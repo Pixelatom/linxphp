@@ -18,8 +18,6 @@
  */
  
 interface IApplicationRouter{
-	public function delegate();
-	public function get_controller_name();
-	public function get_method_name();
+	public function delegate();	
 }
 ?>
