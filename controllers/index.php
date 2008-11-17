@@ -16,30 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-include "classes/postscripts/urlcompleter.php";
 
 class IndexController extends Controller {
 	
 	
 	function index(){		
-		$t = new Template('urltest');
-		$t->register_postscript(new UrlCompleter());
-		
-		$t->show();
+		echo "Hello World!";
 	}
-	
-	function grid(){
-		$pdo=new PDO('mysql:dbname=test;host=127.0.0.1','root','');
-		$pdo->setAttribute(	PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-		$g = new GridComponent(new PDOQueryIterator($pdo,"select * from country limit 9"));
-		//$g->get_paginator()->listings_per_page=5;
-		$t = new Template('gridtest');
-		
-		$t->set('grid',$g);
-		$t->show();
-	}
-	
 	
 }
 ?>
