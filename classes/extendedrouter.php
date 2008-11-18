@@ -108,7 +108,7 @@ class ExtendedRouter implements IApplicationRouter {
             }         
         }
         
-        if (count($args)<$requiredparams){
+        if (count($args)<$requiredparams or count($args)>count($paramsinfo)){
             $this->not_found();
         }
         
