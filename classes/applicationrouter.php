@@ -19,78 +19,15 @@
  
 include_once('iapplicationrouter.php');
 class ApplicationRouter implements IApplicationRouter {
-	
-	protected function not_found(){		
-		if (!headers_sent()){
-			header(' ', true, 404);
-			header('Status: 404 Not Found');
-			header('HTTP/1.0 404 Not Found');	
-		}
-		echo "Page not found";
-		die();
-	}
-		
-	public function delegate(){
-		# indica si la salida es solo la de un componente o un controlador completo
-		$component_output=false;
-		
-		# primero nos fijamos si hay que renderizar solamente un componente
-		if (Application::$request_url->param_exists('_component')){
-			
-			$component_class_name=(Application::$request_url->get_param('_component'));
-			Application::$request_url->remove_param('_component');			
-			$original_url=clone Application::$request_url;
-			#$component=new $component_class_name;			
-			#$component->show();
-			#return;
-			$component_output=true;
-			ob_start();		
-		}
-		
-		# analizamos la ruta y extraemos el nombre del controlador
-		$this->get_controller($file,$controller,$action,$args);
-		
-		# incluye el archivo del controller
-		if (!is_readable($file)){ 			
-			$this->not_found();			
-		}
-		else{			
-			include_once($file);
-		}
-		
-		# inicializa la clase
-		$class = ucfirst($controller).'Controller';
-		$controller = new $class();
-		
-		if (!is_callable(array($controller,$action))){
-			$this->not_found();
-		}
-		
-		$controller->$action();
-		
-		
-		if ($component_output){
-			ob_end_clean();
-			Application::$request_url=$original_url;
-			$component=new $component_class_name;
-			$component->show();			
-			return;
-		}
-	}	
-		
-	public function get_controller_name(){		
-		$this->get_controller($file,$controller,$action,$args);
-		return $controller;
-	}
-	
-	public function get_method_name(){		
-		$this->get_controller($file,$controller,$action,$args);
-		return $action;
-	}
-	
-	private function get_controller(&$file,&$controller,&$action,&$args){
-			
-		/*@var $url Url*/		
+    public function delegate(){
+        $file=null;
+        $controller=null;
+        $action=null;
+        $args=array();
+        
+        
+        /* start get controller */
+        /*@var $url Url*/		
 		$url=Application::$request_url;
 		
 		$route=$url->get_param('route');
@@ -101,78 +38,106 @@ class ApplicationRouter implements IApplicationRouter {
 		$route = trim($route,'/\\');
 		$parts = explode('/',$route);		
 		
-		/*		
-		foreach ($parts as $part){
-			
-			
-			if (is_dir($fullpath)){
-				$cmd_path .= $part . '/';
-				array_shift($parts);
-				continue;
-			}
-			
-			if (is_file($fullpath.'.php')){
-				$controller = $part;
-				array_shift($parts);
-				break;
-			}
-			
-		}
-		*/
 		
-		/*
-		
-		ejemplo:
-		
-		admin/memebers/add
-		
-		seria 
-		dir:
-		admin/
-		
-		controller:
-		member.php
-		
-		method
-		
-		add
-		
-		*/
-		
-				
 		$cmd_path = realpath(Application::get_site_path().Configuration::get('paths','controllers'));
 		
+        $param=null;
 		$controller='index';
 		
-		do{
-			$action=$controller;
+        # recorre el route hasta que encuentra un archivo o se acaba el string.
+		do{ 
+            # controller pasa a ser action
+            $action=$controller;
+            
+            # se arma el path al archivo
 			$fullpath = $cmd_path .'/' . implode('/',$parts);
-			
-			$controller=array_pop($parts);			
+            
+			# se extrae la ultima parte del route
+			$controller=array_pop($parts);
+            $args[]=$controller;
 		}
 		while (!is_file($fullpath.'.php') and count($parts)>0);
+        
 		
-		if (!is_file($fullpath.'.php') and count(explode('/',$route))==1){
+        # si no se encuentra algun archivo, se va a llamar al archivo por defecto 'index.php'
+		if (!is_file($fullpath.'.php') /*and count(explode('/',$route))==1*/){
 			$action=$controller;
 			$controller='index';
 			$fullpath = $cmd_path .'/index'  ;
+            
+            # el ultimo elemento de args es el action
+            array_pop($args);
 		}
-		
-		/*
-		if (empty($controller)) $controller='index';
-		
-		
-		$action=array_shift($parts);
-		
-		if(empty($action)) $action='index';
-		*/
+        else{
+            # los dos ultimos elementos de args son el action y el controller.
+            array_pop($args);
+            array_pop($args);
+        }
 		
 		$file = realpath($fullpath.'.php');
+        $args=array_reverse($args);
 		
+        /*
+         //debbuging
+        echo "file: $file<br />";
+		echo "controller: $controller<br />";
+        echo "action: $action<br />";        
+        */
+        /*
+        var_dump($args);
+        */
+        
+        /* end get controller */        
+        
+        # incluye el archivo del controller
+		if (!is_readable($file)){ 			
+			$this->not_found();			
+		}
+		else{			
+			include_once($file);
+		}
 		
-		
-		$args=$parts;
+		# inicializa la clase
+		$class = ucfirst($controller).'Controller';		
+       
+        
+        $method = new ReflectionMethod($class, $action);
+        
+        if (!$method->isPublic()){
+            $this->not_found();
+        }
+        
+        $paramsinfo = $method->getParameters();
+        
+        $requiredparams = 0;
+        
+        foreach ($paramsinfo as $i => $param) { 
+            if (!$param->isOptional()){
+                $requiredparams++;
+            }         
+        }
+        
+        if (count($args)<$requiredparams or count($args)>count($paramsinfo)){
+            $this->not_found();
+        }
+        
+        
+        /* Creamos el controlador y ejecutamos el metodo */
+        $controller = new $class();
+        if (count($args)==0)
+        $controller->$action();        
+        else
+        call_user_method_array($action,$controller,$args);
+    }
+    
+    protected function not_found(){		
+		if (!headers_sent()){
+			header(' ', true, 404);
+			header('Status: 404 Not Found');
+			header('HTTP/1.0 404 Not Found');	
+		}
+		echo "Page not found";
+		die();
 	}
-	
 }
 ?>

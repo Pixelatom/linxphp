@@ -31,6 +31,12 @@ session_start();
 Url::set_default_url_rewriter(new Regexpurlrewriter());
 
 
+/**
+ * agrega soporte el directorio de los postscripts 
+ */
+Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/classes/postscripts');
+
+
 /* 
  * incluye el controlador indicado en la URL y ejecuta la accion que corresponde
  */
