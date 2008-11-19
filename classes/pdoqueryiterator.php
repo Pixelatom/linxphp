@@ -112,7 +112,7 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	
 	
 	function valid(){
-		return $this->key()+1<$this->count();
+		return $this->key()<$this->count();
 	} 
 }
 ?>
