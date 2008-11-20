@@ -102,6 +102,10 @@ class ApplicationRouter implements IApplicationRouter {
 		$class = ucfirst($controller).'Controller';		
        
         
+        
+        if (!method_exists($class,$action)) $this->not_found();
+       
+        
         $method = new ReflectionMethod($class, $action);
         
         if (!$method->isPublic()){
