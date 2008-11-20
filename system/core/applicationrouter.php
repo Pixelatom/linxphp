@@ -19,12 +19,22 @@
  
 include_once('iapplicationrouter.php');
 class ApplicationRouter implements IApplicationRouter {
+    
+    public $controller=null;
+    public $method=null;
+    public $file=null;
+    public $args=null;
+    
     public function delegate(){
         $file=null;
         $controller=null;
         $action=null;
         $args=array();
         
+        $this->args=$args;
+        $this->file=$file;
+        $this->controller=$controller;
+        $this->action=$action;
         
         /* start get controller */
         /*@var $url Url*/		
@@ -126,6 +136,10 @@ class ApplicationRouter implements IApplicationRouter {
             $this->not_found();
         }
         
+        $this->args=$args;
+        $this->file=$file;
+        $this->controller=$controller;
+        $this->action=$action;
         
         /* Creamos el controlador y ejecutamos el metodo */
         $controller = new $class();
