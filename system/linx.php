@@ -34,12 +34,12 @@ $app_config=array(
 );
 
 
-if (file_exists('config.ini')){
-	$app_config = parse_ini_file("config.ini", true);
-}
-
 include_once('core/configuration.php');
 include_once('core/application.php');
+
+if (file_exists('../config.ini')){
+	$app_config = parse_ini_file("config.ini", true);
+}
 
 Configuration::set_values($app_config);
 
