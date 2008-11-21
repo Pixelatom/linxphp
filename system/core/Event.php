@@ -31,9 +31,8 @@ class Event{
     public static function run($eventName,&$arg=null){
         if (!isset(self::$_listeners[strtolower($eventName)])) return false;
         foreach (self::$_listeners[strtolower($eventName)] as $function){
-            if (is_callable($function))
-            
-            call_user_func_array($function,array(&$arg));
+            if (is_callable($function))            
+            return call_user_func_array($function,array(&$arg));
         }
     }
     
