@@ -21,7 +21,8 @@ class IndexController extends Controller {
 	
 	
 	function index(){		
-		echo "Hello World!";		
+		$t = new Template('index');
+		$t->show();
 	}
 	
 }

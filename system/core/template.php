@@ -86,9 +86,9 @@ class Template{
 	 */
 	function show($name=null){
 		$onbuffer=false;
-		if (!empty($this->_postscripts)){			
-			$onbuffer=ob_start();
-		}
+		
+		$onbuffer=ob_start();
+		
 			
 		try{
 		
@@ -157,7 +157,7 @@ class Template{
 			foreach ($this->_postscripts as $script){
 				$script->process($output);
 			}
-			
+			Event::run('template.show',$output);
 			echo $output;
 		}
 	}

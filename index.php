@@ -30,7 +30,12 @@ session_start();
  */
 Url::set_default_url_rewriter(new Regexpurlrewriter());
 
+function append(&$output){
+    $output.=" this is done with events";
+}
 
+
+Event::add('template.show','append');
 
 
 
