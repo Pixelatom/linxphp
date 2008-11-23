@@ -84,7 +84,9 @@ function __autoload($class_name){
  */
 new Application();
 
-
 if (Configuration::get('errors','useexceptions'))
 include_once('includes/errorexeption.php');
+
+Event::run('system.ready');
+
 ?>
