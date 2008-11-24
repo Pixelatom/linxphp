@@ -71,19 +71,11 @@ class Template{
 	 * que tiene seteadas este objeto.
 	 */
 	function show($name=null){
+		Event::run('template.show_call',$name);
 		$onbuffer=false;
-		
 		$onbuffer=ob_start();
-		
-			
 		try{
-		
-			# muestra un objeto component
-			if (!empty($name) and is_object($name) and is_subclass_of($name,'Component')){
-				$name->show();
-			}
-			# muestra un objeto template (primero le asigna las variables)
-			elseif (!empty($name) and is_object($name) and (get_class($name)=='Template' or  is_subclass_of($name,'Template'))){
+			if (!empty($name) and is_object($name) and (get_class($name)=='Template' or  is_subclass_of($name,'Template'))){
 				/*@var $name Template */
 				$name = clone $name;
 				
@@ -141,7 +133,7 @@ class Template{
 			ob_end_clean();
 			
 			
-			Event::run('template.show',$output);
+			Event::run('template.show',$output,$name);
 			echo $output;
 		}
 	}

@@ -23,8 +23,7 @@
 $app_config=array(
 	'paths'=>array(
 		'templates'=>'templates',
-		'controllers'=>'controllers',
-		'components'=>'components',
+		'controllers'=>'controllers',		
 		'classes'=>'classes',
 		'hooks'=>'hooks',	
 	),
@@ -49,15 +48,12 @@ Configuration::set_values($app_config);
 Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/system/core');
 Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/system/helpers');
 
+// controllers path
+Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/','$1.php',Application::get_site_path().Configuration::get('paths','controllers'));    
+
 // application classes
 Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().Configuration::get('paths','classes'));
 
-
-// controllers path
-Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/','$1.php',Application::get_site_path().Configuration::get('paths','controllers'));
-
-// components path
-Application::add_class_path('/\\A([A-Z]\\w+)Component\\z/','$1.php',Application::get_site_path().Configuration::get('paths','components'));
 
 function __autoload($class_name){
 	$file = '';
