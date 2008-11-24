@@ -52,6 +52,6 @@ function component_router_end(){
     Registry::remove('_component_class_name');
     Registry::remove('_component_original_url');
 }
-Event::add('system.routing','system.post_routing');
+Event::add('system.post_routing','system.post_routing');
 
 ?>
