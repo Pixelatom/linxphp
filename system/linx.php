@@ -26,7 +26,7 @@ $app_config=array(
 		'controllers'=>'controllers',
 		'components'=>'components',
 		'classes'=>'classes',
-	
+		'hooks'=>'hooks',	
 	),
 	'errors'=>array(
 		'useexceptions'=>false,
@@ -86,6 +86,25 @@ new Application();
 
 if (Configuration::get('errors','useexceptions'))
 include_once('includes/errorexeption.php');
+
+/*
+ * Loads hooks here, at the start of the application
+ */
+
+
+$hookdirs=array();
+# loads system hooks
+$hookdirs[] = new DirectoryIterator(realpath(dirname(__FILE__).'/hooks/'));
+# application hooks
+$hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','hooks').'/'));
+
+foreach ($hookdirs as $dir){
+	foreach ($dir as $file){
+		if(!$file->isDot() && !$file->isDir() && preg_match("/\.php$/",$file->getFilename())) {		
+			include_once('hooks/'.$file->getFilename());
+		}
+	}
+}
 
 Event::run('system.ready');
 
