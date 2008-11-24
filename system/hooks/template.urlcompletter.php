@@ -1,5 +1,5 @@
 <?php
-class UrlCompleter extends PostScript{
+class UrlCompleter{
     public function process(&$output){
         
         preg_match_all('/(<[a-z]+[^>]*?(?:src|href)\\s*=\\s*")((?!(?:https?|ftp):\/\/(?:[-A-Z0-9.]+))(?:[-A-Z0-9+&@#\/%=~_|!:,.;]*)?(?:\\?[-A-Z0-9+&@#\/%=~_|!:,.;]*)?)("[^>]*>)/i', $output, $matches, PREG_PATTERN_ORDER);        /*echo count ($matches);*/
@@ -13,4 +13,5 @@ class UrlCompleter extends PostScript{
         
     }
 }
+Event::add('template.show',array('UrlCompleter','process'));
 ?>

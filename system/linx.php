@@ -52,8 +52,6 @@ Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/sys
 // application classes
 Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().Configuration::get('paths','classes'));
 
-// miscelaneous classes
-Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/system/core/postscripts');
 
 // controllers path
 Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/','$1.php',Application::get_site_path().Configuration::get('paths','controllers'));

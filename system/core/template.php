@@ -23,20 +23,6 @@ class Template{
 	protected $_custom_path=false;
 	protected $_vars=array();
 	
-	
-	protected $_postscripts=array();
-	
-	public function register_postscript(PostScript $script){
-		if (array_key_exists(get_class($script),$this->_postscripts)) return false;		
-		$this->_postscripts[get_class($script)]=$script;		
-		return true;
-	}
-	public function unregister_postscript(PostScript $script){
-		if (!array_key_exists(get_class($script),$this->_postscripts)) return false;		
-		unset($this->_postscripts[get_class($script)]);
-		return true;
-	}
-	
 	function __construct($default_template=null,$custom_path=null){
 		$this->set_default_template($default_template);
 		$this->set_custom_path($custom_path);
@@ -154,9 +140,7 @@ class Template{
 			$output = ob_get_contents();
 			ob_end_clean();
 			
-			foreach ($this->_postscripts as $script){
-				$script->process($output);
-			}
+			
 			Event::run('template.show',$output);
 			echo $output;
 		}
