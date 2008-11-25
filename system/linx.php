@@ -45,14 +45,14 @@ Configuration::set_values($app_config);
 // general classes autoinclude paths
 
 // system classes
-Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/system/core');
-Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().'/system/helpers');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().'/system/core');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().'/system/helpers');
 
 // controllers path
-Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/','$1.php',Application::get_site_path().Configuration::get('paths','controllers'));    
+Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','controllers'));    
 
 // application classes
-Application::add_class_path('/(.+)/','$1.php',Application::get_site_path().Configuration::get('paths','classes'));
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','classes'));
 
 
 function __autoload($class_name){
