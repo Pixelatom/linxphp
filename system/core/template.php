@@ -63,7 +63,7 @@ class Template{
 	 * bind() is like set only the variable is assigned by reference.
 	 */
 	public function bind($varname,&$value){
-		$this->_vars[$varname]=&$value;
+		$this->_vars[$varname] = &$value;
 		return $this;
 	}
 	/**
@@ -100,19 +100,30 @@ class Template{
 		return $this;
 	}
 	
+	private function clousure($path,&$vars){
+		extract($vars, EXTR_REFS);
+		include($path);
+	}
 	
 	/**
 	 * renders the output of the View.
 	 *
-	 * @param unknown_type $name: (opcional) si no es especificado
+	 *@param unknown_type $name: (opcional) si no es especificado
 	 * muestra el template default del objeto, 
 	 * si es un strig, busca el archivo .php con el mismo nombre y lo usa 
 	 * de template.
 	 * si es otro objeto template, lo muestra agregandole las variables 
 	 * que tiene seteadas este objeto.
+	 *
+	 *@todo soporte para variables por referencia 
+	 * 
 	 */
 	function show($name=null){
 		Event::run('template.show_call',$name);
+		
+		# sumamos a las variables seteadas con los metodos comunes, las variables seteadas dinamicamente.
+		$vars=array_merge(get_object_vars($this),$this->_vars);
+		
 		$onbuffer=false;
 		$onbuffer=ob_start();
 		try{
@@ -120,8 +131,11 @@ class Template{
 				/*@var $name Template */
 				$name = clone $name;
 				
-				foreach ($this->_vars as $key=>$value){
-					$name->set($key,$value);
+				# copiamos todas las variables que tenemos en este template al template que se paso por parametros
+				foreach ($vars as $key=>&$value){
+					if (!isset($name->_vars[$key])){
+						$name->_vars[$key]=&$value;	
+					}
 				}
 				
 				$name->show();
@@ -140,26 +154,23 @@ class Template{
 				$path = realpath($this->_custom_path).'/'.$name.'.php'; 
 				
 				if (!file_exists($path)) throw new Exception('Template `'.$name.'` does not exists');
-								
-				foreach ($this->_vars as $key=>$value){
-					if (isset($$key) == true){ throw new Exception('Unable to set var `'.$key.'`. Already set.');}
-					
+				
+				#buscamos entre todas las variables que tenemos asignadas por un objeto template
+				foreach ($vars as $key=>&$value){
 					# si es un template le asigna las variables que este template tiene
-					if (!empty($value) and is_object($value) and (get_class($value)=='Template' or  is_subclass_of($value,'Template'))){
-						/*@var $name Template */
+					if (!empty($value) and is_object($value) and (get_class($value)=='Template' or  is_subclass_of($value,'Template'))){						
 						$value = clone $value;				
-						foreach ($this->_vars as $newkey=>$newvalue){
-							$value->set($newkey,$newvalue);
+						
+						foreach ($vars as $key1=>&$value1){
+							if (!isset($value->_vars[$key1]) and $key != $key1){								
+								$value->_vars[$key1] = &$value1;	
+							}
 						}
-					}			
-					$$key=$value;
+						
+					}
 				}
 				
-				include($path);
-				
-				foreach ($this->_vars as $key=>$value){
-					unset($$key);
-				}
+				$this->clousure($path,$vars);
 			}
 		}
 		catch(Exception $e){
