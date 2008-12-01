@@ -42,7 +42,7 @@ class ApplicationRouter implements IApplicationRouter {
         /*@var $url Url*/		
         $url=Application::$request_url;
         
-        $route=$url->get_param('route');
+        $route=strtolower($url->get_param('route'));
         
         if (empty($route)) $route = 'index';
         $cmd_path = Application::get_site_path().Configuration::get('paths','controllers').'/';
