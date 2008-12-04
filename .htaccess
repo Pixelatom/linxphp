@@ -27,6 +27,11 @@ deny from all
 Options +FollowSymlinks
 RewriteEngine on
 
+
+##point to installation directory 
+##if it is the root dir,enter / 
+#rewritebase /
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
