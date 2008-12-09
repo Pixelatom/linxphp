@@ -27,8 +27,8 @@ class Configuration{
 		self::$config[strtolower($section)][strtolower($key)]=$value;
 	}
 	public static function load($filename){		
-		if (file_exists('config.ini')){
-			$array = parse_ini_file("config.ini", true);
+		if (file_exists($filename)){
+			$array = parse_ini_file($filename, true);
 			
 			self::set_values($array);
 		}
@@ -40,11 +40,13 @@ class Configuration{
 			}
 		}
 	}
-	public static function get($section,$key,$default=false){
-		if (isset(self::$config[strtolower($section)]) and isset(self::$config[strtolower($section)][strtolower($key)]))
-		return self::$config[strtolower($section)][strtolower($key)];
+	public static function get($section,$key=false,$default=false){
+		if(isset(self::$config[strtolower($section)]) and isset(self::$config[strtolower($section)]) and !$key)
+			return self::$config[strtolower($section)];
+		elseif(isset(self::$config[strtolower($section)]) and isset(self::$config[strtolower($section)][strtolower($key)]))
+			return self::$config[strtolower($section)][strtolower($key)];
 		else 
-		return $default;
+			return $default;
 	}
 }
 ?>
