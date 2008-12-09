@@ -18,7 +18,7 @@
  */
  
 /*
- * basic application configuration
+ *  basic application configuration
  */
 $app_config=array(
 	'paths'=>array(
@@ -36,12 +36,15 @@ $app_config=array(
 include_once('core/configuration.php');
 include_once('core/application.php');
 
-if (file_exists('../config.ini')){
+if (file_exists('config.ini')){
 	$app_config = parse_ini_file("config.ini", true);
 }
 
 Configuration::set_values($app_config);
 
+/*if (file_exists('config.ini')){
+  Configuration::load('config.ini');
+}*/
 // general classes autoinclude paths
 
 // system classes
@@ -95,7 +98,10 @@ $hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Config
 foreach ($hookdirs as $dir){
 	foreach ($dir as $file){
 		if(!$file->isDot() && !$file->isDir() && preg_match("/\.php$/",$file->getFilename())) {		
-			include_once('hooks/'.$file->getFilename());
+			/*@var $dir DirectoryIterator */
+            
+            include_once($dir->getPath().'/'.$file->getFilename());
+            
 		}
 	}
 }
