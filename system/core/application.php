@@ -33,6 +33,16 @@ class Application{
 	
 	static protected $_classes_paths=array();
 	
+    
+    static public function get_controller(){
+        return self::$_router->controller;
+    }
+    static public function get_action(){
+        return self::$_router->action;
+    }
+    static public function get_args(){
+        return self::$_router->args;
+    }
 	/**
 	 * PHP has functionality to automatically load files if a certain class has not been loaded yet. Linx employs this functionality.
 	 * this function adds a new direcotry where to find classes to auto load.

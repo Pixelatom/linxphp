@@ -25,6 +25,7 @@ class ApplicationRouter implements IApplicationRouter {
     public $file=null;
     public $args=null;
     
+    
     public function delegate(){
         Event::run('system.routing');
         
@@ -138,11 +139,23 @@ class ApplicationRouter implements IApplicationRouter {
             $this->not_found();
         }
         
-        $this->args=$args;
+        /* calculamos el valor de controller */
+        $icontroller=str_ireplace(realpath($cmd_path) ,'',$file);
+        $icontroller=str_replace('\\','/',$icontroller);
+        $icontroller=explode('/',$icontroller);
+        array_pop($icontroller);
+        $icontroller=implode('/',$icontroller);
+        $icontroller.='/'.$controller;
+        
+        $this->args=implode('/',$args);
         $this->file=$file;
-        $this->controller=$controller;
+        $this->controller=$icontroller;
         $this->action=$action;
         
+        
+        /*
+        die($icontroller);
+        */
         /* Creamos el controlador y ejecutamos el metodo */
         
         Event::run('system.execute');
