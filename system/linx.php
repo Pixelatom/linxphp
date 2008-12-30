@@ -22,10 +22,10 @@
  */
 $app_config=array(
 	'paths'=>array(
-		'templates'=>'templates',
-		'controllers'=>'controllers',		
-		'classes'=>'classes',
-		'hooks'=>'hooks',	
+		'templates'=>'application/templates',
+		'controllers'=>'application/controllers',		
+		'classes'=>'application/classes',
+		'hooks'=>'application/hooks',	
 	),
 	'errors'=>array(
 		'useexceptions'=>false,
