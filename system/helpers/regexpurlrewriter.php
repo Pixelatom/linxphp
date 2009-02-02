@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
- 
+
+/**
+ * This rewriter will change a traditional url and give the standard friendly url format
+ */
 class Regexpurlrewriter implements IUrlRewriter {
 	public function rewrite($url){
 		/*http://(.+?)/([^\/]+?\.php){0,1}(?:\?route=(.+?))*(&.*)*\z*/

@@ -1,4 +1,8 @@
 <?php
+/*
+ * This hook will search for relative urls in the template and complete them before the template is printed.
+ * 
+ */
 class UrlCompleter{
     public function process(&$output){
         

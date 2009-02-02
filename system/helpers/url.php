@@ -26,7 +26,9 @@ if (preg_match('¿'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(
 	$referer_url=new Url(preg_replace('¿'.($helper->get_application_path()).'/(.*)¿i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
 }
 */
-
+/**
+ * Url Helper. This class allows you to write and read url easily 
+ */
 class Url{
 	private $_https=false;
 	private $_server_name=false;

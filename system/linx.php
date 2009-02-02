@@ -36,15 +36,15 @@ $app_config=array(
 include_once('core/configuration.php');
 include_once('core/application.php');
 
+/*
+ complete the basic configuration with the config found in the ini file
+*/
 if (file_exists('config.ini')){
 	$app_config = parse_ini_file("config.ini", true);
 }
-
 Configuration::set_values($app_config);
 
-/*if (file_exists('config.ini')){
-  Configuration::load('config.ini');
-}*/
+
 // general classes autoinclude paths
 
 // system classes
@@ -57,7 +57,9 @@ Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').
 // application classes
 Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','classes'));
 
-
+/*
+ * PHP autoload behavior is configured here, so it make use of the Application class configuration.
+ */
 function __autoload($class_name){
 	$file = '';
 	$filename = '';
@@ -77,7 +79,7 @@ function __autoload($class_name){
 }
 
 /*
- * inicializa la variables de la aplicacion. 
+ * Application object is initialized
  */
 new Application();
 
