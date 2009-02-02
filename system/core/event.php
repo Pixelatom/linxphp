@@ -7,13 +7,20 @@ class Event{
      * Used to add a new callback to an event. If the event does not already exist, it will be created.
      */
     public static function add($eventName, $function){
+        
         if (!is_callable($function,true)) throw new InvalidArgumentException("Second Argument must be callable");
+        
+        if (!isset(self::$_listeners[strtolower($eventName)]))
+        self::$_listeners[strtolower($eventName)]=array();
+        
         self::$_listeners[strtolower($eventName)][]=$function;
+        
     }
     /**
      * Clear all callbacks from an event.
      */
     public static function clear($eventName){
+        die('NOOOO');
         unset(self::$_listeners[strtolower($eventName)]);
     }
     
@@ -51,8 +58,11 @@ class Event{
      *@param mixed $referenced is any variable passed by reference that can by modified bu thecallbacks
      */
     public static function run($eventName,&$referenced=null){
+        
         $return=null;
+        
         if (!isset(self::$_listeners[strtolower($eventName)])) return false;
+        
         foreach (self::$_listeners[strtolower($eventName)] as $function){
             $args=func_get_args();
             array_shift($args);

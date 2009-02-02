@@ -22,6 +22,7 @@ error_reporting(E_ALL);
  * necesario para la correcta ejecucion del sitio
  */
 include_once('system/linx.php');
+if (!session_id()) 
 session_start();
 
 /*

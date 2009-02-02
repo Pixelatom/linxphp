@@ -94,6 +94,23 @@ $hookdirs=array();
 $hookdirs[] = new DirectoryIterator(realpath(dirname(__FILE__).'/hooks/'));
 # application hooks
 $hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','hooks').'/'));
+/*
+ now we will search for component hooks
+ they should be placed on [componentsfolder]/[componentname]/hooks
+*/
+$dir = new DirectoryIterator(Application::get_site_path().Configuration::get('paths','components').'/' );
+foreach($dir as $file )
+{
+  if ($file->getType()=='file' and preg_match('/(.+?)\\.php/i', $file->getFilename(), $result)){    
+        $param = $result[1];
+        /*echo $param;*/
+        if (file_exists(Application::get_site_path().Configuration::get('paths','components').'/'.$param.'/hooks')
+            and is_dir(Application::get_site_path().Configuration::get('paths','components').'/'.$param.'/hooks')){
+            # we found a new hooks directory!
+            $hookdirs[] = new DirectoryIterator(Application::get_site_path().Configuration::get('paths','components').'/'.$param.'/hooks/');
+        }
+  }  
+}
 
 foreach ($hookdirs as $dir){
 	foreach ($dir as $file){
