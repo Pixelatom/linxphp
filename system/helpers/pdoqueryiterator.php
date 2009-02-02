@@ -96,9 +96,7 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 				$stmt=$this->_pdo->query("select * from ({$this->_query}) as __query_".$limiter,$this->_fetchmode);
 			}
 			
-			if ($this->count()==1)
-			$this->_cached_result=array($stmt->fetchAll());
-			else
+			 
 			$this->_cached_result=$stmt->fetchAll();
 			
 						
