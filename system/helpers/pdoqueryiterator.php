@@ -25,10 +25,10 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	protected $_fetchargument1=null;
 	protected $_fetchargument2=null;
 	
-	private $_query_position = 1; // position from where the query will take the results
-	private $_query_limit = 10; // cached results array
-	private $_index = 1; // position in the results array
-	private $_cached_result = null; // results array
+	private $_query_position = 0; // position from where the query will take the results
+	private $_query_limit = 10; // quantity of items that will be cached 
+	private $_index = 0; // position in the cached results array
+	private $_cached_result = null; // cached results array
 		
 	function __construct($pdo,$query,$fetchmode=null,$fetchargument1=null,$fetchargument2=null){
 		$this->_query=$query;
@@ -61,22 +61,22 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 		if ($index<0 or $index>=$this->count())
 		throw new OutOfBoundsException('Index Out of Bound');
 		
-		$this->_query_position=$index;
-		$this->_index=1;
+		$this->_query_position=$index; // limit position in query
+		$this->_index=0; // position in cached results
 	}
 	
 	function rewind(){
-		$this->_query_position=1;
-		$this->_index=1;
+		$this->_query_position=0;
+		$this->_index=0;
 	}
 	
 	function key(){
-		return (($this->_query_position-1)+$this->_index)-1;
+		return $this->_query_position+$this->_index;
 	}
 	
 	function current(){
 		if ($this->_index>$this->_query_limit){
-			$this->_query_position=$this->_query_position+$this->_index-1;
+			$this->_query_position=$this->_query_position+$this->_index;
 			$this->_cached_result=null;
 		}
 		if (!is_array($this->_cached_result)){
@@ -103,10 +103,10 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 			
 						
 			unset($stmt);
-			$this->_index=1;
+			$this->_index=0;
 		}
 		
-		return $this->_cached_result[$this->_index-1];
+		return $this->_cached_result[$this->_index];
 	}
 	
 	
@@ -117,8 +117,7 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	
 	function valid(){
 		if ($this->count()==0) return false;
-		if ($this->count()==1) return $this->key()<$this->count();
-		return $this->key()+1<$this->count();
+		return $this->key()<$this->count();
 	} 
 }
 ?>
