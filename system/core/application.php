@@ -33,13 +33,24 @@ class Application{
 	
 	static protected $_classes_paths=array();
 	
-    
+    /**
+     * returns the current controller name.
+     * this function only returns a value once that the router was executed
+     */
     static public function get_controller(){
         return self::$_router->controller;
     }
+    /**
+     * returns the current controller's function called
+     * this function only returns a value once that the router was executed
+     */
     static public function get_action(){
         return self::$_router->action;
     }
+    /**
+     * current arguments passed to the controller.
+     * this function only returns a value once that the router was executed
+     */
     static public function get_args(){
         return self::$_router->args;
     }

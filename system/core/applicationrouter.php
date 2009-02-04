@@ -18,6 +18,16 @@
  */
  
 include_once('iapplicationrouter.php');
+
+/**
+ * The Application Router is the default router of the Framework.
+ * This class will determinate which controller should be exeuted based on the
+ * value of the Application::$requested_url (which is based on the URL requested
+ * by the browser).
+ *
+ * In case the router doesn't find a Controller will execute the error 404 event
+ *
+ */
 class ApplicationRouter implements IApplicationRouter {
     
     public $controller=null;
@@ -25,7 +35,10 @@ class ApplicationRouter implements IApplicationRouter {
     public $file=null;
     public $args=null;
     
-    
+    /**
+     * This function search for a controller and execute it.
+     *
+     */
     public function delegate(){
         Event::run('system.routing');
         
