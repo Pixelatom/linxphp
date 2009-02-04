@@ -4,7 +4,10 @@
  * Author: Javier Arias. *
  * Licensed under GNU General Public License.
  */
- 
+/**
+ * Some people say global variables are a bad practice so here u have the solucion
+ * http://blog.case.edu/gps10/2006/07/22/why_global_variables_in_php_is_bad_programming_practice
+ */
 class Registry{
 	private static $_vars=array();
 	

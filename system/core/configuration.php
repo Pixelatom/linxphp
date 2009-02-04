@@ -6,8 +6,7 @@
  */
 
 /**
- * This is a global Configuration manager. You could access this class anywhere in the program
- * wihtout need of instancing it.
+ * A static class instance holding all of the configuration settings. 
  * Default values are taken form the config.ini file located at the root of the program.
  */
 class Configuration{
