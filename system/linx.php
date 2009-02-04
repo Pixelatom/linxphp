@@ -83,7 +83,7 @@ function __autoload($class_name){
  */
 new Application();
 
-if (Configuration::get('errors','useexceptions'))
+if (Configuration::get('errors','useexeptions'))
 include_once('includes/errorexeption.php');
 
 /*
