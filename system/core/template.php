@@ -4,7 +4,16 @@
  * Author: Javier Arias. *
  * Licensed under GNU General Public License.
  */
- 
+
+
+/**
+ * Template is the main View class of MVC pattern .
+ * 
+ * Views are files that contain the display information for your application. This is most commonly HTML, CSS and JavaScript but can be anything you require such as XML or Json for AJAX output. The purpose of views is to keep this information separate from your application logic for easy reusability and cleaner code.
+ * While this is true, views themselves can contain code used for displaying the data you pass into them. For example, looping through an array of product information and display each one on a new table row. Views are still PHP files so you can use any code you normally would. Views are executed in the Controller namespace so you have access to all resources you have loaded into $this->
+ * When this view is rendered it is executed just as any PHP script would and the output from it is returned (or sent to the browser if you so wish).
+ *
+ */ 
 class Template{
 	
 	protected $_default_template;
@@ -40,7 +49,7 @@ class Template{
 	
 	
 	/**
-	 * set() can be used to set a variable in a view
+	 * set() can be used to set a variable in a view	 
 	 */
 	public function set($varname,$value){
 		$this->_vars[$varname]=$value;
@@ -102,8 +111,6 @@ class Template{
 	 * de template.
 	 * si es otro objeto template, lo muestra agregandole las variables 
 	 * que tiene seteadas este objeto.
-	 *
-	 *@todo soporte para variables por referencia 
 	 * 
 	 */
 	function show($name=null){

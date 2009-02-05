@@ -4,7 +4,14 @@
  * Author: Javier Arias. *
  * Licensed under GNU General Public License.
  */
- 
+/**
+ * PDOQueryIterator is a helper class that allows you to iterato throug the results of a
+ * SQL query.
+ * This class will execute queries in a optimized way depending on how many results
+ * you need.
+ * This class is very useful for paginations.
+ *
+ */
 class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	
 	protected $_query="";
@@ -17,7 +24,11 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	private $_query_limit = 10; // quantity of items that will be cached 
 	private $_index = 0; // position in the cached results array
 	private $_cached_result = null; // cached results array
-		
+	
+	/**
+	 *@param Object $pdo a valid PDO connection
+	 *@param String $query the SQL query to be executed
+	 */
 	function __construct($pdo,$query,$fetchmode=null,$fetchargument1=null,$fetchargument2=null){
 		$this->_query=$query;
 		$this->_pdo=$pdo;
@@ -33,6 +44,9 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	}
 	
 	private $_cached_count=null;
+	/**
+	 * Retrieves the number of rows
+	 */
 	function count(){
 		
 		if ($this->_cached_count===null){			

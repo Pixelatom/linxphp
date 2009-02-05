@@ -7,6 +7,7 @@
 
 /**
  * This rewriter will change a traditional url and give the standard friendly url format
+ * This class is used in conjunction with Url helper, it'll change the way the url are retourned.
  */
 class Regexpurlrewriter implements IUrlRewriter {
 	public function rewrite($url){
