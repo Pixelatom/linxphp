@@ -1,4 +1,9 @@
 <?php
+/**
+ * Default listener for 404 error event
+ * you should need to know the name of this function if you want to change
+ * the default behavior on a 404 not found error
+ */
 function system_404(){
     if (!headers_sent()){
         header(' ', true, 404);

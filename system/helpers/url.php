@@ -15,7 +15,13 @@ if (preg_match('¿'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(
 }
 */
 /**
- * Url Helper. This class allows you to write and read url easily 
+ * Url Helper. This class allows you to write and read url easily.
+ *
+ * with this class you can:
+ * * know what's the current url requested
+ * * create new application urls easily
+ * * get and change the parameters of a url
+ * * output your urls in a friendly format
  */
 class Url{
 	private $_https=false;
@@ -26,12 +32,22 @@ class Url{
 	
 	private static $_default_rewriter=null;
 	
+	/**
+	 * sets a default rewriter class which will modify the output of all the urls printed with this class
+	 *@param Object $rewriter a instance of a rewriter class
+	 */
 	public static function set_default_url_rewriter(IUrlRewriter $rewriter){
 		self::$_default_rewriter=$rewriter;
 	}
 
+	/**
+	 * for default it's true, if you change it to false, the instance of this class will not use the default rewriter
+	 */
 	public $use_rewriter=true;
 	
+	/**
+	 * Returns the base url to the application
+	 */
 	public function get_application_path(){
 		$current_url='http';
 		$current_url.=($this->_https)?'s':'';
@@ -46,6 +62,9 @@ class Url{
 		return $current_url;
 	}
 	
+	/**
+	 *@param String $url if passed, the new instance of this class will parse and fill its properties with the new value, by default, its the current application url
+	 */
 	function __construct($url=null){
 		if (empty($url)){
 			$this->_https=(isset($_SERVER['HTTPS']) and $_SERVER['HTTPS']=='on')?true:false;
@@ -103,14 +122,23 @@ class Url{
 			}
 		}
 	}
+	/**
+	 * set the server name part of the url
+	 */
 	public function set_server_name($name){
 		$this->_server_name=$name;
 		return $this;
 	}
+	/**
+	 * get the server name part of the url
+	 */
 	public function get_server_name(){
 		return $this->_server_name;
 	}
 	
+	/**
+	 * returns the the url as string
+	 */
 	public function get_url(){
 		$current_url='http';
 		$current_url.=($this->_https)?'s':'';
@@ -140,19 +168,36 @@ class Url{
 		
 		return $current_url;
 	}
-	
+	/**
+	 * set the value of a url parameter
+	 *@param string $name the name of the parameter
+	 *@param string $value the new value for the paramenter
+	 */
 	public function set_param($name,$value){
 		$this->_params[$name]=$value;
 		return $this;
 	}
+	/**
+	 * get the value of a url parameter
+	 *@param String $name the name of the parameter
+	 *@param Mixed $default_value a value retourned in case the parameter is not found
+	 */
 	public function get_param($name,$default_value=null){
 		if (!array_key_exists($name,$this->_params)) return $default_value;
 		return $this->_params[$name];
 	}
+	
+	/**
+	 * Remove all the params from the url
+	 */
 	public function clear_params(){
 		$this->_params=array();
 		return $this;
 	}
+	/**
+	 * remove a specific parameter from the url
+	 *@param String $remove the name of the parameter to be removed
+	 */
 	public function remove_param($remove){
 		$new_params=array();
 		foreach ($this->_params as $name=>$value){
@@ -162,6 +207,11 @@ class Url{
 		$this->_params=$new_params;
 		return $this;
 	}
+	
+	/**
+	 * returns true if the parameter specified is set
+	 *@param string $name the name of the parameter
+	 */
 	public function param_exists($name){
 		return array_key_exists($name,$this->_params);
 	}
