@@ -21,7 +21,7 @@ $app_config=array(
 );
 
 
-include_once('core/configuration.php');
+include_once('helpers/configuration.php');
 include_once('core/application.php');
 
 /*
