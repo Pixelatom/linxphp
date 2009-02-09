@@ -14,24 +14,16 @@
  * When this view is rendered it is executed just as any PHP script would and the output from it is returned (or sent to the browser if you so wish).
  *
  */ 
-class Template{
+class Template extends BaseTemplate{
 	
 	protected $_default_template;
 	protected $_custom_path=false;
-	protected $_vars=array();
-	
+		
 	function __construct($default_template=null,$custom_path=null){
 		$this->set_default_template($default_template);
 		$this->set_custom_path($custom_path);
 	}
-	
-	/**
-	 * This method is static. Parameters are the same as creating a new instance.
-	 * It creates a View instance and immediately returns it so method chaining is possible.
-	 */
-	static public function factory($default_template=null,$custom_path=null){
-		return new Template($default_template,$custom_path);
-	}
+		
 	/**
 	 * change the path where the class will search for the file it has to show
 	 */
@@ -39,6 +31,7 @@ class Template{
 		$this->_custom_path=$custom_path;
 		return $this;
 	}
+	
 	/**
 	 * set a default file or object to render when the method show is called without parameters
 	 */
@@ -46,62 +39,7 @@ class Template{
 		$this->_default_template=$default_template;
 		return $this;
 	}
-	
-	
-	/**
-	 * set() can be used to set a variable in a view	 
-	 */
-	public function set($varname,$value){
-		$this->_vars[$varname]=$value;
-		return $this;
-	}
-	
-	/**
-	 * bind() is like set only the variable is assigned by reference.
-	 */
-	public function bind($varname,&$value){
-		$this->_vars[$varname] = &$value;
-		return $this;
-	}
-	/**
-	 * return true if the var name is set for this template
-	 */
-	public function key_exists($key){
-		return isset($this->_vars[$key]);
-		return $this;
-	}
-	
-	/**
-	 * get the value set for a template variable
-	 */
-	public function get($key){
-		if (!isset($this->_vars[$key])) throw new Exception("Value '$key' doesn't exists for this template.");
-		return $this->_vars[$key];
-	}
-	
-	/**
-	 * remove a template variable by name
-	 * 
-	 */
-	public function remove($key){
-		if (!isset($this->_vars[$key])) return $this;
-		unset($this->_vars[$key]);
-		return $this;
-	}
-	
-	/**
-	 * remove all the variables set for this template
-	 */
-	public function clear(){
-		$this->_vars=array();
-		return $this;
-	}
-	
-	private function clousure($path,&$vars){
-		extract($vars, EXTR_REFS);
-		include($path);
-	}
-	
+		
 	/**
 	 * renders the output of the View.
 	 *
@@ -122,7 +60,7 @@ class Template{
 		$onbuffer=false;
 		$onbuffer=ob_start();
 		try{
-			if (!empty($name) and is_object($name) and (get_class($name)=='Template' or  is_subclass_of($name,'Template'))){
+			if (!empty($name) and is_object($name) and (get_class($name)=='Template' or  is_subclass_of($name,'BaseTemplate'))){
 				/*@var $name Template */
 				$name = clone $name;
 				
@@ -153,7 +91,7 @@ class Template{
 				#buscamos entre todas las variables que tenemos asignadas por un objeto template
 				foreach ($vars as $key=>&$value){
 					# si es un template le asigna las variables que este template tiene
-					if (!empty($value) and is_object($value) and (get_class($value)=='Template' or  is_subclass_of($value,'Template'))){						
+					if (!empty($value) and is_object($value) and (get_class($value)=='Template' or  is_subclass_of($value,'BaseTemplate'))){						
 						$value = clone $value;				
 						
 						foreach ($vars as $key1=>&$value1){
@@ -185,12 +123,10 @@ class Template{
 		}
 		return $this;
 	}
-	public function __toString(){
-		ob_start();
-		$this->show();
-		$return=ob_get_contents();
-		ob_end_clean();
-		return $return;
+	
+	protected function clousure($path,&$vars){
+		extract($vars, EXTR_REFS);
+		include($path);
 	}
 }
 ?>

@@ -77,7 +77,7 @@ class PDOQueryIterator implements Iterator, Countable, SeekableIterator{
 	}
 	
 	function current(){
-		if ($this->_index>$this->_query_limit){
+		if ($this->_index>=$this->_query_limit){
 			$this->_query_position=$this->_query_position+$this->_index;
 			$this->_cached_result=null;
 		}
