@@ -29,7 +29,7 @@ class CombinedTemplate extends Template{
         }
         
         // [template] tag interpreter.
-        preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template\\]/si', $code, $results, PREG_SET_ORDER);
+        preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template=\\1\\]/si', $code, $results, PREG_SET_ORDER);
         
         $original_vars = $vars;
         
