@@ -74,20 +74,7 @@ class Template extends BaseTemplate{
 				$name->show();
 			}			
 			else{
-				
-				# va a mostrar template default
-				if (empty($name)){
-					if (empty($this->_default_template)) throw new Exception("Empty template");
-					$name=$this->_default_template;
-				}
-					
-				if (empty($this->_custom_path))
-				$path = Application::get_site_path().Configuration::get('paths','templates').'/'.$name.'.php';
-				else 
-				$path = realpath($this->_custom_path).'/'.$name.'.php'; 
-				
-				if (!file_exists($path)) throw new Exception('Template `'.$name.'` does not exists');
-				
+		
 				#buscamos entre todas las variables que tenemos asignadas por un objeto template
 				foreach ($vars as $key=>&$value){
 					# si es un template le asigna las variables que este template tiene
@@ -103,7 +90,7 @@ class Template extends BaseTemplate{
 					}
 				}
 				
-				$this->clousure($path,$vars);
+				$this->include_template($name,$vars);
 			}
 		}
 		catch(Exception $e){
@@ -122,6 +109,25 @@ class Template extends BaseTemplate{
 			echo $output;
 		}
 		return $this;
+	}
+	
+	protected function include_template($name,&$vars){		
+		
+		# va a mostrar template default
+		if (empty($name)){
+			if (empty($this->_default_template)) throw new Exception("Empty template");
+			$name=$this->_default_template;
+		}
+			
+		if (empty($this->_custom_path))
+		$path = Application::get_site_path().Configuration::get('paths','templates').'/'.$name.'.php';
+		else 
+		$path = realpath($this->_custom_path).'/'.$name.'.php'; 
+		
+		if (!file_exists($path)) throw new Exception('Template `'.$name.'` does not exists');
+		
+		
+		$this->clousure($path,$vars);
 	}
 	
 	protected function clousure($path,&$vars){

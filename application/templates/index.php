@@ -5,7 +5,11 @@
 [template=head]<link rel="shortcut icon" href="favicon.ico">[/template]
 </head>
 <body>
+    [template=hello_message]
+    
     <?=$grid?>
-    [template=hello_message]Hello World![/template]
+    Hello World!
+    
+    [/template]
 </body>
 </html>
