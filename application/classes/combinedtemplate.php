@@ -37,11 +37,15 @@ class CombinedTemplate extends Template{
         
         for ($i = 0; $i < count($results); $i++) {
             /*var_dump($results[$i]['name']);*/
-            $vars[$results[$i]['name']]=new CombinedTemplate();
-            $vars[$results[$i]['name']]->set_content($results[$i]['code']);
             
+            if ( ! (isset($vars[$results[$i]['name']]) and is_object($vars[$results[$i]['name']]) and (is_subclass_of($vars[$results[$i]['name']],'BaseTemplate')))){           
             
-            $vars[$results[$i]['name']]->_vars = array_merge($vars[$results[$i]['name']]->_vars, $original_vars);
+                $vars[$results[$i]['name']]=new CombinedTemplate();
+                $vars[$results[$i]['name']]->set_content($results[$i]['code']);
+                
+                
+                $vars[$results[$i]['name']]->_vars = array_merge($vars[$results[$i]['name']]->_vars, $original_vars);
+            }
             
             $new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);
         }
