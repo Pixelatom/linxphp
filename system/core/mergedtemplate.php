@@ -1,4 +1,5 @@
 <?php
+
 class MergedTemplate extends Template{
     
     private $_template_content = null;
@@ -7,12 +8,12 @@ class MergedTemplate extends Template{
         $this->_template_content=$content;
     }
     
-    protected function include_template($name,&$vars){
-        # va a mostrar template default
+    protected function get_template_code($name){
         if (empty($name) and empty($this->_default_template) and !empty($this->_template_content)){            
             $code = $this->_template_content;
             
         }else{
+            //va a mostrar template default
             if (empty($name) and !empty($this->_default_template)){            
                 $name=$this->_default_template;
             }
@@ -28,6 +29,13 @@ class MergedTemplate extends Template{
             $code=file_get_contents($path);
         }
         
+        return $code;
+    }
+    
+    protected function include_template($name,&$vars){
+        
+        $code = $this->get_template_code($name);
+        
         // [template] tag interpreter.
         preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template=\\1\\]/si', $code, $results, PREG_SET_ORDER);
         
@@ -36,18 +44,24 @@ class MergedTemplate extends Template{
         $new_code = $code;
         
         for ($i = 0; $i < count($results); $i++) {
-            /*var_dump($results[$i]['name']);*/
             
-            if ( ! (isset($vars[$results[$i]['name']]) and is_object($vars[$results[$i]['name']]) and (is_subclass_of($vars[$results[$i]['name']],'BaseTemplate')))){           
-            
-                $vars[$results[$i]['name']]=new MergedTemplate();
-                $vars[$results[$i]['name']]->set_content($results[$i]['code']);
-                
-                
+			# if there is not a template set for that name, we'll create one now.
+            if ( ! (isset($vars[$results[$i]['name']]) and is_object($vars[$results[$i]['name']]) and (is_subclass_of($vars[$results[$i]['name']],'BaseTemplate')))){				
+                $vars[$results[$i]['name']]=new MergedTemplate();				
+				$vars[$results[$i]['name']]->set_content($results[$i]['code']);	
                 $vars[$results[$i]['name']]->_vars = array_merge($vars[$results[$i]['name']]->_vars, $original_vars);
             }
-            
-            $new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);
+            /*
+			if (get_class($vars[$results[$i]['name']])=='InlineTemplate'){
+				$vars[$results[$i]['name']]->set_content($results[$i]['code']);
+				$vars[$results[$i]['name']]->_vars = array_merge($vars[$results[$i]['name']]->_vars, $original_vars);
+				$new_code=str_replace($results[$i][0],'',$new_code);
+			}
+			else{*/
+				# prints a template in place of the code.
+				$new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);	
+			//}
+			
         }
         
         // call the template already processed

@@ -52,7 +52,7 @@ class Template extends BaseTemplate{
 	 * 
 	 */
 	function show($name=null){
-		Event::run('template.show_call',$name);
+		Event::run('template.show_call',$this,$name);
 		
 		# sumamos a las variables seteadas con los metodos comunes, las variables seteadas dinamicamente.
 		$vars=array_merge(get_object_vars($this),$this->_vars);
@@ -105,7 +105,7 @@ class Template extends BaseTemplate{
 			ob_end_clean();
 			
 			
-			Event::run('template.show',$output,$name);
+			Event::run('template.show',$output,$this,$name);
 			echo $output;
 		}
 		return $this;
