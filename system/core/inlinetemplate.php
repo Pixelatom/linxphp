@@ -4,7 +4,6 @@ class InlineTemplate extends MergedTemplate{
     
     
     public function set_inline_name($inline_name){
-    
         $this->_inline_name=$inline_name;
         return $this;
     }
@@ -34,7 +33,8 @@ class InlineTemplate extends MergedTemplate{
         $code = parent::get_template_code($name);
         
         # extract the part of the template that belongs to the inline template we are searching for.
-        if (preg_match('/\\[template='.$this->_inline_name.'\\](?P<code>.*?)\\[\/template='.$this->_inline_name.'\\]/si', $code, $result)) {
+        //if (preg_match('/\\[template='.$this->_inline_name.'\\](?P<code>.*?)\\[\/template='.$this->_inline_name.'\\]/si', $code, $result)) {
+        if (preg_match('/<!--\\s*template\\s*=\\s*'.$this->_inline_name.'\\s*-->(?P<code>.*?)<!--\\s*\/template\\s*=\\s*'.$this->_inline_name.'\\s*-->/si', $code, $result)) {
             $code=$result['code'];    
         }
         

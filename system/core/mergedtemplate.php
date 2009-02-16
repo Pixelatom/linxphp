@@ -1,9 +1,6 @@
 <?php
 
 class MergedTemplate extends Template{
-    
-    
-    
     protected function get_template_code($name){
         
         //va a mostrar template default
@@ -41,7 +38,9 @@ class MergedTemplate extends Template{
         $code = $this->get_template_code($name);
         
         // [template] tag interpreter.
-        preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template=\\1\\]/si', $code, $results, PREG_SET_ORDER);
+        //preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template=\\1\\]/si', $code, $results, PREG_SET_ORDER);
+        // <!--template--> tag interpreter.
+        preg_match_all('/<!--\\s*template\\s*=\\s*(?P<name>.+?)\\s*-->(?P<code>.*?)<!--\\s*\/template\\s*=\\s*\\1\\s*-->/si', $code, $results, PREG_SET_ORDER);
         
         $original_vars = $vars;
         
