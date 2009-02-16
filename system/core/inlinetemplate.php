@@ -2,7 +2,9 @@
 class InlineTemplate extends MergedTemplate{
     protected $_inline_name = null;
     
+    
     public function set_inline_name($inline_name){
+    
         $this->_inline_name=$inline_name;
         return $this;
     }
