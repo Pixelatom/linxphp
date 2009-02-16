@@ -37,8 +37,6 @@ class MergedTemplate extends Template{
         
         $code = $this->get_template_code($name);
         
-        // [template] tag interpreter.
-        //preg_match_all('/\\[template=(?P<name>.+?)\\](?P<code>.*?)\\[\/template=\\1\\]/si', $code, $results, PREG_SET_ORDER);
         // <!--template--> tag interpreter.
         preg_match_all('/<!--\\s*template\\s*=\\s*(?P<name>\\w+?)\\s*-->(?P<code>.*?)<!--\\s*\/template\\s*=\\s*\\1\\s*-->/si', $code, $results, PREG_SET_ORDER);
         
@@ -49,11 +47,10 @@ class MergedTemplate extends Template{
         for ($i = 0; $i < count($results); $i++) {
             
 			# if there is not a template set for that name, we'll create one now.
-            if ( ! (isset($vars[$results[$i]['name']]) and is_object($vars[$results[$i]['name']]) and (is_subclass_of($vars[$results[$i]['name']],'BaseTemplate')))){				
-                
-                
+            if ( ! (isset($vars[$results[$i]['name']]) and is_object($vars[$results[$i]['name']]) and (is_subclass_of($vars[$results[$i]['name']],'BaseTemplate')))){
+                # create the new template object
                 $vars[$results[$i]['name']]=new InlineTemplate($results[$i]['name'],$this->_get_template_name($name),$this->_custom_path);
-				
+                # assign the same variables we have
                 $vars[$results[$i]['name']]->_vars = array_merge($vars[$results[$i]['name']]->_vars, $original_vars);
             }
             
