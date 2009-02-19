@@ -1,4 +1,7 @@
 <?php
+/**
+ *@package template system
+ */
 class InlineTemplate extends MergedTemplate{
     protected $_inline_name = null;
     

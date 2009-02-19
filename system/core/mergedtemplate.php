@@ -1,5 +1,12 @@
 <?php
+/**
+ *@package template system
+ */
 
+/**
+ * Merged Template can handle a template tagged with multyples inline sub-templates
+ *  
+ */
 class MergedTemplate extends Template{
     protected function get_template_code($name){
         

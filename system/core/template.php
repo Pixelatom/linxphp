@@ -4,7 +4,9 @@
  * Author: Javier Arias. *
  * Licensed under GNU General Public License.
  */
-
+/**
+ *@package template system
+ */
 
 /**
  * Template is the main View class of MVC pattern .

@@ -1,4 +1,8 @@
 <?php
+/**
+ *@package template system
+ */
+
 abstract class BaseTemplate{
     protected $_vars=array();
     
