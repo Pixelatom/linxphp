@@ -5,7 +5,14 @@
 class InlineTemplate extends MergedTemplate{
     protected $_inline_name = null;
     
-    
+    /**
+	 * This method is static. Parameters are the same as creating a new instance.
+	 * It creates a View instance and immediately returns it so method chaining is possible.
+	 */
+	static public function factory($default_template=null,$custom_path=null){        
+		$class = get_class();
+		return new $class($default_template,$custom_path);
+	}
     public function set_inline_name($inline_name){
         $this->_inline_name=$inline_name;
         return $this;

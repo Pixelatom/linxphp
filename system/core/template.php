@@ -20,6 +20,15 @@ class Template extends BaseTemplate{
 	
 	protected $_default_template;
 	protected $_custom_path=false;
+	
+	/**
+	 * This method is static. Parameters are the same as creating a new instance.
+	 * It creates a View instance and immediately returns it so method chaining is possible.
+	 */
+	static public function factory($default_template=null,$custom_path=null){        
+		$class = get_class();
+		return new $class($default_template,$custom_path);
+	}
 		
 	function __construct($default_template=null,$custom_path=null){
 		$this->set_default_template($default_template);
