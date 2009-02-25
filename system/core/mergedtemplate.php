@@ -62,8 +62,8 @@ class MergedTemplate extends Template{
             }
             
             # prints a template in place of the code.
-            $new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);	
-			
+            //$new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);	
+			$new_code=str_replace($results[$i][0],'',$new_code);	
 			
         }
         
