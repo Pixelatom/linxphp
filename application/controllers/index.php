@@ -2,8 +2,9 @@
 
 
 class IndexController extends Controller {
-	function index(){		
-		MergedTemplate::factory('index')->show();
+	function index(){
+		# showing up a template
+		Template::factory('index')->show();
 	}	
 }
 ?>

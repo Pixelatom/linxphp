@@ -5,13 +5,8 @@
 <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>    
-    <!--template=hello_message-->
+    
     Hello World!
-    <?php $echo++; ?>    
-    <!--/template=hello_message-->
     
-    <?=$hello_message?>
-    
-    <?=$echo?>
 </body>
 </html>
