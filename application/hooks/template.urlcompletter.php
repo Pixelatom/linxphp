@@ -11,6 +11,7 @@ class UrlCompleter{
             // $matches[0][$i];
             $u = new Url($matches[2][$i]);
             
+			if(!stripos($matches[0][$i],'mailto:')) 
             $output=str_replace($matches[0][$i],$matches[1][$i].$u->get_url().$matches[3][$i],$output);
         }
         
