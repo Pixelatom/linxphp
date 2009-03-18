@@ -155,7 +155,7 @@ class Url{
 				else 
 				$request.='&';
 				
-				$request .= $name.'='.$value;
+				$request .= $name.'='.urlencode($value);
 			}
 			$current_url.= $request;
 		}
