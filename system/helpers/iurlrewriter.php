@@ -2,7 +2,7 @@
 /*
  * Linx PHP Framework
  * Author: Javier Arias. *
- * Licensed under GNU General Public License.
+ * Licensed under MIT License.
  */
  
 interface IUrlRewriter{	

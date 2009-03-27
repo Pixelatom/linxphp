@@ -2,7 +2,7 @@
 /*
  * Linx PHP Framework
  * Author: Javier Arias. *
- * Licensed under GNU General Public License.
+ * Licensed under MIT License.
  */
 /**
  * PDOQueryIterator is a helper class that allows you to iterato throug the results of a

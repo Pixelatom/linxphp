@@ -2,7 +2,7 @@
 /*
  * Linx PHP Framework
  * Author: Javier Arias. *
- * Licensed under GNU General Public License.
+ * Licensed under MIT License.
  */
 /**
  * Some people say global variables are a bad practice, insted of GLOBAL you could use this class
