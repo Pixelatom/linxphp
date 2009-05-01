@@ -10,8 +10,8 @@ TIP:
 codigo para emular la reescritura que hace el htaccess.
 
 $helper=new Url();	
-if (preg_match('¿'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(.*)¿i', $_SERVER['HTTP_REFERER'])) {	
-	$referer_url=new Url(preg_replace('¿'.($helper->get_application_path()).'/(.*)¿i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
+if (preg_match('ï¿½'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(.*)ï¿½i', $_SERVER['HTTP_REFERER'])) {	
+	$referer_url=new Url(preg_replace('ï¿½'.($helper->get_application_path()).'/(.*)ï¿½i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
 }
 */
 /**
@@ -106,7 +106,7 @@ class Url{
 			}
 		}
 		else{			
-			if (preg_match('·(?:(?<protocol>https?|ftp)://(?<domain>[-A-Z0-9.]+))?(?<file>/?[-A-Z0-9+&@#/%=~_|!:,.;]*)?(?<parameters>\?[-A-Z0-9+&@#/%=~_|!:,.;]*)?·i', $url, $result)) {
+			if (preg_match('ï¿½(?:(?<protocol>https?|ftp)://(?<domain>[-A-Z0-9.]+))?(?<file>/?[-A-Z0-9+&@#/%=~_|!:,.;]*)?(?<parameters>\?[-A-Z0-9+&@#/%=~_|!:,.;]*)?ï¿½i', $url, $result)) {
 				
 				if (!empty($result['protocol']))
 				$this->_https=($result['protocol']=='https')?true:false;
@@ -245,7 +245,12 @@ class Url{
 		return array_key_exists($name,$this->_params);
 	}
 	public function __toString(){
-		return $this->get_url();
+        try{
+            return $this->get_url();
+        }
+        catch(Exception $e){
+            die(print_r($e,true));
+        }
 	}
 }
 ?>
