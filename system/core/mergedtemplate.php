@@ -8,14 +8,6 @@
  *  
  */
 class MergedTemplate extends Template{
-    /**
-	 * This method is static. Parameters are the same as creating a new instance.
-	 * It creates a View instance and immediately returns it so method chaining is possible.
-	 */
-	static public function factory($default_template=null,$custom_path=null){        
-		$class = get_class();
-		return new $class($default_template,$custom_path);
-	}
     protected function get_template_code($name){
         
         //va a mostrar template default
@@ -71,7 +63,7 @@ class MergedTemplate extends Template{
             
             # prints a template in place of the code.
             $new_code=str_replace($results[$i][0],'<?= $'.$results[$i]['name'].'?>',$new_code);	
-            //$new_code=str_replace($results[$i][0],'',$new_code);	
+			
 			
         }
         
@@ -83,5 +75,6 @@ class MergedTemplate extends Template{
 		extract($vars, EXTR_REFS);
 		eval("?>" . $code . "<?"); 
 	}
+    
 }
 ?>

@@ -5,6 +5,16 @@
 
 abstract class BaseTemplate{
     protected $_vars=array();
+    
+    /**
+	 * This method is static. Parameters are the same as creating a new instance.
+	 * It creates a View instance and immediately returns it so method chaining is possible.
+	 */
+	static public function factory($default_template=null,$custom_path=null){
+		$class = get_class($this);
+		return new $class($default_template,$custom_path);
+	}
+    
     /**
 	 * set() can be used to set a variable in a view	 
 	 */
@@ -55,11 +65,18 @@ abstract class BaseTemplate{
 	}
 	
     public function __toString(){
-		ob_start();
-		$this->show();
-		$return=ob_get_contents();
-		ob_end_clean();
-		return $return;
+        ob_start();
+        try{
+            $this->show();
+        }
+        catch(Exception $e){
+            die($e->__toString());
+        }
+
+        $return=ob_get_contents();
+        ob_end_clean();
+        return $return;
+
 	}
     
     abstract function show();

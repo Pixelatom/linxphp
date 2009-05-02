@@ -105,8 +105,9 @@ class Url{
 				$this->_params[$name]=$value;				
 			}
 		}
-		else{			
-			if (preg_match('�(?:(?<protocol>https?|ftp)://(?<domain>[-A-Z0-9.]+))?(?<file>/?[-A-Z0-9+&@#/%=~_|!:,.;]*)?(?<parameters>\?[-A-Z0-9+&@#/%=~_|!:,.;]*)?�i', $url, $result)) {
+		else{
+
+			if (preg_match('{(?:(?<protocol>https?|ftp)://(?<domain>[-A-Z0-9.]+))?(?<file>/?[-A-Z0-9+&@#/%=~_|!:,.;]*)?(?<parameters>\?[-A-Z0-9+&@#/%=~_|!:,.;]*)?}i',  ($url), $result)) {
 				
 				if (!empty($result['protocol']))
 				$this->_https=($result['protocol']=='https')?true:false;
@@ -179,15 +180,19 @@ class Url{
 		if (count($this->_params)>0){
 			$request='';
 			foreach ($this->_params as $name=>$value){
-                if (is_array($value)){
-                    $value = implode("&$name=", $value);
-                }
+                
 				if ($request=='')
 				$request.='?';
 				else 
 				$request.='&';
 				
-				$request .= $name.'='.urlencode($value);
+                if (is_array($value)){
+                    $value = implode("&$name=", urlencode($value));
+                    $request .= $name.'='.$value;
+                }
+                else{
+                    $request .= $name.'='.urlencode($value);
+                }
 			}
 			$current_url.= $request;
 		}
