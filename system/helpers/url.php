@@ -179,6 +179,9 @@ class Url{
 		if (count($this->_params)>0){
 			$request='';
 			foreach ($this->_params as $name=>$value){
+                if (is_array($value)){
+                    $value = implode("&$name=", $value);
+                }
 				if ($request=='')
 				$request.='?';
 				else 
@@ -249,7 +252,7 @@ class Url{
             return $this->get_url();
         }
         catch(Exception $e){
-            die(print_r($e,true));
+            die($e->__toString());
         }
 	}
 }
