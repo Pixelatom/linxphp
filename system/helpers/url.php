@@ -186,9 +186,14 @@ class Url{
 				else 
 				$request.='&';
 				
-                if (is_array($value)){
-                    $value = implode("&$name=", urlencode($value));
-                    $request .= $name.'='.$value;
+                if (is_array($value)){                    
+                    $value1 = '';
+                    foreach($value as $valueitem){
+                        if ($value1!='')
+                        $value1.="&$name"."[]=";
+                        $value1 .= urlencode($valueitem);
+                    }
+                    $request .= $name.'[]='.$value1;
                 }
                 else{
                     $request .= $name.'='.urlencode($value);
