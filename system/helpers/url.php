@@ -191,11 +191,18 @@ class Url{
                     foreach($value as $valueitem){
                         if ($value1!='')
                         $value1.="&$name"."[]=";
+                        if ($name!='route')
                         $value1 .= urlencode($valueitem);
+                        else
+                        $value1 .= $valueitem;
                     }
+
                     $request .= $name.'[]='.$value1;
                 }
                 else{
+                    if ($name=='route')
+                    $request .= $name.'='.($value);
+                    else
                     $request .= $name.'='.urlencode($value);
                 }
 			}
