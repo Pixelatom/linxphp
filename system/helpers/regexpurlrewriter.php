@@ -2,7 +2,7 @@
 /*
  * Linx PHP Framework
  * Author: Javier Arias. *
- * Licensed under MIT License.
+ * Licensed under GNU General Public License.
  */
 
 /**
@@ -11,8 +11,14 @@
  */
 class Regexpurlrewriter implements IUrlRewriter {
 	public function rewrite($url){
+                //return $url;
 		/*http://(.+?)/([^\/]+?\.php){0,1}(?:\?route=(.+?))*(&.*)*\z*/
-		$url = preg_replace('/http:\/\/(.+?)\/([^\\/]+?\\.php){0,1}(?:\\?route=(.+?))*(&.*)*\\z/i', 'http://\\1/\\3\\4', $url);
+                $pattern = '/http(s)*:\/\/(.+?)\/([^\/]+?\.php){0,1}((?:&|\?)(?!route).*?)*(?:(?:&|\?)route=(.+?))*(&.*)*\z/i';
+                if (preg_match($pattern, $url)){
+
+                    $url = preg_replace($pattern, 'http\1://\2/\5\4\6', $url);
+                }
+
 		return $url;
 	}
 }
