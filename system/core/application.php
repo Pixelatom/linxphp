@@ -64,7 +64,9 @@ class Application{
 	 */
 	static public function get_site_path(){
 		# TODO: armar esto utilizando la configuracion.
-		# Configuration::get		
+		# Configuration::get
+                $application_directory = dirname(realpath($_SERVER['DOCUMENT_ROOT'].$_SERVER['PHP_SELF']));
+                return $application_directory.'/';
 		return realpath(dirname(__FILE__).'/../../').'/';
 	}
 	

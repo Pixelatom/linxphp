@@ -1,4 +1,9 @@
 <?php
+
+$application_directory = dirname(realpath($_SERVER['DOCUMENT_ROOT'].$_SERVER['PHP_SELF']));
+$system_directory = dirname(__FILE__);
+
+
 /*
  * Linx PHP Framework
  * Author: Javier Arias. *
@@ -36,8 +41,8 @@ Configuration::set_values($app_config);
 // general classes autoinclude paths
 
 // system classes
-Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().'/system/core');
-Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().'/system/helpers');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/core');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/helpers');
 
 // controllers path
 Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','controllers'));    
@@ -83,6 +88,7 @@ $hookdirs=array();
 # loads system hooks
 $hookdirs[] = new DirectoryIterator(realpath(dirname(__FILE__).'/hooks/'));
 # application hooks
+
 $hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','hooks').'/'));
 /*
  now we will search for component hooks
