@@ -32,8 +32,8 @@ include_once('core/application.php');
 /*
  complete the basic configuration with the config found in the ini file
 */
-if (file_exists('config.ini')){
-	$app_config = parse_ini_file("config.ini", true);
+if (file_exists("$application_directory/config.ini")){
+	$app_config = parse_ini_file("$application_directory/config.ini", true);
 }
 Configuration::set_values($app_config);
 
