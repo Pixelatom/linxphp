@@ -14,7 +14,7 @@ function components_autoinclude(){
         $path=Application::get_site_path().Configuration::get('paths','components');
     }
     
-    Application::add_class_path('/\\A([A-Z]\\w+)Component\\z/','$1.php',$path);    
+    Application::add_class_path('/\\A([A-Z]\\w+)Component\\z/e',"strtolower('\\1').'.php'",$path);
 }
 Event::add('system.ready','components_autoinclude');
 
