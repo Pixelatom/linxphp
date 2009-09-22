@@ -164,8 +164,8 @@ class ApplicationRouter implements IApplicationRouter {
         $controller = new $class();
         if (count($args)==0)
         $controller->$action();        
-        else
-        call_user_method_array($action,$controller,$args);	
+        else        
+        call_user_func_array(array($controller, $action), $args);
         
         Event::run('system.post_routing');
     }
