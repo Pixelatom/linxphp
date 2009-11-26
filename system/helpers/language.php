@@ -4,11 +4,11 @@ class Language {
 
 
 
-    /**
-     * Holds the current language
-     *
-     * @var string
-     */
+/**
+ * Holds the current language
+ *
+ * @var string
+ */
     private static $_language;
 
     /**
@@ -81,15 +81,15 @@ class Language {
     "vi" => "vietnamese"
     );
 
-    static private function setup(){
+    static private function setup() {
         if (empty(self::$_translation_store))
-        self::$_translation_store = new CsvTranslationStorer();
+            self::$_translation_store = new CsvTranslationStorer();
 
         if (empty(self::$_translator))
-        self::$_translator = new GoogleTranslator();
-        
+            self::$_translator = new GoogleTranslator();
+
         if (empty(self::$_language))
-        self::$_language = self::$_defaultlanguage;
+            self::$_language = self::$_defaultlanguage;
     }
 
     /**
@@ -110,16 +110,18 @@ class Language {
         }
         $value = self::$_translation_store->get($string);
         if(!$value) {
-            // Add string to translations
+        // Add string to translations
             if(self::$_auto) {
                 $value = self::translate(self::$_defaultlanguage, self::$_language, $string);
 
-            }else {
-                $value =  '<!-- TRANSLATE THIS -->';
             }
         }
-
-        self::$_translation_store->set($string,$value);
+        
+        if(!$value) {
+            $value =  '<!-- TRANSLATE THIS -->'.$string.'<!-- /TRANSLATE THIS -->';
+        }
+        else
+            self::$_translation_store->set($string,$value);
         return $value;
     }
 
@@ -127,7 +129,7 @@ class Language {
 
 
 
-    
+
 
 
 
@@ -209,7 +211,7 @@ class Language {
 
 }
 
-function _($string) {    
+function _($string) {
     return Language::_($string);
 }
 

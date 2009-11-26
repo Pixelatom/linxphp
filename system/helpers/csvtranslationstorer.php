@@ -19,10 +19,9 @@ class CsvTranslationStorer implements ITranslationStorer{
      */
     private $_path = "translations";
 
-    public function set_language($language){
-        $this->_language=$language;
-        $this->load($language);
-    }
+   
+   
+   
     /**
      * Save translations back to csv
      *
@@ -55,6 +54,7 @@ class CsvTranslationStorer implements ITranslationStorer{
      * @return void
      */
     public function load($language) {
+        $this->_language=$language;
         $path  = $this->_path . "/" . $language . ".csv";
         if(file_exists($path)) {
             
