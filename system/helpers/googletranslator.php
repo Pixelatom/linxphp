@@ -34,5 +34,3 @@ class GoogleTranslator implements ITranslationProvider{
 
     }
 }
-
-?>
