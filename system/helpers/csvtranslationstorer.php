@@ -31,6 +31,8 @@ class CsvTranslationStorer implements ITranslationStorer{
     public function save() {
         $array = "";
         foreach($this->_translations as $key => $value) {
+            //$key = str_replace(array(',',';'), array('\,','\;'), $key);
+            //$value = str_replace(array(',',';'), array('\,','\;'), $value);
             $array[]= $key . ";" . $value;
         }
         $path  = $this->_path . "/" . $this->_language . ".csv";
@@ -64,9 +66,10 @@ class CsvTranslationStorer implements ITranslationStorer{
                 $parts = explode(";", $line);
                 $key = isset($parts[0]) ? $parts[0] : "";
                 if(isset($parts[1])) {
-                //$value = iconv("ISO-8859-1", "UTF-8", $parts[1]);
-                    $value = htmlentities($parts[1], ENT_COMPAT, 'UTF-8');
-                    $value = mb_convert_encoding($value,"UTF-8");
+                    $value = $parts[1];
+                    //$value = iconv("ISO-8859-1", "UTF-8", $parts[1]);
+                    //$value = htmlentities($value, ENT_COMPAT, 'UTF-8');
+                    //$value = mb_convert_encoding($value,"UTF-8");
                 }else {
                     $value = "";
                 }
