@@ -62,6 +62,7 @@ class Url {
     private $_server_port=false;
     private $_request_uri=false;
     private $_params=array();
+    private $_fragment=null;
 
     private static $_default_rewriter=null;
 
@@ -112,11 +113,14 @@ class Url {
         else {
             $url_parts=parse_url($url);
             if($url_parts) {
+                
                 if (isset($url_parts['host']))
                     $this->_https=($url_parts['host']=='https')?true:false;
                 else
                     $this->_https=(isset($_SERVER['HTTPS']) and $_SERVER['HTTPS']=='on')?true:false;
 
+                if (isset($url_parts['fragment']))
+                $this->_fragment = $url_parts['fragment'];
                 $this->_server_port=isset($url_parts['port'])?$url_parts['port']:$this->_server_port=$_SERVER['SERVER_PORT'];
                 $this->_server_name=(isset($url_parts['host']))?$url_parts['host']:$_SERVER['SERVER_NAME'];
                 $this->_request_uri=(isset($url_parts['path']))?str_replace('//','/',dirname($_SERVER['SCRIPT_NAME']).'/'.$url_parts['path']):$_SERVER['SCRIPT_NAME'];
@@ -242,11 +246,14 @@ class Url {
             $current_url.= $request;
         }
 
-
+        
 
         if (!empty(self::$_default_rewriter) and is_object(self::$_default_rewriter) and $this->use_rewriter) {
             $current_url=self::$_default_rewriter->rewrite($current_url);
         }
+
+        if (!empty($this->_fragment))
+        $current_url.='#'.$this->_fragment;
 
         return $current_url;
     }
