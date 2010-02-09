@@ -269,7 +269,7 @@ class Language {
 
 }
 
-function _($string) {
+function _t($string) {
     return Language::_($string);
 }
 

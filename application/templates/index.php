@@ -3,7 +3,7 @@
     <head>
 
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title><?php echo _('Website Translator example'); ?></title>
+        <title><?php echo _t('Website Translator example'); ?></title>
         <style type="text/css">
             <!--
             @charset "utf-8";
@@ -394,9 +394,9 @@
     </head><body>
         <div id="wrapper">
             <div id="maincontent">
-                <h1><?php echo _('Create a multilingual website'); ?></h1>
+                <h1><?php echo _t('Create a multilingual website'); ?></h1>
                 <hr />
-                <h2><?php echo _('Change language'); ?></h2>
+                <h2><?php echo _t('Change language'); ?></h2>
                 <ol>
                     <li><a href="example.php?ln=en">English</a></li>
                     <li><a href="example.php?ln=nl">Nederlands</a></li>
@@ -404,13 +404,13 @@
                 <p>
                 </p>
                 
-                <h2><?php echo _('Paragraph'); ?> <a name="features" id="features"></a></h2>
-                <p><?php echo _('This is a small paragraph with some content to show you the PHP class in action.'); ?></p>
+                <h2><?php echo _t('Paragraph'); ?> <a name="features" id="features"></a></h2>
+                <p><?php echo _t('This is a small paragraph with some content to show you the PHP class in action.'); ?></p>
                 <ul>
-                    <li><?php echo _('Translations are saved in CSV files'); ?></li>
-                    <li><?php echo _('Automatic create new CSV lines when there are new strings'); ?></li>
-                    <li><?php echo _('Auto translation of new strings with Google translator'); ?></li>
-                    <li><?php echo _('Easy to use'); ?></li>
+                    <li><?php echo _t('Translations are saved in CSV files'); ?></li>
+                    <li><?php echo _t('Automatic create new CSV lines when there are new strings'); ?></li>
+                    <li><?php echo _t('Auto translation of new strings with Google translator'); ?></li>
+                    <li><?php echo _t('Easy to use'); ?></li>
                 </ul>
             </div>
         </div>
