@@ -84,7 +84,7 @@ class Mapper{
       $field['data_type'] = 'VARCHAR(255)';
       $type = 'string';
       
-      if (isset($schema['attributes']['table'])){
+      if (isset($schema['properties'][$property_name]['attributes']['table'])){
 
       }
 
