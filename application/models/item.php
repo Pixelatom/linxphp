@@ -37,7 +37,7 @@ class Item
 
     /**     
      * label: Description
-     * type: text
+     * type: string
      * description: Description of the item     
      */
     public $description;
