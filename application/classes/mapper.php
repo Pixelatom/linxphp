@@ -141,6 +141,9 @@ real            FLOAT(63)     double          real                  real
     var_dump($sql_schema);
     die();
 
+    foreach ($sql_schema['table_name'] as $field=>$field_attributes){
+    }
+
     $sql = "CREATE TABLE {$sql_schema['table_name']}
     (
      a INTEGER PRIMARY KEY
