@@ -85,7 +85,7 @@ real            FLOAT(63)     double          real                  real
     foreach ($obj_schema['properties'] as $property_name => $property_attributes){
       $fields=array();
 
-      $field['name'] = $property_name;
+      //$field['name'] = $property_name;
 
       $field['value'] = $property_attributes['value'];
 
@@ -124,7 +124,7 @@ real            FLOAT(63)     double          real                  real
 
       $field['data_type'] = $type;
 
-      $schema['fields'][] = $field;
+      $schema['fields'][$property_name] = $field;
 
     }
 
@@ -141,7 +141,11 @@ real            FLOAT(63)     double          real                  real
     var_dump($sql_schema);
     die();
 
-
+    $sql = "CREATE TABLE {$sql_schema['table_name']}
+    (
+     a INTEGER PRIMARY KEY
+    ,b VARCHAR(10)
+    )";
 
   }
 
