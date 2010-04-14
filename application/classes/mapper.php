@@ -141,12 +141,21 @@ real            FLOAT(63)     double          real                  real
     var_dump($sql_schema);
     die();
 
-    foreach ($sql_schema['table_name'] as $field=>$field_attributes){
+    foreach ($sql_schema['table_name'] as $field=>$attributes){
+
+      $declaration = "$field {$attributes['data_type']}";
+
+      if (isset($attributes['primary_key']) and $attributes['primary_key']==true
+        and count($sql_schema['primary_key'])==1){
+
+        $declaration .= ' PRIMARY KEY';
+      }
+
     }
 
     $sql = "CREATE TABLE {$sql_schema['table_name']}
     (
-     a INTEGER PRIMARY KEY
+     a INTEGER 
     ,b VARCHAR(10)
     )";
 
