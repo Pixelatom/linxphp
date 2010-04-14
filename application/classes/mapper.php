@@ -101,6 +101,8 @@ real            FLOAT(63)     double          real                  real
             $type = 'VARCHAR';
             if (!empty($length))
             $type .= "($length)";
+            else
+            $type .= "(255)";
             break;
           case 'integer':
             $type = 'INTEGER';
