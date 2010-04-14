@@ -9,6 +9,13 @@
 class Item
 {
     //@ fields
+    
+    /**     
+     * type: integer
+     * primary_key: true
+     */
+    public $id;
+    
 
     /**
      * label: Title

@@ -51,17 +51,23 @@ class Mapper{
 
       $schema['properties'][$property] = $prop;
     }
-    /*
-    echo '<PRE>';
-    var_dump($schema);
-    die();
-     *
-     */
+    
 
     return $schema;
 
   }
-
+/**
+ANSI data type	Oracle        MySql           PostGreSQL            Most Portable
+integer         NUMBER(38)    integer(11)     integer               integer
+smallint        NUMBER(38)    smallint(6)     smallint              smallint
+tinyint         *	tinyint(4)  *               numeric(4,0)
+numeric(p,s)    NUMBER(p,s)   decimal(p,s)    numeric(p,s)          numeric(p,s)
+varchar(n)      VARCHAR2(n)   varchar(n)      character varying(n)	varchar(n)
+char(n)         CHAR(n)       varchar(n)      character(n)          char(n)
+datetime        DATE          datetime        timestamp no timezone have to autodetect
+float           FLOAT(126)    float           double precision      float
+real            FLOAT(63)     double          real                  real
+ */
   static protected function get_sql_table_schema($object){
     $obj_schema = self::get_object_schema($object);
 
@@ -74,6 +80,8 @@ class Mapper{
 
     $schema['fields'] = array();
 
+    $schema['primary_key'] = array();
+
     foreach ($obj_schema['properties'] as $property_name => $property_attributes){
       $fields=array();
 
@@ -81,14 +89,40 @@ class Mapper{
 
       $field['value'] = $property_attributes['value'];
 
-      $field['data_type'] = 'VARCHAR(255)';
-      $type = 'string';
-      
-      if (isset($schema['properties'][$property_name]['attributes']['table'])){
+      $length = (int) (isset($property_attributes['attributes']['length']))?$property_attributes['attributes']['length']:'';
 
+      if (isset($property_attributes['attributes']['primary_key']) and $property_attributes['attributes']['primary_key']==true){
+        $schema['primary_key'][] = $property_name;
+      }
+      $type = 'VARCHAR(255)';
+      if (isset($property_attributes['attributes']['type'])){
+        switch ($property_attributes['attributes']['type']){
+          case 'string':
+            $type = 'VARCHAR';
+            if (!empty($length))
+            $type .= "($length)";
+            break;
+          case 'integer':
+            $type = 'INTEGER';
+            break;
+          case 'date':
+            $type = 'DATE';
+            break;
+          case 'datetime':
+            $type = 'DATETIME';
+            break;
+          case 'float':
+            $type = 'FLOAT';
+            break;
+          default:
+            $type = 'VARCHAR(255)';
+            break;
+        }
       }
 
-      $schema['fields'] = $field;
+      $field['data_type'] = $type;
+
+      $schema['fields'][] = $field;
 
     }
 
@@ -100,6 +134,10 @@ class Mapper{
   static public function insert($object){
     $sql_schema = self::get_sql_table_schema($object);
 
+
+    echo '<PRE>';
+    var_dump($sql_schema);
+    die();
 
 
 
