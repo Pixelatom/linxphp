@@ -82,8 +82,11 @@ real            FLOAT(63)     double          real                  real
 
     $schema['primary_key'] = array();
 
+    
     foreach ($obj_schema['properties'] as $property_name => $property_attributes){
-      $fields=array();
+
+
+      $field = array();
 
       //$field['name'] = $property_name;
 
@@ -91,8 +94,10 @@ real            FLOAT(63)     double          real                  real
 
       $length = (int) (isset($property_attributes['attributes']['length']))?$property_attributes['attributes']['length']:'';
 
-      if (isset($property_attributes['attributes']['primary_key']) and $property_attributes['attributes']['primary_key']==true){
+      if (isset($property_attributes['attributes']['primary_key'])
+        and $property_attributes['attributes']['primary_key']==true){
         $schema['primary_key'][] = $property_name;
+        $field['primary_key'] = true;
       }
       $type = 'VARCHAR(255)';
       if (isset($property_attributes['attributes']['type'])){
@@ -137,11 +142,12 @@ real            FLOAT(63)     double          real                  real
     $sql_schema = self::get_sql_table_schema($object);
 
 
-    echo '<PRE>';
-    var_dump($sql_schema);
-    die();
+    //echo '<PRE>';
+    //var_dump($sql_schema);
+    //die();
 
-    foreach ($sql_schema['table_name'] as $field=>$attributes){
+    $fields_declaration = "";
+    foreach ($sql_schema['fields'] as $field=>$attributes){
 
       $declaration = "$field {$attributes['data_type']}";
 
@@ -150,6 +156,9 @@ real            FLOAT(63)     double          real                  real
 
         $declaration .= ' PRIMARY KEY';
       }
+
+      echo '<br />';
+      echo $declaration;
 
     }
 
