@@ -146,6 +146,7 @@ real            FLOAT(63)     double          real                  real
     //var_dump($sql_schema);
     //die();
 
+    # field declarations
     $fields_declaration = "";
     foreach ($sql_schema['fields'] as $field=>$attributes){
 
@@ -157,17 +158,27 @@ real            FLOAT(63)     double          real                  real
         $declaration .= ' PRIMARY KEY';
       }
 
-      echo '<br />';
-      echo $declaration;
+      if (!empty($fields_declaration))
+      $fields_declaration .= ", ";
+
+      $fields_declaration .= "\n".$declaration;
 
     }
 
+    # composite primary key
+    if (isset($sql_schema['primary_key']) and count($sql_schema['primary_key'])>1){
+      $fields_declaration .= ", PRIMARY KEY (".implode(',', $sql_schema['primary_key']).")";
+    }
+
     $sql = "CREATE TABLE {$sql_schema['table_name']}
-    (
-     a INTEGER 
-    ,b VARCHAR(10)
+    ({$fields_declaration}
     )";
 
+/*
+    echo '<PRE>';
+    echo $sql;
+    die();
+*/
   }
 
 }
