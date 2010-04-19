@@ -51,7 +51,7 @@ class Mapper{
 
       $schema['properties'][$property] = $prop;
     }
-    
+
 
     return $schema;
 
@@ -82,7 +82,7 @@ real            FLOAT(63)     double          real                  real
 
     $schema['primary_key'] = array();
 
-    
+
     foreach ($obj_schema['properties'] as $property_name => $property_attributes){
 
 
@@ -179,6 +179,32 @@ real            FLOAT(63)     double          real                  real
     echo $sql;
     die();
 */
+  }
+
+  protected function table_exists($tableName){
+    try
+    {
+      // ANSI SQL way.  Works in PostgreSQL, MSSQL, MySQL.
+      $cmd = "select case when exists((select * from information_schema.tables where table_name = '" .$tableName. "')) then 1 else 0 end";
+
+      $exists = (int) cmd.ExecuteScalar() == 1;
+    }
+    catch (Exception $e)
+    {
+      try
+      {
+        // Other RDBMS.  Graceful degradation
+        $exists = true;
+        $cmdOthers = "select 1 from " . $tableName . " where 1 = 0";
+        cmdOthers.ExecuteNonQuery();
+      }
+      catch(Exception $e1)
+      {
+        $exists = false;
+      }
+    }
+
+    return $exists;
   }
 
 }
