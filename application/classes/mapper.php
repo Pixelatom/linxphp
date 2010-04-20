@@ -141,10 +141,15 @@ real            FLOAT(63)     double          real                  real
   static public function insert($object){
     $sql_schema = self::get_sql_table_schema($object);
 
+    if (!db::table_exists($sql_schema['table_name'])){
+      self::create_table($object);
+    }
 
-    //echo '<PRE>';
-    //var_dump($sql_schema);
-    //die();
+    
+  }
+
+  static protected function create_table($object){
+    $sql_schema = self::get_sql_table_schema($object);    
 
     # field declarations
     $fields_declaration = "";
@@ -174,11 +179,8 @@ real            FLOAT(63)     double          real                  real
     ({$fields_declaration}
     )";
 
-/*
-    echo '<PRE>';
-    echo $sql;
-    die();
-*/
+    db::execute($sql);
+
   }
 
   
