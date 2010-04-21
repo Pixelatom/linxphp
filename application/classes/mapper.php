@@ -145,11 +145,37 @@ real            FLOAT(63)     double          real                  real
       self::create_table($object);
     }
 
+    $fields_names = array();
+    $fields_values = array();
+
+    foreach ($sql_schema['fields'] as $field=>$attributes){
+
+      $fields_names[]=$field;
+
+      if (!is_scalar($attributes['value']))
+      throw new Exception('Field Values must be scalars!');
+
+      $fields_values[':'.$field] = $attributes['value'];
+
+    }
+
+    $fields = implode(',', $fields_names);
+
+    $params = implode(',',array_keys($fields_values));
+
+
+    $sql = "INSERT INTO {$sql_schema['table_name']} ($fields) VALUES ($params)";
+
+    db::execute($sql, $fields_values);
+
+  }
+
+  static public function update($object){
     
   }
 
   static protected function create_table($object){
-    $sql_schema = self::get_sql_table_schema($object);    
+    $sql_schema = self::get_sql_table_schema($object);
 
     # field declarations
     $fields_declaration = "";
@@ -183,7 +209,7 @@ real            FLOAT(63)     double          real                  real
 
   }
 
-  
+
 
 }
 ?>
