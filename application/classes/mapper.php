@@ -171,7 +171,13 @@ real            FLOAT(63)     double          real                  real
   }
 
   static public function update($object){
-    
+    $sql_schema = self::get_sql_table_schema($object);
+
+    if (!db::table_exists($sql_schema['table_name'])){
+      self::create_table($object);
+      self::insert($object);
+      return;
+    }
   }
 
   static protected function create_table($object){
