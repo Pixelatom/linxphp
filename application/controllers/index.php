@@ -8,6 +8,13 @@ class IndexController extends Controller {
 
       $object = new Item();
 
+      $object->id = 1;
+
+      $object->title = 'this is a test';
+
+      $object->uri = 'lol';
+
+
       Mapper::insert($object);
 
 
