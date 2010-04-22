@@ -178,6 +178,35 @@ real            FLOAT(63)     double          real                  real
       self::insert($object);
       return;
     }
+
+    $field_updates = '';
+    $fields_values = array();
+    foreach ($sql_schema['fields'] as $field=>$attributes){
+      if (!empty($field_updates))
+      $field_updates .= ", ";
+
+      $field_updates .= "$field = :$field";
+
+      $fields_values[':'.$field] = $attributes['value'];
+    }
+
+    $where_id = '';
+
+    foreach ($sql_schema['primary_key'] as $key){
+      if (!empty($where_id))
+      $where_id .= " AND ";
+
+      $where_id .= "$key = :$key";
+    }
+
+
+    $sql = "UPDATE {$sql_schema['table_name']}
+    SET $field_updates
+    WHERE $where_id";
+    
+    
+    db::execute($sql, $fields_values);
+
   }
 
   static protected function create_table($object){
