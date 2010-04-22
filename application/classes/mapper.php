@@ -111,20 +111,27 @@ real            FLOAT(63)     double          real                  real
             break;
           case 'integer':
             $type = 'INTEGER';
+            break;          
+          case 'float':
+            $type = 'FLOAT';
             break;
+          /*
           case 'date':
             $type = 'DATE';
             break;
           case 'datetime':
             $type = 'DATETIME';
             break;
-          case 'float':
-            $type = 'FLOAT';
-            break;
+           */
           default:
-            $type = 'VARCHAR(255)';
+            # run an event to proccess the unrecognized type
+            $type = Event::run('mapper.data_type_declaration',$property_attributes['attributes']['type']);
             break;
         }
+      }
+      else{
+        # default type if it's not set 
+        $type = 'VARCHAR(255)';
       }
 
       $field['data_type'] = $type;
@@ -155,7 +162,10 @@ real            FLOAT(63)     double          real                  real
       if (!is_scalar($attributes['value']))
       throw new Exception('Field Values must be scalars!');
 
-      $fields_values[':'.$field] = $attributes['value'];
+      $value = $attributes['value'];
+      # proccess value with hooks (just in case it needs to be processed)
+      Event::run('mapper.process_field_value',$field,$attributes,&$value);
+      $fields_values[':'.$field] = $value;
 
     }
 
@@ -187,7 +197,10 @@ real            FLOAT(63)     double          real                  real
 
       $field_updates .= "$field = :$field";
 
-      $fields_values[':'.$field] = $attributes['value'];
+      $value = $attributes['value'];
+      # proccess value with hooks (just in case it needs to be processed)
+      Event::run('mapper.process_field_value',$field,$attributes,&$value);
+      $fields_values[':'.$field] = $value;
     }
 
     $where_id = '';
