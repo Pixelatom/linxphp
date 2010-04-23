@@ -5,9 +5,9 @@ class DB {
   static private function connect(){
     $c = Configuration::get('database');
         /* Connect to an ODBC database using driver invocation */
-    $dsn = 'mysql:dbname='.$c['dbname'].';host='.$c['host'];
-    $user = $c['user'];
-    $password = $c['pass'];
+    $dsn = $c['dsn'];
+    $user = $c['username'];
+    $password = $c['password'];
 
     $dbh = new PDO($dsn, $user, $password);
     $dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);//drops exception when error

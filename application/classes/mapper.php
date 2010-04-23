@@ -159,10 +159,12 @@ real            FLOAT(63)     double          real                  real
 
       $fields_names[]=$field;
 
-      if (!is_scalar($attributes['value']))
+      $value = $attributes['value'];
+
+      if (!is_scalar($value))
       throw new Exception('Field Values must be scalars!');
 
-      $value = $attributes['value'];
+      
       # proccess value with hooks (just in case it needs to be processed)
       Event::run('mapper.process_field_value',$field,$attributes,$value);
       $fields_values[':'.$field] = $value;
@@ -179,7 +181,11 @@ real            FLOAT(63)     double          real                  real
     db::execute($sql, $fields_values);
 
   }
-
+/**
+ *
+ * @todo: usar bind_param para especificar el tipo de dato http://www.php.net/manual/es/pdostatement.bindparam.php
+ * @return <type>
+ */
   static public function update($object){
     $sql_schema = self::get_sql_table_schema($object);
 
@@ -198,6 +204,11 @@ real            FLOAT(63)     double          real                  real
       $field_updates .= "$field = :$field";
 
       $value = $attributes['value'];
+      
+
+      if (!is_scalar($value))
+      throw new Exception('Field Values must be scalars!');
+
       # proccess value with hooks (just in case it needs to be processed)
       Event::run('mapper.process_field_value',$field,$attributes,$value);
       $fields_values[':'.$field] = $value;
