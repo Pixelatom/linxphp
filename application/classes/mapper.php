@@ -68,6 +68,19 @@ datetime        DATE          datetime        timestamp no timezone have to auto
 float           FLOAT(126)    float           double precision      float
 real            FLOAT(63)     double          real                  real
  */
+
+  /*
+   * PDO::PARAM_BOOL ( integer )
+Represents a boolean data type.
+PDO::PARAM_NULL ( integer )
+Represents the SQL NULL data type.
+PDO::PARAM_INT ( integer )
+Represents the SQL INTEGER data type.
+PDO::PARAM_STR ( integer )
+Represents the SQL CHAR, VARCHAR, or other string data type.
+PDO::PARAM_LOB ( integer )
+Represents the SQL large object data type.
+   */
   static protected function get_sql_table_schema($object){
     $obj_schema = self::get_object_schema($object);
 
@@ -112,10 +125,10 @@ real            FLOAT(63)     double          real                  real
           case 'integer':
             $type = 'INTEGER';
             break;          
+          /*
           case 'float':
             $type = 'FLOAT';
-            break;
-          /*
+            break;          
           case 'date':
             $type = 'DATE';
             break;
