@@ -20,9 +20,10 @@ class DB {
   //}
 
 
-  static public function query($sql,$params=array()){
+  static public function query($sql,$params=array(),$bind_params=array()){
     if(!self::$link)
     self::connect();
+    
 
     $return = array();
     
@@ -32,8 +33,20 @@ class DB {
 
     }
     else{
-      $stmt = self::$link->prepare($sql);      
-      $stmt->execute($params);
+      $stmt = self::$link->prepare($sql);
+
+      foreach($params as $field_name=>&$value){
+        if (isset($bind_params[$field_name]['data_type']) and isset($bind_params[$field_name]['length'])){
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type'], $bind_params[$field_name]['length']);
+        }
+        elseif (isset($bind_params[$field_name]['data_type'])){
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type']);
+        }
+        else
+        $stmt->bindParam($field_name, $value);
+      }
+
+      $stmt->execute();
       $return = $stmt->fetchAll(PDO::FETCH_CLASS, 'stdClass');
     }
 
@@ -41,15 +54,33 @@ class DB {
 
     return  $return;
   }
-  static public function execute($sql,$params=array()){
+  static public function execute($sql,$params=array(),$bind_params=array()){
     if(!self::$link)
     self::connect();
+    //echo $sql;
+    //var_dump($bind_params);
+    //die();
     if (empty($params)){
       $count = self::$link->exec($sql);
     }
     else{
-      $stmt = self::$link->prepare($sql);      
-      $stmt->execute($params);
+      $stmt = self::$link->prepare($sql);
+
+      foreach($params as $field_name=>&$value){
+        
+        if (isset($bind_params[$field_name]['data_type']) and isset($bind_params[$field_name]['length'])){
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type'], $bind_params[$field_name]['length']);
+        }
+        elseif (isset($bind_params[$field_name]['data_type'])){          
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type']);
+        }
+        else{
+          $stmt->bindParam($field_name, $value);
+        }
+        
+      }      
+
+      $stmt->execute();
       $count = $stmt->rowCount();      
     }
 

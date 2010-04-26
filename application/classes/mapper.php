@@ -42,6 +42,7 @@ class Mapper{
     foreach ($properties as $property=>$value){
       $prop = array();
       $prop['value'] = $value;
+      $prop['value'] = $object->$property;
 
       $method=new ReflectionProperty($class_name,$property);
 
@@ -69,18 +70,7 @@ float           FLOAT(126)    float           double precision      float
 real            FLOAT(63)     double          real                  real
  */
 
-  /*
-   * PDO::PARAM_BOOL ( integer )
-Represents a boolean data type.
-PDO::PARAM_NULL ( integer )
-Represents the SQL NULL data type.
-PDO::PARAM_INT ( integer )
-Represents the SQL INTEGER data type.
-PDO::PARAM_STR ( integer )
-Represents the SQL CHAR, VARCHAR, or other string data type.
-PDO::PARAM_LOB ( integer )
-Represents the SQL large object data type.
-   */
+  
   static protected function get_sql_table_schema($object){
     $obj_schema = self::get_object_schema($object);
 
@@ -113,16 +103,26 @@ Represents the SQL large object data type.
         $field['primary_key'] = true;
       }
       $type = 'VARCHAR(255)';
+
+      $pdo_bind_params = array('data_type'=>PDO::PARAM_STR,'length'=>(!empty($length))?$length:255);
+
       if (isset($property_attributes['attributes']['type'])){
         switch ($property_attributes['attributes']['type']){
           case 'string':
+
+
             $type = 'VARCHAR';
             if (!empty($length))
             $type .= "($length)";
             else
             $type .= "(255)";
+            
+            $pdo_bind_params = array('data_type'=>PDO::PARAM_STR,'length'=>(!empty($length))?$length:255);
+            
             break;
           case 'integer':
+            
+            $pdo_bind_params = array('data_type'=>PDO::PARAM_INT);
             $type = 'INTEGER';
             break;          
           /*
@@ -138,7 +138,8 @@ Represents the SQL large object data type.
            */
           default:
             # run an event to proccess the unrecognized type
-            $type = Event::run('mapper.data_type_declaration',$property_attributes['attributes']['type']);
+
+            $type = Event::run('mapper.data_type_declaration',$property_attributes['attributes']['type'],$pdo_bind_params);
             break;
         }
       }
@@ -147,6 +148,10 @@ Represents the SQL large object data type.
         $type = 'VARCHAR(255)';
       }
 
+      if ($field['value'] == null)
+      $pdo_bind_params = array('data_type'=>PDO::PARAM_NULL);
+
+      $field['pdo_bind_params'] = $pdo_bind_params;
       $field['data_type'] = $type;
 
       $schema['fields'][$property_name] = $field;
@@ -167,6 +172,7 @@ Represents the SQL large object data type.
 
     $fields_names = array();
     $fields_values = array();
+    $bind_params = array();
 
     foreach ($sql_schema['fields'] as $field=>$attributes){
 
@@ -174,14 +180,14 @@ Represents the SQL large object data type.
 
       $value = $attributes['value'];
 
-      if (!is_scalar($value))
+      if (!is_scalar($value) and !$value==null)
       throw new Exception('Field Values must be scalars!');
 
       
       # proccess value with hooks (just in case it needs to be processed)
       Event::run('mapper.process_field_value',$field,$attributes,$value);
       $fields_values[':'.$field] = $value;
-
+      $bind_params[':'.$field] = $attributes['pdo_bind_params'];
     }
 
     $fields = implode(',', $fields_names);
@@ -191,7 +197,7 @@ Represents the SQL large object data type.
 
     $sql = "INSERT INTO {$sql_schema['table_name']} ($fields) VALUES ($params)";
 
-    db::execute($sql, $fields_values);
+    db::execute($sql, $fields_values,$bind_params);
 
   }
 /**
@@ -219,7 +225,7 @@ Represents the SQL large object data type.
       $value = $attributes['value'];
       
 
-      if (!is_scalar($value))
+      if (!is_scalar($value) and !$value==null)
       throw new Exception('Field Values must be scalars!');
 
       # proccess value with hooks (just in case it needs to be processed)
