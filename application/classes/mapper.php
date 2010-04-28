@@ -163,6 +163,21 @@ real            FLOAT(63)     double          real                  real
     return $schema;
   }
 
+  static public function save($object){
+    if (self::update($object)==0){
+      try{
+        self::insert($object);
+      }
+      catch(PDOException $e){
+        // if there where an update == 0 because the object wasn't modified
+        // then the insert will give an duplicated id error
+        // we chatch here
+      }
+    }
+  }
+
+
+
   static public function insert($object){
     $sql_schema = self::get_sql_table_schema($object);
 
@@ -197,7 +212,7 @@ real            FLOAT(63)     double          real                  real
 
     $sql = "INSERT INTO {$sql_schema['table_name']} ($fields) VALUES ($params)";
 
-    db::execute($sql, $fields_values,$bind_params);
+    return db::execute($sql, $fields_values,$bind_params);
 
   }
 /**
@@ -216,6 +231,7 @@ real            FLOAT(63)     double          real                  real
 
     $field_updates = '';
     $fields_values = array();
+    $bind_params = array();
     foreach ($sql_schema['fields'] as $field=>$attributes){
       if (!empty($field_updates))
       $field_updates .= ", ";
@@ -231,6 +247,7 @@ real            FLOAT(63)     double          real                  real
       # proccess value with hooks (just in case it needs to be processed)
       Event::run('mapper.process_field_value',$field,$attributes,$value);
       $fields_values[':'.$field] = $value;
+      $bind_params[':'.$field] = $attributes['pdo_bind_params'];
     }
 
     $where_id = '';
@@ -252,7 +269,7 @@ real            FLOAT(63)     double          real                  real
     WHERE $where_id";
     
     
-    db::execute($sql, $fields_values);
+    return db::execute($sql, $fields_values,$bind_params);
 
   }
 

@@ -10,12 +10,12 @@ class IndexController extends Controller {
 
       $object->id = 1;
 
-      $object->title = 'this is a test LOL';
+      $object->title = 'is a test LOL';
 
       $object->uri = 'lol';
 
 
-      Mapper::update($object);
+      Mapper::save($object);
 
 
       
