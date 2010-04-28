@@ -235,6 +235,10 @@ real            FLOAT(63)     double          real                  real
 
     $where_id = '';
 
+    if (count($sql_schema['primary_key'])==0){
+      throw new Exception('Objects must have a PRIMARY ID property.');
+    }
+
     foreach ($sql_schema['primary_key'] as $key){
       if (!empty($where_id))
       $where_id .= " AND ";
