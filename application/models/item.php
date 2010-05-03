@@ -2,7 +2,7 @@
 /**
  * # Sample model
  *
- * table: item
+ * table: items
  * database: default
  * read_only: false
  */

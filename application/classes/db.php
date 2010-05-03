@@ -20,7 +20,7 @@ class DB {
   //}
 
 
-  static public function query($sql,$params=array(),$bind_params=array()){
+  static public function query($sql,$params=array(),$bind_params=array(),$class_name = 'stdClass'){
     if(!self::$link)
     self::connect();
     
@@ -29,7 +29,7 @@ class DB {
     
     if (empty($params)){
       $stmt = self::$link->query($sql);
-      $return = $stmt->fetchAll(PDO::FETCH_CLASS, 'stdClass');
+      $return = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $class_name );
 
     }
     else{

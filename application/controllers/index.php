@@ -18,7 +18,7 @@ class IndexController extends Controller {
       Mapper::save($object);
 
 
-      
+      var_dump(Mapper::get('Item', 'id=1'));
 
 
 

@@ -13,11 +13,8 @@ class Mapper{
     return Spyc::YAMLLoadString($attributes);
   }
 
-  static protected function get_object_schema($object){
-    $schema = array();
-
-
-    $class_name = get_class($object);
+  static protected function get_class_schema($class_name){
+    $schema = array();    
 
     $schema['type'] = $class_name;
 
@@ -42,7 +39,7 @@ class Mapper{
     foreach ($properties as $property=>$value){
       $prop = array();
       $prop['value'] = $value;
-      $prop['value'] = $object->$property;
+      //$prop['value'] = $object->$property;
 
       $method=new ReflectionProperty($class_name,$property);
 
@@ -55,7 +52,19 @@ class Mapper{
 
 
     return $schema;
+  }
 
+  static protected function get_object_schema($object){
+    $schema = self::get_class_schema(get_class($object));
+
+    foreach ($schema['properties'] as $property=>&$prop){
+
+
+      $prop['value'] = $object->$property;
+
+
+    }
+    return $schema;  
   }
 /**
 ANSI data type	Oracle        MySql           PostGreSQL            Most Portable
@@ -71,8 +80,14 @@ real            FLOAT(63)     double          real                  real
  */
 
   
-  static protected function get_sql_table_schema($object){
-    $obj_schema = self::get_object_schema($object);
+  static protected function get_sql_table_schema($object_or_classname){
+    if (is_object($object_or_classname)){
+        $obj_schema = self::get_object_schema($object_or_classname);
+    }
+    else{
+        $obj_schema = self::get_class_schema($object_or_classname);
+    }
+    
 
     $schema = array();
 
@@ -305,6 +320,28 @@ real            FLOAT(63)     double          real                  real
     )";
 
     db::execute($sql);
+
+  }
+
+  static public function get($classname,$conditions=null){
+    $sql_schema = self::get_sql_table_schema($classname);
+
+    if (!db::table_exists($sql_schema['table_name'])){      
+      return;
+    }
+
+    /*
+    foreach ($sql_schema['fields'] as $field=>$attributes){
+    
+    }
+    */
+    
+    $sql = "SELECT * FROM {$sql_schema['table_name']}";
+    if (!empty ($conditions))
+    $sql .= " WHERE $conditions";
+
+
+    return db::query($sql, $fields_values = array(),$bind_params = array(),$sql_schema['table_name']);
 
   }
 
