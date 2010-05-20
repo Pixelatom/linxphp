@@ -51,6 +51,11 @@ class Language {
 			}
 		}
 
+                /*@todo: ver porque esto ocurre en ie */
+                if (!isset($user_languages[1][0])){
+                    return false;
+                }
+
                 return $user_languages[1][0];
 	}
 	else// if no languages found
@@ -139,6 +144,10 @@ class Language {
     "vi" => "vietnamese"
     );
 
+    static public function SetStorer(ITranslationStorer $storer){
+        self::$_translation_store = $storer;
+    }
+
     static private function setup() {
         if (empty(self::$_translation_store))
             self::$_translation_store = new CsvTranslationStorer();
@@ -157,7 +166,7 @@ class Language {
      * @param string $string
      * @return string
      */
-    public function _($string) {
+    public static function _($string) {
         self::setup();
 
 
@@ -171,15 +180,14 @@ class Language {
         // Add string to translations
             if(self::$_auto) {
                 $value = self::translate(self::$_defaultlanguage, self::$_language, $string);
-
             }
         }
         
         if(!$value) {
             $value =  '<!-- TRANSLATE THIS -->'.$string.'<!-- /TRANSLATE THIS -->';
         }
-        else
-            self::$_translation_store->set($string,$value);
+        
+        self::$_translation_store->set($string,$value);
         return $value;
     }
 
@@ -198,7 +206,7 @@ class Language {
      * @param string $language
      * @return void
      */
-    public function SetDefault($language) {
+    public static function SetDefault($language) {
         self::setup();
         self::$_defaultlanguage = $language;
     }
@@ -210,7 +218,7 @@ class Language {
      * @param string $language
      * @return void
      */
-    public function Set(&$language) {
+    public static function Set(&$language) {
         self::setup();
         if(!empty($language)) {
             self::$_translation_store->load($language);
@@ -228,7 +236,7 @@ class Language {
      * @access public
      * @return string
      */
-    public function Get() {
+    public static function Get() {
         self::setup();
         return self::$_language;
     }
@@ -240,7 +248,7 @@ class Language {
      * @param bool $bool
      * @return string
      */
-    public function SetAuto($bool) {
+    public static function SetAuto($bool) {
         self::setup();
         self::$_auto = $bool;
     }
@@ -254,7 +262,7 @@ class Language {
      * @param string $string
      * @return string
      */
-    private function translate($from, $to, $string) {
+    private static function translate($from, $to, $string) {
         self::setup();
 
         return self::$_translator->translate($from, $to, $string);

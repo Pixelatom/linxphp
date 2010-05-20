@@ -173,7 +173,9 @@ real            FLOAT(63)     double          real                  real
 
     }
 
-
+    if (count($schema['primary_key'])==0){
+      throw new Exception('Objects must have a PRIMARY ID property.');
+    }
 
     return $schema;
   }
@@ -232,7 +234,7 @@ real            FLOAT(63)     double          real                  real
   }
 /**
  *
- * @todo: usar bind_param para especificar el tipo de dato http://www.php.net/manual/es/pdostatement.bindparam.php
+ * 
  * @return <type>
  */
   static public function update($object){
@@ -284,6 +286,47 @@ real            FLOAT(63)     double          real                  real
     WHERE $where_id";
     
     
+    return db::execute($sql, $fields_values,$bind_params);
+
+  }
+
+   static public function delete($object){
+    $sql_schema = self::get_sql_table_schema($object);
+
+    if (!db::table_exists($sql_schema['table_name'])){
+      self::create_table($object);
+      self::insert($object);
+      return;
+    }
+
+    $where_id = '';
+
+    
+
+    $fields_values = array();
+    $bind_params = array();
+
+    foreach ($sql_schema['primary_key'] as $key){
+      if (!empty($where_id))
+      $where_id .= " AND ";
+
+      $where_id .= "$key = :$key";
+      
+      $attributes = $sql_schema['fields'][$key];
+      
+      $value = $attributes['value'];
+
+      # proccess value with hooks (just in case it needs to be processed)
+      Event::run('mapper.process_field_value',$key,$attributes,$value);
+      $fields_values[':'.$key] = $value;
+      $bind_params[':'.$key] = $attributes['pdo_bind_params'];
+    }
+
+
+    $sql = "DELETE FROM {$sql_schema['table_name']}
+    WHERE $where_id";
+
+
     return db::execute($sql, $fields_values,$bind_params);
 
   }
