@@ -31,7 +31,8 @@ class Header
     public $title;
 
     /**
-     * type: Item
+     * type: class
+     * class: Item
      * relationship: childs
      */
     public $items;
