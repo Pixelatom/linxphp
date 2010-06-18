@@ -152,7 +152,10 @@ real            FLOAT(63)     double          real                  real
             break;
            */
           default:
-            
+            # unrecognized type! let's see if it's a class name
+
+            class_exists($property_attributes['attributes']['type']);
+
             # run an event to proccess the unrecognized type
             $type = Event::run('mapper.data_type_declaration',$property_attributes['attributes']['type'],$pdo_bind_params);
             break;
