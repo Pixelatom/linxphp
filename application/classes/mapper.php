@@ -8,6 +8,9 @@ class Mapper {
   /* options */
     static protected $_convert_to_lowercase = true;
 
+    /* cache */
+    static protected $_load_cache = array();
+
     static protected function get_attributes($comments_string) {
         $attributes = preg_replace('%/\*\*|^\s*?\*/\s*|^\s*?\*(?:\s?$| ){0,1}%sm', '', $comments_string);
         return Spyc::YAMLLoadString($attributes);
@@ -168,7 +171,10 @@ class Mapper {
                                 // parents doesnt need a sql property for their childs
                                     break;
                                 case 'parent':
-                                // childs must define the relationship to a parent in SQL
+                                    // childs must define the relationship to a parent in SQL
+                                case 'childs':
+                                    // we will add fore keys to this table
+                                
                                     $type_sql_schema = self::get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
@@ -179,11 +185,13 @@ class Mapper {
                                         $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
                                         $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
-                                        $schema['fields'][''] = $field;
+                                        $schema['fields'][$type_sql_schema['table_name'].'_'.$type_primary_key] = $field;
 
                                     }
 
                                     break;
+
+
                             }
                             // continue with next property
                             continue;
@@ -420,7 +428,11 @@ class Mapper {
             $sql .= " WHERE $conditions";
 
 
-        return db::query($sql, $fields_values = array(),$bind_params = array(),$sql_schema['table_name']);
+        $return = db::query($sql, $fields_values = array(),$bind_params = array(),$sql_schema['table_name']);
+        if (is_array($return)){
+
+        }
+        return $return;
 
     }
 
