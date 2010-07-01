@@ -410,12 +410,60 @@ class Mapper {
 
     }
 
+
+    static protected function add_to_cache($object){
+      $classname = get_class($object);
+
+      $sql_schema = self::get_sql_table_schema($object);
+
+      $id = array();
+
+      foreach ($sql_schema['primary_key'] as $key) {
+            
+            $value = $sql_schema['fields'][$key]['value'];
+
+            $id[$key] = (string) $value;
+      }
+
+      $key = md5($classname . json_encode($id));
+
+      self::$_load_cache[$key] = $object;
+
+    }
+    static protected function is_in_cache($classname,$id){
+      if (!is_array($id)){
+        $sql_schema = self::get_sql_table_schema($classname);
+        $id=array($sql_schema['primary_key'][0]=> (string) $id);
+        
+      }
+
+      $key = md5($classname . json_encode($id));
+      
+
+      return isset(self::$_load_cache[$key]);
+    }
+    static protected function get_from_cache($classname,$id){
+      if (!is_array($id)){
+        $sql_schema = self::get_sql_table_schema($classname);
+        $id=array($sql_schema['primary_key'][0]=> (string) $id);
+      }
+
+      $key = md5($classname . json_encode($id));
+
+      return self::$_load_cache[$key];
+    }
+
+
     static public function get_by_id($classname,$id){
       $sql_schema = self::get_sql_table_schema($classname);
 
       if (!db::table_exists($sql_schema['table_name'])) {
             return;
       }
+
+      if (self::is_in_cache($classname,$id))
+      return self::get_from_cache($classname,$id);
+
 
       $where_id = '';
 
@@ -460,8 +508,10 @@ class Mapper {
 
         $results = db::query($sql, $fields_values,$bind_params,$classname);
         
-        if (isset($results[0]))
-        return $results[0];
+        if (isset($results[0])){
+          self::add_to_cache($results[0]);
+          return $results[0];
+        }
         else
         return;
     }

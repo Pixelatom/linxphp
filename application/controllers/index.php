@@ -31,9 +31,16 @@ class IndexController extends Controller {
 
         
 
-        echo '<pre>';
-        var_dump(Mapper::get_by_id('Item', 2));
         
+        
+        $object = Mapper::get_by_id('Item', 2);
+        $object->description = ':D';
+
+       
+       
+
+echo '<pre>';
+        var_dump(Mapper::get_by_id('Item', 2));
 
 
 
