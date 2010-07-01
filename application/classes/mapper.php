@@ -454,7 +454,7 @@ class Mapper {
 
 
         $sql = "SELECT * FROM {$sql_schema['table_name']}";
-        if (!empty ($conditions))
+        
             $sql .= " WHERE $where_id";
 
 
