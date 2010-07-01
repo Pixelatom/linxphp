@@ -410,6 +410,62 @@ class Mapper {
 
     }
 
+    static public function get_by_id($classname,$id){
+      $sql_schema = self::get_sql_table_schema($classname);
+
+      if (!db::table_exists($sql_schema['table_name'])) {
+            return;
+      }
+
+      $where_id = '';
+
+      if (count($sql_schema['primary_key']) != count($id)){
+        throw new Exception('Incorrect number of values for primary key');
+      }
+
+        $fields_values = array();
+        $bind_params = array();
+
+        foreach ($sql_schema['primary_key'] as $key) {
+            if (!empty($where_id))
+                $where_id .= " AND ";
+
+            $where_id .= "$key = :$key";
+
+            $attributes = $sql_schema['fields'][$key];
+
+            if (!is_array($id))
+            $value = $id;
+            else{
+              if (!isset($id[$key]))
+              throw new Exception("Missin key '$key' in primary keys argument");
+
+              $value = $id[$key];
+            }
+
+            # proccess value with hooks (just in case it needs to be processed)
+            Event::run('mapper.process_field_value',$key,$attributes,$value);
+
+            $fields_values[':'.$key] = $value;
+            $bind_params[':'.$key] = $attributes['pdo_bind_params'];
+        }
+
+
+
+
+        $sql = "SELECT * FROM {$sql_schema['table_name']}";
+        if (!empty ($conditions))
+            $sql .= " WHERE $where_id";
+
+
+        $results = db::query($sql, $fields_values,$bind_params,$classname);
+        
+        if (isset($results[0]))
+        return $results[0];
+        else
+        return;
+    }
+
     static public function get($classname,$conditions=null) {
         $sql_schema = self::get_sql_table_schema($classname);
 
@@ -428,10 +484,8 @@ class Mapper {
             $sql .= " WHERE $conditions";
 
 
-        $return = db::query($sql, $fields_values = array(),$bind_params = array(),$sql_schema['table_name']);
-        if (is_array($return)){
-
-        }
+        $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
+        
         return $return;
 
     }

@@ -1,6 +1,7 @@
 <?php
 class DB {
-  static private $link;
+  static protected $link;
+  static protected $prepared_queries = array();
 
   static private function connect(){
     $c = Configuration::get('database');
@@ -33,7 +34,13 @@ class DB {
 
     }
     else{
-      $stmt = self::$link->prepare($sql);
+      if (isset(self::$prepared_queries[$sql]))
+      $stmt = self::$prepared_queries[$sql];
+      else{
+        $stmt = self::$link->prepare($sql);
+        self::$prepared_queries[$sql] = $stmt;
+      }
+      
 
       foreach($params as $field_name=>&$value){
         if (isset($bind_params[$field_name]['data_type']) and isset($bind_params[$field_name]['length'])){
@@ -64,7 +71,12 @@ class DB {
       $count = self::$link->exec($sql);
     }
     else{
-      $stmt = self::$link->prepare($sql);
+      if (isset(self::$prepared_queries[$sql]))
+      $stmt = self::$prepared_queries[$sql];
+      else{
+        $stmt = self::$link->prepare($sql);
+        self::$prepared_queries[$sql] = $stmt;
+      }
 
       foreach($params as $field_name=>&$value){
         

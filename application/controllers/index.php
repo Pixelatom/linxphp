@@ -32,7 +32,7 @@ class IndexController extends Controller {
         
 
         echo '<pre>';
-        var_dump(Mapper::get('Item'));
+        var_dump(Mapper::get_by_id('Item', 2));
         
 
 
