@@ -34,7 +34,7 @@ class IndexController extends Controller {
         
         
         $object = Mapper::get_by_id('Item', 2);
-        $object->description = ':D';
+        $object->description = ':(';
 
        
        
