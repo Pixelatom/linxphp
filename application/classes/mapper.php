@@ -21,6 +21,7 @@ class Mapper {
 
         $schema['type'] = $class_name;
 
+
         $function = new ReflectionClass($class_name);
 
         // get type name from class name
@@ -158,21 +159,23 @@ class Mapper {
                     # unrecognized type! let's see if it's a class name
 
                         if (class_exists($property_attributes['attributes']['type'])) {
+                          
                             $type_classname = $property_attributes['attributes']['type'];
-                            $type_schema = self::get_object_schema($type_classname);
+                            $type_schema = self::get_class_schema($type_classname);
 
                             # we're going to define fore keys for this relationship
                             if (!isset($property_attributes['attributes']['relationship'])) {
                             # relationship must be deffined in comments!
                                 throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
                             }
+                            //die(    $property_attributes['attributes']['relationship']);
                             switch ($property_attributes['attributes']['relationship']) {
                                 case 'childs':
                                 // parents doesnt need a sql property for their childs
                                     break;
                                 case 'parent':
                                     // childs must define the relationship to a parent in SQL
-                                case 'childs':
+                                //case 'childs':
                                     // we will add fore keys to this table
                                 
                                     $type_sql_schema = self::get_sql_table_schema($type_classname);
@@ -194,7 +197,7 @@ class Mapper {
 
                             }
                             // continue with next property
-                            continue;
+                            continue 2; // 2 because the sentence SWITCH is considered a loop structure :O
                         }
 
                         # run an event to proccess the unrecognized type

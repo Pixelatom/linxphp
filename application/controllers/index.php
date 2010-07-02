@@ -4,6 +4,7 @@
 class IndexController extends Controller {
     function index() {
         require (Application::get_site_path().'application/models/item.php');
+        require (Application::get_site_path().'application/models/header.php');
 
 
         $object = new Item();
@@ -39,10 +40,17 @@ class IndexController extends Controller {
        
        
 
+//echo '<pre>';
+        //var_dump(Mapper::get_by_id('Item', 2));
+
+        $object = new Header();
+        $object->id = 1;
+        $object->title = 'test';
+
+      Mapper::save($object);
+
 echo '<pre>';
-        var_dump(Mapper::get_by_id('Item', 2));
-
-
+        var_dump(Mapper::get_by_id('Header', 1));
 
     }
     function language() {
