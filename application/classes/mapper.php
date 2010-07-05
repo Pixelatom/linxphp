@@ -513,11 +513,14 @@ class Mapper {
         
         if (isset($results[0])){
           self::add_to_cache($results[0]);
+          self::fill_relationship($results[0]);
           return $results[0];
         }
         else
         return;
     }
+
+
 
     static public function get($classname,$conditions=null) {
         $sql_schema = self::get_sql_table_schema($classname);
@@ -538,12 +541,82 @@ class Mapper {
 
 
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
-        
+
+        foreach($return as $object){
+          self::add_to_cache($object);
+          self::fill_relationship($object);
+        }
+
         return $return;
 
     }
 
+    static protected function fill_relationship($object){
 
+        $obj_schema = self::get_object_schema($object);
+        $sql_schema = self::get_sql_table_schema($object);
+
+        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+
+                  $type_classname = $property_attributes['attributes']['type'];
+                  $type_schema = self::get_class_schema($type_classname);
+
+                  # we're going to define fore keys for this relationship
+                  if (!isset($property_attributes['attributes']['relationship'])) {
+                  # relationship must be deffined in comments!
+                      throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                  }
+
+                  switch ($property_attributes['attributes']['relationship']) {
+                      case 'childs':
+
+                        $conditions = '';
+
+                        foreach ($sql_schema['primary_key'] as $primary_key) {
+
+                             if (!empty($conditions))
+                              $conditions .= " AND ";
+
+                              $value = $sql_schema['fields'][$primary_key]['value'];
+
+                              $field = $sql_schema['table_name'].'_'.$primary_key;
+
+                              $conditions .= " $field = '$value' ";
+
+                        }
+                        /*TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
+                          // parents doesnt need a sql property for their childs
+                          $childs = self::get($type_classname, $conditions);
+
+
+                          // asignamos los childs at last
+
+                          $object->$property_name = $childs;
+
+                          break;
+                      case 'parent':                          
+
+                          $type_sql_schema = self::get_sql_table_schema($type_classname);
+
+                          $field = array();
+
+                          foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
+                              
+                              
+                              
+
+                              $field[$type_sql_schema['table_name'].'_'.$type_primary_key] = 
+
+                          }
+
+                          break;
+                      }
+            }
+            
+
+        }
+    }
 
 }
 ?>

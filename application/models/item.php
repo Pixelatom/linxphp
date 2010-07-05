@@ -50,4 +50,12 @@ class Item
     public $description;
 
     //@ end fields
+
+    /*
+
+    public function __set($name, $value) {
+        echo "Setting '$name' to '$value'\n";
+        $this->data[$name] = $value;
+    }
+     */
 }

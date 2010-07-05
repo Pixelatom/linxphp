@@ -54,7 +54,7 @@ class DB {
       }
 
       $stmt->execute();
-      $return = $stmt->fetchAll(PDO::FETCH_CLASS, $class_name);
+      $return = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $class_name);
     }
 
     $stmt->closeCursor();
