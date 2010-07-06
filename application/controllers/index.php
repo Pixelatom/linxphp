@@ -9,6 +9,9 @@ class IndexController extends Controller {
 
         // testing loading
         echo '<pre>';
+        var_dump(Mapper::get_by_id('Header', 1));
+        die();
+        echo '<pre>';
         var_dump(Mapper::get_by_id('Item', 2));
         die();
 
