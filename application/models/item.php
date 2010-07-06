@@ -51,10 +51,10 @@ class Item
 
 
     /**
-     * type: Item
-     * relationship: childs
+     * type: Header
+     * relationship: parent
      */
-    public $items;
+    public $header;
 
     //@ end fields
 

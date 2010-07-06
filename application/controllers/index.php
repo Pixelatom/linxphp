@@ -7,6 +7,13 @@ class IndexController extends Controller {
         require (Application::get_site_path().'application/models/header.php');
 
 
+        // testing loading
+        echo '<pre>';
+        var_dump(Mapper::get_by_id('Item', 2));
+        die();
+
+
+        // testing removing item 1
         $object = new Item();
 
         $object->id = 1;
@@ -17,8 +24,8 @@ class IndexController extends Controller {
 
 
         Mapper::save($object);
+        Mapper::delete($object);
 
-        //Mapper::delete($object);
 
 
         $object = new Item();
@@ -27,30 +34,29 @@ class IndexController extends Controller {
 
         $object->title = 'another object';
 
-        Mapper::save($object);
-
-
-        
+        Mapper::save($object);      
 
         
-        
+        // testing cache in item # 2
+        /*
         $object = Mapper::get_by_id('Item', 2);
         $object->description = ':(';
+        echo '<pre>';
+        var_dump(Mapper::get_by_id('Item', 2));
+        */
 
-       
-       
-
-//echo '<pre>';
-        //var_dump(Mapper::get_by_id('Item', 2));
-
-        $object = new Header();
-        $object->id = 1;
-        $object->title = 'test';
-
-      Mapper::save($object);
-
-echo '<pre>';
+        // testing relationships
+        $header = new Header();
+        $header->id = 1;
+        $header->title = 'test';
+        Mapper::save($header);
+/*
+        echo '<pre>';
         var_dump(Mapper::get_by_id('Header', 1));
+*/
+
+        $object->header = $header;
+        Mapper::save($object);
 
     }
     function language() {

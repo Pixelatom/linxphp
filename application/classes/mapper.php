@@ -177,7 +177,12 @@ class Mapper {
                                     // childs must define the relationship to a parent in SQL
                                 //case 'childs':
                                     // we will add fore keys to this table
-                                
+
+                                    if (is_object($property_attributes['value']))
+                                    // if the relationship is not empty we'll get the values for the fields
+                                    $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
+                                    else
+                                    // if the relationship is empty we'll get the schema from the class name
                                     $type_sql_schema = self::get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
@@ -489,7 +494,7 @@ class Mapper {
             $value = $id;
             else{
               if (!isset($id[$key]))
-              throw new Exception("Missin key '$key' in primary keys argument");
+              throw new Exception("Missing key '$key' in primary keys argument");
 
               $value = $id[$key];
             }
@@ -556,7 +561,11 @@ class Mapper {
         $obj_schema = self::get_object_schema($object);
         $sql_schema = self::get_sql_table_schema($object);
 
+
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+
+          if (is_null($object->$property_name)){
+
             if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
 
                   $type_classname = $property_attributes['attributes']['type'];
@@ -595,31 +604,35 @@ class Mapper {
                           $object->$property_name = $childs;
 
                           break;
-                      case 'parent':                          
-
+                      case 'parent':             
+                        //
+                        
                           $type_sql_schema = self::get_sql_table_schema($type_classname);
 
                           $fore_keys = array();
 
                           foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
-                              
-                              
+
+
                               $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
 
-                              $fore_keys[$sql_field] = $object->$sql_field;
-                              
+                              $fore_keys[$type_primary_key] = $object->$sql_field;
+
                               if (!in_array($sql_field,array_keys($obj_schema['properties'])))
                               unset($object->$sql_field); # remove property because it was not defined in the original class
 
                           }
 
                           $object->$property_name = self::get_by_id($type_classname, $fore_keys);
+                        
+
+                          
 
 
                           break;
                       }
             }
-            
+          }
 
         }
     }
