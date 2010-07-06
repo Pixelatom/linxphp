@@ -49,6 +49,13 @@ class Item
      */
     public $description;
 
+
+    /**
+     * type: Item
+     * relationship: childs
+     */
+    public $items;
+
     //@ end fields
 
     /*

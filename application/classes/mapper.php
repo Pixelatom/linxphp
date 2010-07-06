@@ -599,16 +599,22 @@ class Mapper {
 
                           $type_sql_schema = self::get_sql_table_schema($type_classname);
 
-                          $field = array();
+                          $fore_keys = array();
 
                           foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
                               
                               
-                              
+                              $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
 
-                              $field[$type_sql_schema['table_name'].'_'.$type_primary_key] = 
+                              $fore_keys[$sql_field] = $object->$sql_field;
+                              
+                              if (!in_array($sql_field,array_keys($obj_schema['properties'])))
+                              unset($object->$sql_field); # remove property because it was not defined in the original class
 
                           }
+
+                          $object->$property_name = self::get_by_id($type_classname, $fore_keys);
+
 
                           break;
                       }
