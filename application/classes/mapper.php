@@ -419,6 +419,8 @@ class Mapper {
     }
 
 
+
+
     static protected function add_to_cache($object){
       $classname = get_class($object);
 
@@ -438,6 +440,24 @@ class Mapper {
       self::$_load_cache[$key] = $object;
 
     }
+
+    static protected function is_object_in_cache($object){
+      $classname = get_class($object);
+
+      $sql_schema = self::get_sql_table_schema($object);
+
+      $id = array();
+
+      foreach ($sql_schema['primary_key'] as $key) {
+
+            $value = $sql_schema['fields'][$key]['value'];
+
+            $id[$key] = (string) $value;
+      }
+
+      return self::is_in_cache($classname, $id);
+     }
+
     static protected function is_in_cache($classname,$id){
       if (!is_array($id)){
         $sql_schema = self::get_sql_table_schema($classname);
@@ -450,6 +470,26 @@ class Mapper {
 
       return isset(self::$_load_cache[$key]);
     }
+
+    static protected function get_object_from_cache($object){
+      $classname = get_class($object);
+
+      $sql_schema = self::get_sql_table_schema($object);
+
+      $id = array();
+
+      foreach ($sql_schema['primary_key'] as $key) {
+
+            $value = $sql_schema['fields'][$key]['value'];
+
+            $id[$key] = (string) $value;
+      }
+
+      $key = md5($classname . json_encode($id));
+
+      return self::$_load_cache[$key];
+    }
+
     static protected function get_from_cache($classname,$id){
       if (!is_array($id)){
         $sql_schema = self::get_sql_table_schema($classname);
@@ -507,8 +547,6 @@ class Mapper {
         }
 
 
-
-
         $sql = "SELECT * FROM {$sql_schema['table_name']}";
         
             $sql .= " WHERE $where_id";
@@ -532,34 +570,31 @@ class Mapper {
 
         if (!db::table_exists($sql_schema['table_name'])) {
             return;
-        }
-
-    /*
-    foreach ($sql_schema['fields'] as $field=>$attributes){
-    
-    }
-    */
+        }    
 
         $sql = "SELECT * FROM {$sql_schema['table_name']}";
         if (!empty ($conditions))
             $sql .= " WHERE $conditions";
 
-
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
 
-        foreach($return as $object){
+        foreach($return as &$object){
 
-          // revisar si cada uno de los objetos retornados esta en cache,
+          // revisa si cada uno de los objetos retornados esta en cache,
           // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
-
+          if (self::is_object_in_cache($object)){
+            // objects in cache are supposed to be already filled
+            
+            $object = self::get_object_from_cache($object);
+          }
+          else{
+            self::add_to_cache($object);
+            self::fill_relationship($object);
+          }
           
-
-          self::add_to_cache($object);
-          self::fill_relationship($object);
         }
 
         return $return;
-
     }
 
     static protected function fill_relationship($object){
