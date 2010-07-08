@@ -548,6 +548,12 @@ class Mapper {
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
 
         foreach($return as $object){
+
+          // revisar si cada uno de los objetos retornados esta en cache,
+          // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
+
+          
+
           self::add_to_cache($object);
           self::fill_relationship($object);
         }
