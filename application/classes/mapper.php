@@ -1,11 +1,22 @@
 <?php
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/*
+ ANSI data type	Oracle        MySql           PostGreSQL            Most Portable
+ integer         NUMBER(38)    integer(11)     integer               integer
+ smallint        NUMBER(38)    smallint(6)     smallint              smallint
+ tinyint         *	tinyint(4)  *               numeric(4,0)
+ numeric(p,s)    NUMBER(p,s)   decimal(p,s)    numeric(p,s)          numeric(p,s)
+ varchar(n)      VARCHAR2(n)   varchar(n)      character varying(n)	varchar(n)
+ char(n)         CHAR(n)       varchar(n)      character(n)          char(n)
+ datetime        DATE          datetime        timestamp no timezone have to autodetect
+ float           FLOAT(126)    float           double precision      float
+ real            FLOAT(63)     double          real                  real
  */
+
+
+
 class Mapper {
 
-  /* options */
+    /* options */
     static protected $_convert_to_lowercase = true;
 
     /* cache */
@@ -70,18 +81,7 @@ class Mapper {
         }
         return $schema;
     }
-    /**
-     ANSI data type	Oracle        MySql           PostGreSQL            Most Portable
-     integer         NUMBER(38)    integer(11)     integer               integer
-     smallint        NUMBER(38)    smallint(6)     smallint              smallint
-     tinyint         *	tinyint(4)  *               numeric(4,0)
-     numeric(p,s)    NUMBER(p,s)   decimal(p,s)    numeric(p,s)          numeric(p,s)
-     varchar(n)      VARCHAR2(n)   varchar(n)      character varying(n)	varchar(n)
-     char(n)         CHAR(n)       varchar(n)      character(n)          char(n)
-     datetime        DATE          datetime        timestamp no timezone have to autodetect
-     float           FLOAT(126)    float           double precision      float
-     real            FLOAT(63)     double          real                  real
-     */
+    
 
 
     static protected function get_sql_table_schema($object_or_classname) {
@@ -232,6 +232,9 @@ class Mapper {
         return $schema;
     }
 
+    /*
+     * Stupid function
+     */
     static public function save($object) {
         if (self::update($object)==0) {
             try {
@@ -245,9 +248,14 @@ class Mapper {
         }
     }
 
+    static protected function save_relationships($object){
 
-
+    }
+    /*
+     * CRUD functions
+     */
     static public function insert($object) {
+        self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
 
         if (!db::table_exists($sql_schema['table_name'])) {
@@ -283,13 +291,9 @@ class Mapper {
 
         return db::execute($sql, $fields_values,$bind_params);
 
-    }
-    /**
-     *
-     *
-     * @return <type>
-     */
+    }    
     static public function update($object) {
+        self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
 
         if (!db::table_exists($sql_schema['table_name'])) {
@@ -341,7 +345,6 @@ class Mapper {
         return db::execute($sql, $fields_values,$bind_params);
 
     }
-
     static public function delete($object) {
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -383,6 +386,9 @@ class Mapper {
 
     }
 
+    /*
+     * Misc function
+     */
     static protected function create_table($object) {
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -418,7 +424,9 @@ class Mapper {
 
     }
 
-
+    /*
+     * Cache functions
+     */
 
 
     static protected function add_to_cache($object){
@@ -500,8 +508,13 @@ class Mapper {
 
       return self::$_load_cache[$key];
     }
+    /*
+     * End Cache functions
+     */
 
-
+    /*
+     * Loads one object by id -uses cache
+     */
     static public function get_by_id($classname,$id){
       $sql_schema = self::get_sql_table_schema($classname);
 
@@ -562,9 +575,6 @@ class Mapper {
         else
         return;
     }
-
-
-
     static public function get($classname,$conditions=null) {
         $sql_schema = self::get_sql_table_schema($classname);
 
@@ -597,6 +607,9 @@ class Mapper {
         return $return;
     }
 
+    /*
+     * Complete relationship properties on load
+     */
     static protected function fill_relationship($object){
 
         $obj_schema = self::get_object_schema($object);
