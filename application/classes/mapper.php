@@ -10,7 +10,7 @@
  datetime        DATE          datetime        timestamp no timezone have to autodetect
  float           FLOAT(126)    float           double precision      float
  real            FLOAT(63)     double          real                  real
- */
+*/
 
 
 
@@ -81,7 +81,7 @@ class Mapper {
         }
         return $schema;
     }
-    
+
 
 
     static protected function get_sql_table_schema($object_or_classname) {
@@ -117,7 +117,7 @@ class Mapper {
             $length = (int) (isset($property_attributes['attributes']['length']))?$property_attributes['attributes']['length']:'';
 
             if (isset($property_attributes['attributes']['primary_key'])
-                and $property_attributes['attributes']['primary_key']==true) {
+                    and $property_attributes['attributes']['primary_key']==true) {
                 $schema['primary_key'][] = $property_name;
                 $field['primary_key'] = true;
             }
@@ -144,7 +144,7 @@ class Mapper {
                         $pdo_bind_params = array('data_type'=>PDO::PARAM_INT);
                         $type = 'INTEGER';
                         break;
-          /*
+                    /*
           case 'float':
             $type = 'FLOAT';
             break;          
@@ -154,18 +154,18 @@ class Mapper {
           case 'datetime':
             $type = 'DATETIME';
             break;
-           */
+                    */
                     default:
                     # unrecognized type! let's see if it's a class name
 
                         if (class_exists($property_attributes['attributes']['type'])) {
-                          
+
                             $type_classname = $property_attributes['attributes']['type'];
                             $type_schema = self::get_class_schema($type_classname);
 
                             # we're going to define fore keys for this relationship
                             if (!isset($property_attributes['attributes']['relationship'])) {
-                            # relationship must be deffined in comments!
+                                # relationship must be deffined in comments!
                                 throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
                             }
                             //die(    $property_attributes['attributes']['relationship']);
@@ -174,16 +174,16 @@ class Mapper {
                                 // parents doesnt need a sql property for their childs
                                     break;
                                 case 'parent':
-                                    // childs must define the relationship to a parent in SQL
+                                // childs must define the relationship to a parent in SQL
                                 //case 'childs':
-                                    // we will add fore keys to this table
+                                // we will add fore keys to this table
 
                                     if (is_object($property_attributes['value']))
                                     // if the relationship is not empty we'll get the values for the fields
-                                    $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
+                                        $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
                                     else
                                     // if the relationship is empty we'll get the schema from the class name
-                                    $type_sql_schema = self::get_sql_table_schema($type_classname);
+                                        $type_sql_schema = self::get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
                                         // we're going to copy the declaration of the primary keys
@@ -211,7 +211,7 @@ class Mapper {
                 }
             }
             else {
-            # default type if it's not set
+                # default type if it's not set
                 $type = 'VARCHAR(255)';
             }
 
@@ -234,26 +234,62 @@ class Mapper {
 
     /*
      * Stupid function
-     */
+    */
     static public function save($object) {
         if (self::update($object)==0) {
             try {
                 self::insert($object);
             }
-            catch(PDOException $e ){
-            // if there where an update == 0 because the object wasn't modified
-            // then the insert will give an duplicated id error
-            // we chatch here
+            catch(PDOException $e ) {
+                // if there where an update == 0 because the object wasn't modified
+                // then the insert will give an duplicated id error
+                // we chatch here
             }
         }
     }
 
-    static protected function save_relationships($object){
+    static protected function save_relationships($object) {
+        $obj_schema = self::get_object_schema($object);
 
+        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+
+
+            if  (isset($property_attributes['attributes']['relationship']) and  $property_attributes['attributes']['relationship'] == 'childs') {
+
+                if (is_object($object->$property_name)) {
+                    if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
+                        throw new Exception("Wrong class type in child object");
+                    }
+
+                    if (isset($property_attributes['attributes']['inverse_property'])) {
+                        $inverse = $property_attributes['attributes']['inverse_property'];
+
+                        $object->$property_name->$inverse = $object;
+                        
+                    }
+
+                    self::save($object->$property_name);
+                }
+                elseif(is_array($object->$property_name)) {
+                    foreach($object->$property_name as $child) {
+                        if (isset($property_attributes['attributes']['inverse_property'])) {
+
+                            $inverse = $property_attributes['attributes']['inverse_property'];
+
+                            $child->{$inverse} = $object;
+
+                        }
+                        self::save($child);
+                    }
+                }
+
+
+            }
+        }
     }
     /*
      * CRUD functions
-     */
+    */
     static public function insert($object) {
         self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
@@ -291,7 +327,7 @@ class Mapper {
 
         return db::execute($sql, $fields_values,$bind_params);
 
-    }    
+    }
     static public function update($object) {
         self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
@@ -345,13 +381,41 @@ class Mapper {
         return db::execute($sql, $fields_values,$bind_params);
 
     }
-    static public function delete($object) {
+    static protected function delete_relationships($object) {
+        $obj_schema = self::get_object_schema($object);
+
+        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+
+            if  (isset($property_attributes['attributes']['relationship']) and $property_attributes['attributes']['relationship'] == 'childs') {
+
+                if (is_object($object->$property_name)) {
+                    if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
+                        throw new Exception("Wrong class type in child object");
+                    }
+                    self::delete($object->$property_name);
+                }
+                elseif(is_array($object->$property_name)) {
+                    foreach($object->$property_name as $child) {
+                        self::delete($child);
+                    }
+                }
+
+                $object->$property_name = null;
+            }
+        }
+    }
+
+    static public function delete($object,$delete_childs=true) {
         $sql_schema = self::get_sql_table_schema($object);
 
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
             self::insert($object);
             return;
+        }
+
+        if ($delete_childs) {
+            self::delete_relationships($object);
         }
 
         $where_id = '';
@@ -378,8 +442,7 @@ class Mapper {
         }
 
 
-        $sql = "DELETE FROM {$sql_schema['table_name']}
-    WHERE $where_id";
+        $sql = "DELETE FROM {$sql_schema['table_name']} WHERE $where_id";
 
 
         return db::execute($sql, $fields_values,$bind_params);
@@ -388,7 +451,7 @@ class Mapper {
 
     /*
      * Misc function
-     */
+    */
     static protected function create_table($object) {
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -399,7 +462,7 @@ class Mapper {
             $declaration = "$field {$attributes['data_type']}";
 
             if (isset($attributes['primary_key']) and $attributes['primary_key']==true
-                and count($sql_schema['primary_key'])==1) {
+                    and count($sql_schema['primary_key'])==1) {
 
                 $declaration .= ' PRIMARY KEY';
             }
@@ -426,111 +489,111 @@ class Mapper {
 
     /*
      * Cache functions
-     */
+    */
 
 
-    static protected function add_to_cache($object){
-      $classname = get_class($object);
+    static protected function add_to_cache($object) {
+        $classname = get_class($object);
 
-      $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = self::get_sql_table_schema($object);
 
-      $id = array();
+        $id = array();
 
-      foreach ($sql_schema['primary_key'] as $key) {
-            
-            $value = $sql_schema['fields'][$key]['value'];
-
-            $id[$key] = (string) $value;
-      }
-
-      $key = md5($classname . json_encode($id));
-
-      self::$_load_cache[$key] = $object;
-
-    }
-
-    static protected function is_object_in_cache($object){
-      $classname = get_class($object);
-
-      $sql_schema = self::get_sql_table_schema($object);
-
-      $id = array();
-
-      foreach ($sql_schema['primary_key'] as $key) {
+        foreach ($sql_schema['primary_key'] as $key) {
 
             $value = $sql_schema['fields'][$key]['value'];
 
             $id[$key] = (string) $value;
-      }
+        }
 
-      return self::is_in_cache($classname, $id);
-     }
+        $key = md5($classname . json_encode($id));
 
-    static protected function is_in_cache($classname,$id){
-      if (!is_array($id)){
-        $sql_schema = self::get_sql_table_schema($classname);
-        $id=array($sql_schema['primary_key'][0]=> (string) $id);
-        
-      }
+        self::$_load_cache[$key] = $object;
 
-      $key = md5($classname . json_encode($id));
-      
-
-      return isset(self::$_load_cache[$key]);
     }
 
-    static protected function get_object_from_cache($object){
-      $classname = get_class($object);
+    static protected function is_object_in_cache($object) {
+        $classname = get_class($object);
 
-      $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = self::get_sql_table_schema($object);
 
-      $id = array();
+        $id = array();
 
-      foreach ($sql_schema['primary_key'] as $key) {
+        foreach ($sql_schema['primary_key'] as $key) {
 
             $value = $sql_schema['fields'][$key]['value'];
 
             $id[$key] = (string) $value;
-      }
+        }
 
-      $key = md5($classname . json_encode($id));
-
-      return self::$_load_cache[$key];
+        return self::is_in_cache($classname, $id);
     }
 
-    static protected function get_from_cache($classname,$id){
-      if (!is_array($id)){
-        $sql_schema = self::get_sql_table_schema($classname);
-        $id=array($sql_schema['primary_key'][0]=> (string) $id);
-      }
+    static protected function is_in_cache($classname,$id) {
+        if (!is_array($id)) {
+            $sql_schema = self::get_sql_table_schema($classname);
+            $id=array($sql_schema['primary_key'][0]=> (string) $id);
 
-      $key = md5($classname . json_encode($id));
+        }
 
-      return self::$_load_cache[$key];
+        $key = md5($classname . json_encode($id));
+
+
+        return isset(self::$_load_cache[$key]);
+    }
+
+    static protected function get_object_from_cache($object) {
+        $classname = get_class($object);
+
+        $sql_schema = self::get_sql_table_schema($object);
+
+        $id = array();
+
+        foreach ($sql_schema['primary_key'] as $key) {
+
+            $value = $sql_schema['fields'][$key]['value'];
+
+            $id[$key] = (string) $value;
+        }
+
+        $key = md5($classname . json_encode($id));
+
+        return self::$_load_cache[$key];
+    }
+
+    static protected function get_from_cache($classname,$id) {
+        if (!is_array($id)) {
+            $sql_schema = self::get_sql_table_schema($classname);
+            $id=array($sql_schema['primary_key'][0]=> (string) $id);
+        }
+
+        $key = md5($classname . json_encode($id));
+
+        return self::$_load_cache[$key];
     }
     /*
      * End Cache functions
-     */
+    */
 
     /*
      * Loads one object by id -uses cache
-     */
-    static public function get_by_id($classname,$id){
-      $sql_schema = self::get_sql_table_schema($classname);
+    */
+    static public function get_by_id($classname,$id) {
+        $sql_schema = self::get_sql_table_schema($classname);
 
-      if (!db::table_exists($sql_schema['table_name'])) {
+        if (!db::table_exists($sql_schema['table_name'])) {
             return;
-      }
+        }
 
-      if (self::is_in_cache($classname,$id))
-      return self::get_from_cache($classname,$id);
+        if (self::is_in_cache($classname,$id))
+            return self::get_from_cache($classname,$id);
 
 
-      $where_id = '';
+        $where_id = '';
 
-      if (count($sql_schema['primary_key']) != count($id)){
-        throw new Exception('Incorrect number of values for primary key');
-      }
+        if (count($sql_schema['primary_key']) != count($id)) {
+            throw new Exception('Incorrect number of values for primary key');
+        }
 
         $fields_values = array();
         $bind_params = array();
@@ -544,12 +607,12 @@ class Mapper {
             $attributes = $sql_schema['fields'][$key];
 
             if (!is_array($id))
-            $value = $id;
-            else{
-              if (!isset($id[$key]))
-              throw new Exception("Missing key '$key' in primary keys argument");
+                $value = $id;
+            else {
+                if (!isset($id[$key]))
+                    throw new Exception("Missing key '$key' in primary keys argument");
 
-              $value = $id[$key];
+                $value = $id[$key];
             }
 
             # proccess value with hooks (just in case it needs to be processed)
@@ -561,26 +624,26 @@ class Mapper {
 
 
         $sql = "SELECT * FROM {$sql_schema['table_name']}";
-        
-            $sql .= " WHERE $where_id";
+
+        $sql .= " WHERE $where_id";
 
 
         $results = db::query($sql, $fields_values,$bind_params,$classname);
-        
-        if (isset($results[0])){
-          self::add_to_cache($results[0]);
-          self::fill_relationship($results[0]);
-          return $results[0];
+
+        if (isset($results[0])) {
+            self::add_to_cache($results[0]);
+            self::fill_relationship($results[0]);
+            return $results[0];
         }
         else
-        return;
+            return;
     }
     static public function get($classname,$conditions=null) {
         $sql_schema = self::get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
             return;
-        }    
+        }
 
         $sql = "SELECT * FROM {$sql_schema['table_name']}";
         if (!empty ($conditions))
@@ -588,20 +651,20 @@ class Mapper {
 
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
 
-        foreach($return as &$object){
+        foreach($return as &$object) {
 
-          // revisa si cada uno de los objetos retornados esta en cache,
-          // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
-          if (self::is_object_in_cache($object)){
-            // objects in cache are supposed to be already filled
-            
-            $object = self::get_object_from_cache($object);
-          }
-          else{
-            self::add_to_cache($object);
-            self::fill_relationship($object);
-          }
-          
+            // revisa si cada uno de los objetos retornados esta en cache,
+            // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
+            if (self::is_object_in_cache($object)) {
+                // objects in cache are supposed to be already filled
+
+                $object = self::get_object_from_cache($object);
+            }
+            else {
+                self::add_to_cache($object);
+                self::fill_relationship($object);
+            }
+
         }
 
         return $return;
@@ -609,8 +672,8 @@ class Mapper {
 
     /*
      * Complete relationship properties on load
-     */
-    static protected function fill_relationship($object){
+    */
+    static protected function fill_relationship($object) {
 
         $obj_schema = self::get_object_schema($object);
         $sql_schema = self::get_sql_table_schema($object);
@@ -618,75 +681,75 @@ class Mapper {
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
-          if (is_null($object->$property_name)){
+            if (is_null($object->$property_name)) {
 
-            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+                if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
 
-                  $type_classname = $property_attributes['attributes']['type'];
-                  $type_schema = self::get_class_schema($type_classname);
+                    $type_classname = $property_attributes['attributes']['type'];
+                    $type_schema = self::get_class_schema($type_classname);
 
-                  # we're going to define fore keys for this relationship
-                  if (!isset($property_attributes['attributes']['relationship'])) {
-                  # relationship must be deffined in comments!
-                      throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
-                  }
+                    # we're going to define fore keys for this relationship
+                    if (!isset($property_attributes['attributes']['relationship'])) {
+                        # relationship must be deffined in comments!
+                        throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                    }
 
-                  switch ($property_attributes['attributes']['relationship']) {
-                      case 'childs':
+                    switch ($property_attributes['attributes']['relationship']) {
+                        case 'childs':
 
-                        $conditions = '';
+                            $conditions = '';
 
-                        foreach ($sql_schema['primary_key'] as $primary_key) {
+                            foreach ($sql_schema['primary_key'] as $primary_key) {
 
-                             if (!empty($conditions))
-                              $conditions .= " AND ";
+                                if (!empty($conditions))
+                                    $conditions .= " AND ";
 
-                              $value = $sql_schema['fields'][$primary_key]['value'];
+                                $value = $sql_schema['fields'][$primary_key]['value'];
 
-                              $field = $sql_schema['table_name'].'_'.$primary_key;
+                                $field = $sql_schema['table_name'].'_'.$primary_key;
 
-                              $conditions .= " $field = '$value' ";
+                                $conditions .= " $field = '$value' ";
 
-                        }
-                        /*TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
-                          // parents doesnt need a sql property for their childs
-                          $childs = self::get($type_classname, $conditions);
+                            }
+                            /*TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
+                            // parents doesnt need a sql property for their childs
+                            $childs = self::get($type_classname, $conditions);
 
 
-                          // asignamos los childs at last
+                            // asignamos los childs at last
 
-                          $object->$property_name = $childs;
+                            $object->$property_name = $childs;
 
-                          break;
-                      case 'parent':             
+                            break;
+                        case 'parent':
                         //
-                        
-                          $type_sql_schema = self::get_sql_table_schema($type_classname);
 
-                          $fore_keys = array();
+                            $type_sql_schema = self::get_sql_table_schema($type_classname);
 
-                          foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
+                            $fore_keys = array();
 
-
-                              $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
-
-                              $fore_keys[$type_primary_key] = $object->$sql_field;
-
-                              if (!in_array($sql_field,array_keys($obj_schema['properties'])))
-                              unset($object->$sql_field); # remove property because it was not defined in the original class
-
-                          }
-
-                          $object->$property_name = self::get_by_id($type_classname, $fore_keys);
-                        
-
-                          
+                            foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
 
 
-                          break;
-                      }
+                                $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
+
+                                $fore_keys[$type_primary_key] = $object->$sql_field;
+
+                                if (!in_array($sql_field,array_keys($obj_schema['properties'])))
+                                    unset($object->$sql_field); # remove property because it was not defined in the original class
+
+                            }
+
+                            $object->$property_name = self::get_by_id($type_classname, $fore_keys);
+
+
+
+
+
+                            break;
+                    }
+                }
             }
-          }
 
         }
     }
