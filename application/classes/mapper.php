@@ -646,7 +646,7 @@ class Mapper {
             return;
         }
 
-        $sql = "SELECT {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
+        $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
 
         // create relationship properties with left joins
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
