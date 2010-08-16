@@ -6,15 +6,12 @@ class IndexController extends Controller {
         require (Application::get_site_path().'application/models/item.php');
         require (Application::get_site_path().'application/models/header.php');
 
-        /*
+        
         // testing loading
         echo '<pre>';
         var_dump(Mapper::get_by_id('Header', 1));
         die();
-        echo '<pre>';
-        var_dump(Mapper::get_by_id('Item', 2));
-        die();
-        */
+        
 
         /*
         // testing removing item 1
@@ -72,6 +69,8 @@ class IndexController extends Controller {
         $header->items[] = $object;
 
         Mapper::save($header);
+
+//        Mapper::delete($header);
 
     }
 }
