@@ -35,7 +35,7 @@ class Header
      * relationship: childs
      * inverse_property: header
      */
-    public $items = array();
+    public $items;
 
     //@ end fields
 }

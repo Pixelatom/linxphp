@@ -265,7 +265,7 @@ class Mapper {
                         $inverse = $property_attributes['attributes']['inverse_property'];
 
                         $object->$property_name->$inverse = $object;
-                        
+
                     }
 
                     self::save($object->$property_name);
@@ -639,15 +639,84 @@ class Mapper {
             return;
     }
     static public function get($classname,$conditions=null) {
+        $obj_schema = self::get_class_schema($classname);
         $sql_schema = self::get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
             return;
         }
 
-        $sql = "SELECT * FROM {$sql_schema['table_name']}";
+        $sql = "SELECT {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
+
+        // create relationship properties with left joins
+        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+
+
+            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+
+                $type_classname = $property_attributes['attributes']['type'];
+                $type_schema = self::get_class_schema($type_classname);
+                $type_sql_schema = self::get_sql_table_schema($type_classname);
+
+                # we're going to define fore keys for this relationship
+                if (!isset($property_attributes['attributes']['relationship'])) {
+                    # relationship must be deffined in comments!
+                    throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                }
+                $join_condition = '';
+
+                switch ($property_attributes['attributes']['relationship']) {
+                    case 'childs':                       
+
+                        foreach ($sql_schema['primary_key'] as $primary_key) {
+
+                            if (!empty($join_condition))
+                                $join_condition .= " AND ";
+
+                           
+
+                            $field = $sql_schema['table_name'].'_'.$primary_key;
+
+                            $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
+
+                        }
+
+
+
+                        break;
+                    case 'parent':
+                    //
+
+                        foreach ($type_sql_schema['primary_key'] as $primary_key) {
+
+                            if (!empty($join_condition))
+                                $join_condition .= " AND ";
+
+
+
+                            $field = $type_sql_schema['table_name'].'_'.$primary_key;
+
+                            $join_condition .= " {$sql_schema['table_name']}.$field = {$property_name}.$primary_key ";
+
+                        }
+
+
+
+
+
+                        break;
+
+                }
+
+                $sql .= " left join {$type_sql_schema['table_name']} {$property_name}  on $join_condition ";
+            }
+        }
+
+
         if (!empty ($conditions))
             $sql .= " WHERE $conditions";
+
+        //die($sql);
 
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
 
@@ -680,7 +749,9 @@ class Mapper {
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-
+            // solamente llenamos la propiedad si es null.. pero es un problema, porque
+            // si en el constructor le asigna otra cosa no lo va a llenar. se deberia usar
+            // algun tipo de bandera
             if (is_null($object->$property_name)) {
 
                 if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
@@ -711,6 +782,8 @@ class Mapper {
                                 $conditions .= " $field = '$value' ";
 
                             }
+
+
                             /*TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
                             // parents doesnt need a sql property for their childs
                             $childs = self::get($type_classname, $conditions);
