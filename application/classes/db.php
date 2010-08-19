@@ -118,27 +118,19 @@ class DB {
   }
 
   static public function table_exists($tableName){
-    try
-    {
-      // ANSI SQL way.  Works in PostgreSQL, MSSQL, MySQL.
-      $cmd = "select case when exists((select * from information_schema.tables where table_name = '" .$tableName. "')) then 1 else 0 end";
-
-      $exists = ((int) self::query_scalar($cmd)) == 1;
-    }
-    catch (Exception $e)
-    {
+    
       try
       {
         // Other RDBMS.  Graceful degradation
         $exists = true;
-        $cmdOthers = "select 1 from " . $tableName . " where 1 = 0";
+        $cmdOthers = "select 1 from `" . $tableName . "` where 1 = 0";
         self::query($cmdOthers);
       }
       catch(Exception $e1)
       {
         $exists = false;
       }
-    }
+    
 
     return $exists;
   }
