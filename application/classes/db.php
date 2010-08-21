@@ -118,7 +118,8 @@ class DB {
   }
 
   static public function table_exists($tableName){
-    
+    if(!self::$link)
+    self::connect();
       try
       {
         // Other RDBMS.  Graceful degradation
