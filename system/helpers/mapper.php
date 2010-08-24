@@ -491,9 +491,9 @@ class Mapper {
 
     /*
      * Cache functions
+     * every object is stored in cache so it's possible to use always the
+     * same instance of an object
     */
-
-
     static protected function add_to_cache($object) {
         $classname = get_class($object);
 
@@ -576,7 +576,83 @@ class Mapper {
     /*
      * End Cache functions
     */
+    
+    /*
+     * utility function
+     */
+    static protected function build_select_query($classname,$conditions=null){
+        $obj_schema = self::get_class_schema($classname);
+        $sql_schema = self::get_sql_table_schema($classname);
 
+        if (!db::table_exists($sql_schema['table_name'])) {
+            return;
+        }
+
+        $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
+
+        // create relationship properties with left joins
+        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+
+                $type_classname = $property_attributes['attributes']['type'];
+                $type_schema = self::get_class_schema($type_classname);
+                $type_sql_schema = self::get_sql_table_schema($type_classname);
+
+                # we're going to define fore keys for this relationship
+                if (!isset($property_attributes['attributes']['relationship'])) {
+                    # relationship must be deffined in comments!
+                    throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                }
+                $join_condition = '';
+
+                switch ($property_attributes['attributes']['relationship']) {
+                    case 'childs':
+                        foreach ($sql_schema['primary_key'] as $primary_key) {
+
+                            if (!empty($join_condition))
+                                $join_condition .= " AND ";
+                            $field = $sql_schema['table_name'].'_'.$primary_key;
+
+                            $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
+
+                        }
+                        break;
+                    case 'parent':
+
+                        foreach ($type_sql_schema['primary_key'] as $primary_key) {
+
+                            if (!empty($join_condition))
+                                $join_condition .= " AND ";
+
+                            $field = $type_sql_schema['table_name'].'_'.$primary_key;
+
+                            $join_condition .= " {$sql_schema['table_name']}.$field = {$property_name}.$primary_key ";
+
+                        }
+                        break;
+
+                }
+
+                $sql .= " left join {$type_sql_schema['table_name']} {$property_name}  on $join_condition ";
+            }
+        }
+
+
+        if (!empty ($conditions))
+            $sql .= " WHERE $conditions";
+
+        return $sql;
+    }
+    /*
+     * SQL Functions wrapers
+     */
+    static public function count($classname,$conditions=null){
+        $sql = self::build_select_query($classname, $conditions);
+        
+        $sql = "select count(1) from ($sql) as selectquery";
+
+        return db::query_scalar($sql);
+    }
     /*
      * Loads one object by id -uses cache
     */
@@ -641,84 +717,7 @@ class Mapper {
             return;
     }
     static public function get($classname,$conditions=null) {
-        $obj_schema = self::get_class_schema($classname);
-        $sql_schema = self::get_sql_table_schema($classname);
-
-        if (!db::table_exists($sql_schema['table_name'])) {
-            return;
-        }
-
-        $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
-
-        // create relationship properties with left joins
-        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-
-
-            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
-
-                $type_classname = $property_attributes['attributes']['type'];
-                $type_schema = self::get_class_schema($type_classname);
-                $type_sql_schema = self::get_sql_table_schema($type_classname);
-
-                # we're going to define fore keys for this relationship
-                if (!isset($property_attributes['attributes']['relationship'])) {
-                    # relationship must be deffined in comments!
-                    throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
-                }
-                $join_condition = '';
-
-                switch ($property_attributes['attributes']['relationship']) {
-                    case 'childs':                       
-
-                        foreach ($sql_schema['primary_key'] as $primary_key) {
-
-                            if (!empty($join_condition))
-                                $join_condition .= " AND ";
-
-                           
-
-                            $field = $sql_schema['table_name'].'_'.$primary_key;
-
-                            $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
-
-                        }
-
-
-
-                        break;
-                    case 'parent':
-                    //
-
-                        foreach ($type_sql_schema['primary_key'] as $primary_key) {
-
-                            if (!empty($join_condition))
-                                $join_condition .= " AND ";
-
-
-
-                            $field = $type_sql_schema['table_name'].'_'.$primary_key;
-
-                            $join_condition .= " {$sql_schema['table_name']}.$field = {$property_name}.$primary_key ";
-
-                        }
-
-
-
-
-
-                        break;
-
-                }
-
-                $sql .= " left join {$type_sql_schema['table_name']} {$property_name}  on $join_condition ";
-            }
-        }
-
-
-        if (!empty ($conditions))
-            $sql .= " WHERE $conditions";
-
-        //die($sql);
+        $sql = self::build_select_query($classname, $conditions);
 
         $return = db::query($sql, $fields_values = array(),$bind_params = array(),$classname);
 
@@ -808,6 +807,7 @@ class Mapper {
 
                                 $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
 
+                                // if the id is null then there is not an object related to it
                                 if ($object->$sql_field == NULL)
                                         break 2;
 

@@ -3,8 +3,9 @@
 
 class IndexController extends Controller {
     function index() {
-        $t = new Template('index');
-        $t->show();
+
+        die (Mapper::count('item'));
+
         
 //        Mapper::get('Item', "header.title = 'test' ");
 //        Mapper::get('Header', "items.title = 'another object' ");
