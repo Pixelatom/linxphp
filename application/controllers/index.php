@@ -3,9 +3,8 @@
 
 class IndexController extends Controller {
     function index() {
-        require (Application::get_site_path().'application/models/item.php');
-        require (Application::get_site_path().'application/models/header.php');
 
+        
 //        Mapper::get('Item', "header.title = 'test' ");
 //        Mapper::get('Header', "items.title = 'another object' ");
 

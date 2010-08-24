@@ -22,6 +22,7 @@ $app_config=array(
         'controllers'=>'application/controllers',
         'classes'=>'application/classes',
         'hooks'=>'application/hooks',
+        'models'=>'application/models',
     ),
     'errors'=>array(
         'useexceptions'=>false,
@@ -51,7 +52,12 @@ Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directo
 Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','controllers'));    
 
 // application classes
+if (file_exists(Application::get_site_path().Configuration::get('paths','classes')))
 Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','classes'));
+
+// models classes
+if (file_exists(Application::get_site_path().Configuration::get('paths','models')))
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','models'));
 
 /*
  * PHP autoload behavior is configured here, so it make use of the Application class configuration.
@@ -90,9 +96,11 @@ include_once('includes/errorexeption.php');
 $hookdirs=array();
 # loads system hooks
 $hookdirs[] = new DirectoryIterator(realpath(dirname(__FILE__).'/hooks/'));
-# application hooks
 
-$hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','hooks').'/'));
+# application hooks
+if (file_exists(Application::get_site_path().Configuration::get('paths','hooks'))){
+    $hookdirs[] = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','hooks').'/'));
+}
 
 
 foreach ($hookdirs as $dir){
