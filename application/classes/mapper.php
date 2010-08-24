@@ -236,9 +236,10 @@ class Mapper {
      * Stupid function
     */
     static public function save($object) {
-        if (self::update($object)==0) {
+        $update = self::update($object);
+        if ($update ==0) {
             try {
-                self::insert($object);
+                return self::insert($object);
             }
             catch(PDOException $e ) {
                 // if there where an update == 0 because the object wasn't modified
@@ -246,6 +247,7 @@ class Mapper {
                 // we chatch here
             }
         }
+        return $update;
     }
 
     static protected function save_relationships($object) {
@@ -805,6 +807,9 @@ class Mapper {
 
 
                                 $sql_field = $type_sql_schema['table_name'].'_'.$type_primary_key;
+
+                                if ($object->$sql_field == NULL)
+                                        break 2;
 
                                 $fore_keys[$type_primary_key] = $object->$sql_field;
 
