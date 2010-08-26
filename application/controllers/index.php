@@ -10,9 +10,9 @@ class IndexController extends Controller {
 //        Mapper::get('Item', "header.title = 'test' ");
 //        Mapper::get('Header', "items.title = 'another object' ");
 
-        echo '<pre>';
-        var_dump(Mapper::get('Header', "items.title = 'another object' "));
-        die();
+//        echo '<pre>';
+//        var_dump(Mapper::get('Header', "items.title = 'another object' "));
+//        die();
 
 
         
