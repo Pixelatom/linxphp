@@ -807,7 +807,7 @@ class Mapper {
 
     static protected function fill_relationship($object) {
 
-        $obj_schema = self::get_class_schema($object);
+        $obj_schema = self::get_object_schema($object);
         
 
 
