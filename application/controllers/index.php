@@ -4,15 +4,16 @@
 class IndexController extends Controller {
     function index() {
 
-        die (Mapper::count('item'));
+        //die (Mapper::count('item'));
 
         
-//        Mapper::get('Item', "header.title = 'test' ");
+        //Mapper::get('Item', "header.title = 'test' ");
 //        Mapper::get('Header', "items.title = 'another object' ");
 
-//        echo '<pre>';
-//        var_dump(Mapper::get('Header', "items.title = 'another object' "));
-//        die();
+        echo '<pre>';
+        $item = Mapper::get('Item', "item.title = 'another object' ");
+        var_dump(isset($item[0]->header->items));
+        die();
 
 
         

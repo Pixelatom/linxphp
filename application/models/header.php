@@ -7,7 +7,7 @@
  * database: default
  * read_only: false
  */
-class Header
+class Header extends Model
 {
     //@ fields
 
@@ -34,6 +34,7 @@ class Header
      * type: Item
      * relationship: childs
      * inverse_property: header
+     * lazy_load: true
      */
     public $items;
 
