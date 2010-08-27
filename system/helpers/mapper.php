@@ -295,7 +295,7 @@ class Mapper {
 
             $fields_names[] = $field;
 
-            $value = $object->$field;
+            $value = $attributes['value'];
 
             if (!is_scalar($value) and !$value == null)
                 throw new Exception('Field Values must be scalars!');
@@ -336,7 +336,7 @@ class Mapper {
 
             $field_updates .= "$field = :$field";
 
-            $value = $object->$field;
+            $value = $attributes['value'];
 
 
             if (!is_scalar($value) and !$value == null)
@@ -421,8 +421,7 @@ class Mapper {
 
             $attributes = $sql_schema['fields'][$key];
 
-            //$value = $attributes['value'];
-            $value = $object->$key;
+            $value = $attributes['value'];
 
             # proccess value with hooks (just in case it needs to be processed)
             Event::run('mapper.process_field_value', $key, $attributes, $value);
@@ -489,8 +488,7 @@ class Mapper {
 
         foreach ($sql_schema['primary_key'] as $key) {
 
-            //$value = $sql_schema['fields'][$key]['value'];
-            $value = $object->$key;
+            $value = $sql_schema['fields'][$key]['value'];
 
             $id[$key] = (string) $value;
         }
@@ -509,8 +507,7 @@ class Mapper {
 
         foreach ($sql_schema['primary_key'] as $key) {
 
-            //$value = $sql_schema['fields'][$key]['value'];
-            $value = $object->$key;
+            $value = $sql_schema['fields'][$key]['value'];
 
             $id[$key] = (string) $value;
         }
@@ -755,8 +752,7 @@ class Mapper {
                         if (!empty($conditions))
                             $conditions .= " AND ";
 
-                        //$value = $sql_schema['fields'][$primary_key]['value'];
-                        $value = $object->$primary_key;
+                        $value = $sql_schema['fields'][$primary_key]['value'];
 
                         $field = $sql_schema['table_name'] . '_' . $primary_key;
 
