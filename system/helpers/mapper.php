@@ -72,8 +72,7 @@ class Mapper {
         $schema = self::get_class_schema(get_class($object));
 
         foreach ($schema['properties'] as $property => &$prop) {
-
-            if (isset($object->$property))
+            if (!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load']==false)
             $prop['value'] = $object->$property;
         }
         return $schema;
@@ -725,7 +724,7 @@ class Mapper {
     }
 
     static public function _load_relationship($object, $property_name) {
-        $obj_schema = self::get_object_schema($object);
+        $obj_schema = self::get_class_schema(get_class($object));
         $sql_schema = self::get_sql_table_schema($object);
 
         $property_attributes = $obj_schema['properties'][$property_name];
@@ -808,7 +807,7 @@ class Mapper {
 
     static protected function fill_relationship($object) {
 
-        $obj_schema = self::get_object_schema($object);
+        $obj_schema = self::get_class_schema($object);
         
 
 
@@ -820,13 +819,14 @@ class Mapper {
                 if (is_null($object->$property_name)) {
                     Mapper::_load_relationship($object,$property_name);
                 }
-            }
-            elseif($property_attributes['attributes']['lazy_load'] == true){
+            }elseif(isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true){
                 // if the property is set to be loaded when requested, we'll unset it now
                 unset($object->$property_name);
             }
 
         }
+
+        
     }
 
 }

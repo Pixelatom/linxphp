@@ -1,6 +1,12 @@
 <?php
 abstract class Model{
-    
+    function  __isset($name) {
+        $class_name = get_class($this);
+        $function = new ReflectionClass($class_name);
+        $properties = $function->getDefaultProperties();
+
+        return (array_key_exists($name,$properties));
+    }
     function  __get($name) {
         $class_name = get_class($this);
         $function = new ReflectionClass($class_name);
