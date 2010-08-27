@@ -8,11 +8,13 @@ abstract class Model{
         return (array_key_exists($name,$properties));
     }
     function  __get($name) {
+       
         $class_name = get_class($this);
         $function = new ReflectionClass($class_name);
         $properties = $function->getDefaultProperties();
         
         if (array_key_exists($name,$properties)){
+            
             Mapper::_load_relationship($this,$name);
             return $this->$name;
         }
