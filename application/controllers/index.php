@@ -12,7 +12,7 @@ class IndexController extends Controller {
 
         echo '<pre>';
         $item = Mapper::get('Item', "item.title = 'another object' ");
-        var_dump($item[0]->header);
+        var_dump($item[0]->header->items);
         die();
 
 
