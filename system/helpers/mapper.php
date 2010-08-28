@@ -74,8 +74,7 @@ class Mapper {
         foreach ($schema['properties'] as $property => &$prop) {
             if (!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load']==false)
             $prop['value'] = $object->$property;
-//            else
-//            $prop['value'] = null;
+
         }
         return $schema;
     }
@@ -105,7 +104,7 @@ class Mapper {
 
             $field = array();
 
-            //$field['name'] = $property_name;
+            $field['name'] = $property_name;
 
             $field['value'] = $property_attributes['value'];
 
@@ -172,7 +171,10 @@ class Mapper {
                                     // childs must define the relationship to a parent in SQL
                                     //case 'childs':
                                     // we will add fore keys to this table
-
+                                    
+                                    // force loading just in case it's lazy load
+                                    if (is_object($object_or_classname))
+                                    $property_attributes['value']=$object_or_classname->$property_name;
                                     if (is_object($property_attributes['value']))
                                     // if the relationship is not empty we'll get the values for the fields
                                         $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
@@ -247,7 +249,7 @@ class Mapper {
 
 
             if (isset($property_attributes['attributes']['relationship']) and $property_attributes['attributes']['relationship'] == 'childs') {
-
+                // save child objects using inverse property name
                 if (is_object($object->$property_name)) {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
                         throw new Exception("Wrong class type in child object");
@@ -261,12 +263,16 @@ class Mapper {
 
                     self::save($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
+
                     foreach ($object->$property_name as $child) {
+                        
                         if (isset($property_attributes['attributes']['inverse_property'])) {
 
                             $inverse = $property_attributes['attributes']['inverse_property'];
 
                             $child->{$inverse} = $object;
+
+                            
                         }
                         self::save($child);
                     }
@@ -337,6 +343,7 @@ class Mapper {
             $field_updates .= "$field = :$field";
 
             $value = $attributes['value'];
+            //$value = $object->{$attributes['name']};
 
 
             if (!is_scalar($value) and !$value == null)

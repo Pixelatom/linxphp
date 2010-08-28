@@ -10,10 +10,10 @@ class IndexController extends Controller {
         //Mapper::get('Item', "header.title = 'test' ");
 //        Mapper::get('Header', "items.title = 'another object' ");
 
-        echo '<pre>';
-        $item = Mapper::get('Item', "item.title = 'another object' ");
-        var_dump($item[0]->header->items);
-        die();
+//        echo '<pre>';
+//        $item = Mapper::get('Item', "item.title = 'another object' ");
+//        var_dump(is_array($item[0]->header->items));
+//        die();
 
 
         
@@ -59,7 +59,7 @@ class IndexController extends Controller {
         
         // testing relationships
         $header = new Header();
-        $header->id = 1;
+        $header->id = 2;
         $header->title = 'test';
         
         $object = new Item();
