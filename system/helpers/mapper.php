@@ -717,7 +717,7 @@ class Mapper {
     }
 
     static public function get($classname, $conditions=null,$order_by=null) {
-        $sql = self::build_select_query($classname, $conditions,$order_by=null);
+        $sql = self::build_select_query($classname, $conditions,$order_by);
 
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
