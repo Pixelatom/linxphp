@@ -572,7 +572,7 @@ class Mapper {
      * utility function
      */
 
-    static protected function build_select_query($classname, $conditions=null) {
+    static protected function build_select_query($classname, $conditions=null,$order_by=null) {
         $obj_schema = self::get_class_schema($classname);
         $sql_schema = self::get_sql_table_schema($classname);
 
@@ -630,6 +630,9 @@ class Mapper {
         if (!empty($conditions))
             $sql .= " WHERE $conditions";
 
+        if (!empty($order_by))
+            $sql .= " ORDER BY $order_by";
+
         return $sql;
     }
 
@@ -649,7 +652,7 @@ class Mapper {
      * Loads one object by id -uses cache
      */
 
-    static public function get_by_id($classname, $id) {
+    static public function get_by_id($classname, $id,$order_by=null) {
         $sql_schema = self::get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
@@ -698,6 +701,9 @@ class Mapper {
 
         $sql .= " WHERE $where_id";
 
+        if (!empty($order_by))
+            $sql .= " ORDER BY $order_by";
+
 
         $results = db::query($sql, $fields_values, $bind_params, $classname);
 
@@ -710,8 +716,8 @@ class Mapper {
             return;
     }
 
-    static public function get($classname, $conditions=null) {
-        $sql = self::build_select_query($classname, $conditions);
+    static public function get($classname, $conditions=null,$order_by=null) {
+        $sql = self::build_select_query($classname, $conditions,$order_by=null);
 
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
