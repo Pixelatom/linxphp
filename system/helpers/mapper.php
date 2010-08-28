@@ -582,6 +582,7 @@ class Mapper {
 
         $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
 
+
         // create relationship properties with left joins
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
             if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
