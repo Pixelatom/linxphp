@@ -14,7 +14,6 @@ abstract class Model{
         $properties = $function->getDefaultProperties();
         
         if (array_key_exists($name,$properties)){
-            
             Mapper::_load_relationship($this,$name);
             return $this->$name;
         }

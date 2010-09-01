@@ -72,9 +72,8 @@ class Mapper {
         $schema = self::get_class_schema(get_class($object));
 
         foreach ($schema['properties'] as $property => &$prop) {
-            if (!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load']==false)
-            $prop['value'] = $object->$property;
-
+            if (!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load'] == false)
+                $prop['value'] = $object->$property;
         }
         return $schema;
     }
@@ -169,12 +168,14 @@ class Mapper {
                                     break;
                                 case 'parent':
                                     // childs must define the relationship to a parent in SQL
-                                    //case 'childs':
-                                    // we will add fore keys to this table
                                     
+                                    // we will add fore keys to this table
+
                                     // force loading just in case it's lazy load
-                                    if (is_object($object_or_classname))
-                                    $property_attributes['value']=$object_or_classname->$property_name;
+                                    // TODO: remove force loading from here.
+                                    //if (is_object($object_or_classname))
+                                        //$property_attributes['value'] = $object_or_classname->$property_name;
+
                                     if (is_object($property_attributes['value']))
                                     // if the relationship is not empty we'll get the values for the fields
                                         $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
@@ -190,7 +191,7 @@ class Mapper {
                                         $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
                                         $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
-                                        $schema['fields'][$type_sql_schema['table_name'] . '_' . $type_primary_key] = $field;
+                                        $schema['fields'][$property_name . '_' . $type_primary_key] = $field;
                                     }
 
                                     break;
@@ -243,6 +244,9 @@ class Mapper {
     }
 
     static protected function save_relationships($object) {
+        // force loading of lazy load properties
+        self::fill_relationship($object,true);
+
         $obj_schema = self::get_object_schema($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
@@ -265,14 +269,12 @@ class Mapper {
                 } elseif (is_array($object->$property_name)) {
 
                     foreach ($object->$property_name as $child) {
-                        
+
                         if (isset($property_attributes['attributes']['inverse_property'])) {
 
                             $inverse = $property_attributes['attributes']['inverse_property'];
 
                             $child->{$inverse} = $object;
-
-                            
                         }
                         self::save($child);
                     }
@@ -286,6 +288,7 @@ class Mapper {
      */
 
     static public function insert($object) {
+
         self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -324,6 +327,7 @@ class Mapper {
     }
 
     static public function update($object) {
+
         self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -378,6 +382,9 @@ class Mapper {
     }
 
     static protected function delete_relationships($object) {
+        // force loading of lazy load properties
+        self::fill_relationship($object,true);
+
         $obj_schema = self::get_object_schema($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
@@ -572,7 +579,7 @@ class Mapper {
      * utility function
      */
 
-    static protected function build_select_query($classname, $conditions=null,$order_by=null) {
+    static protected function build_select_query($classname, $conditions=null, $order_by=null) {
         $obj_schema = self::get_class_schema($classname);
         $sql_schema = self::get_sql_table_schema($classname);
 
@@ -604,7 +611,7 @@ class Mapper {
 
                             if (!empty($join_condition))
                                 $join_condition .= " AND ";
-                            $field = $sql_schema['table_name'] . '_' . $primary_key;
+                            $field = $property_name . '_' . $primary_key;
 
                             $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
                         }
@@ -616,7 +623,7 @@ class Mapper {
                             if (!empty($join_condition))
                                 $join_condition .= " AND ";
 
-                            $field = $type_sql_schema['table_name'] . '_' . $primary_key;
+                            $field = $property_name . '_' . $primary_key;
 
                             $join_condition .= " {$sql_schema['table_name']}.$field = {$property_name}.$primary_key ";
                         }
@@ -653,7 +660,7 @@ class Mapper {
      * Loads one object by id -uses cache
      */
 
-    static public function get_by_id($classname, $id,$order_by=null) {
+    static public function get_by_id($classname, $id, $order_by=null) {
         $sql_schema = self::get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
@@ -717,8 +724,8 @@ class Mapper {
             return;
     }
 
-    static public function get($classname, $conditions=null,$order_by=null) {
-        $sql = self::build_select_query($classname, $conditions,$order_by);
+    static public function get($classname, $conditions=null, $order_by=null) {
+        $sql = self::build_select_query($classname, $conditions, $order_by);
 
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
@@ -768,7 +775,7 @@ class Mapper {
 
                         $value = $sql_schema['fields'][$primary_key]['value'];
 
-                        $field = $sql_schema['table_name'] . '_' . $primary_key;
+                        $field = $property_name . '_' . $primary_key;
 
                         $conditions .= " $field = '$value' ";
                     }
@@ -794,7 +801,7 @@ class Mapper {
                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
 
 
-                        $sql_field = $type_sql_schema['table_name'] . '_' . $type_primary_key;
+                        $sql_field = $property_name . '_' . $type_primary_key;
 
                         // if the id is null then there is not an object related to it
                         if ($object->$sql_field == NULL)
@@ -821,27 +828,30 @@ class Mapper {
      * Complete relationship properties on load
      */
 
-    static protected function fill_relationship($object) {
+    static protected function fill_relationship($object,$force_loading=false) {
 
-        $obj_schema = self::get_object_schema($object);       
+        $obj_schema = self::get_object_schema($object);
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-            // first we check the property doesnt do lazy load
-            if (!isset($property_attributes['attributes']['lazy_load']) or $property_attributes['attributes']['lazy_load'] == false) {
+            // check only properties of an object type
+            if (isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])){
+                // first we check the property doesnt do lazy load
+                if ((!array_key_exists('lazy_load', $property_attributes['attributes'])
+                        or $property_attributes['attributes']['lazy_load'] === false)
+                        or ($force_loading==true and $property_attributes['attributes']['relationship']=='childs')) {
 
-                // only fill null properties
-                if (is_null($object->$property_name)) {
-                    Mapper::_load_relationship($object,$property_name);
+                    // only fill null properties
+                    if (is_null($object->$property_name)) {
+                        Mapper::_load_relationship($object, $property_name);
+                    }
+                } elseif (isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true) {
+                    // if the property is set to be loaded when requested, we'll unset it now
+                    unset($object->$property_name);
                 }
-            }elseif(isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true){
-                // if the property is set to be loaded when requested, we'll unset it now
-                unset($object->$property_name);
             }
-
+            
         }
-
-        
     }
 
 }
