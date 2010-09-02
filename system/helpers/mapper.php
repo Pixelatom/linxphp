@@ -72,7 +72,9 @@ class Mapper {
         $schema = self::get_class_schema(get_class($object));
 
         foreach ($schema['properties'] as $property => &$prop) {
-            if (!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load'] == false)
+            // we'll ask this condition to avoid force loading of lazy loading properties
+            if ((!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load'] == false)
+                    or isset($object->$property))
                 $prop['value'] = $object->$property;
         }
         return $schema;
@@ -168,13 +170,11 @@ class Mapper {
                                     break;
                                 case 'parent':
                                     // childs must define the relationship to a parent in SQL
-                                    
                                     // we will add fore keys to this table
-
                                     // force loading just in case it's lazy load
                                     // TODO: remove force loading from here.
                                     //if (is_object($object_or_classname))
-                                        //$property_attributes['value'] = $object_or_classname->$property_name;
+                                    //$property_attributes['value'] = $object_or_classname->$property_name;
 
                                     if (is_object($property_attributes['value']))
                                     // if the relationship is not empty we'll get the values for the fields
@@ -245,7 +245,7 @@ class Mapper {
 
     static protected function save_relationships($object) {
         // force loading of lazy load properties
-        self::fill_relationship($object,true);
+        self::fill_relationship($object, true);
 
         $obj_schema = self::get_object_schema($object);
 
@@ -383,7 +383,7 @@ class Mapper {
 
     static protected function delete_relationships($object) {
         // force loading of lazy load properties
-        self::fill_relationship($object,true);
+        self::fill_relationship($object, true);
 
         $obj_schema = self::get_object_schema($object);
 
@@ -756,6 +756,7 @@ class Mapper {
 
             $type_classname = $property_attributes['attributes']['type'];
             $type_schema = self::get_class_schema($type_classname);
+            $type_sql_schema = self::get_sql_table_schema($type_classname);
 
             # we're going to define fore keys for this relationship
             if (!isset($property_attributes['attributes']['relationship'])) {
@@ -775,7 +776,8 @@ class Mapper {
 
                         $value = $sql_schema['fields'][$primary_key]['value'];
 
-                        $field = $property_name . '_' . $primary_key;
+                        $field = $type_sql_schema['table_name'] . '.' . $primary_key;
+//                        $field = $primary_key;
 
                         $conditions .= " $field = '$value' ";
                     }
@@ -794,7 +796,8 @@ class Mapper {
                 case 'parent':
                     //
 
-                    $type_sql_schema = self::get_sql_table_schema($type_classname);
+                    
+
 
                     $fore_keys = array();
 
@@ -803,17 +806,20 @@ class Mapper {
 
                         $sql_field = $property_name . '_' . $type_primary_key;
 
-                        // if the id is null then there is not an object related to it
-                        if ($object->$sql_field == NULL)
-                            return;
 
-                        $fore_keys[$type_primary_key] = $object->$sql_field;
+                        // if the id is null then there is not an object related to it
+                        if ($object->$sql_field == NULL) {
+                            $object->$property_name = null;
+                        } else {
+                            $fore_keys[$type_primary_key] = $object->$sql_field;
+                        }
 
                         if (!in_array($sql_field, array_keys($obj_schema['properties'])))
                             unset($object->$sql_field);# remove property because it was not defined in the original class
                     }
 
-                    $object->$property_name = self::get_by_id($type_classname, $fore_keys);
+                    if (!empty($fore_keys))
+                        $object->$property_name = self::get_by_id($type_classname, $fore_keys);
 
 
 
@@ -828,28 +834,36 @@ class Mapper {
      * Complete relationship properties on load
      */
 
-    static protected function fill_relationship($object,$force_loading=false) {
+    static protected function fill_relationship($object, $force_loading=false) {
 
         $obj_schema = self::get_object_schema($object);
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-            // check only properties of an object type
-            if (isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])){
-                // first we check the property doesnt do lazy load
-                if ((!array_key_exists('lazy_load', $property_attributes['attributes'])
-                        or $property_attributes['attributes']['lazy_load'] === false)
-                        or ($force_loading==true and $property_attributes['attributes']['relationship']=='childs')) {
+            
+                // check only properties of an object type
+                if (isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])) {
+                    // first we check the property doesnt do lazy load
+                    if ((!array_key_exists('lazy_load', $property_attributes['attributes']) or $property_attributes['attributes']['lazy_load'] === false)) {
+                        // only fill null properties
+                        if (is_null($object->$property_name)) {
+                            Mapper::_load_relationship($object, $property_name);
+                        }
+                    } elseif (isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true) {
+                        // rpoperty with lazy load
+                        if (!isset($object->$property_name)) {
+                            if ($force_loading == true /*and $property_attributes['attributes']['relationship'] == 'parent'*/)
+                            //force loading only by referencing the property
+                                $object->$property_name;
+                            else
+                            // if the property is set to be loaded when requested, we'll unset it now
+                                unset($object->$property_name);
 
-                    // only fill null properties
-                    if (is_null($object->$property_name)) {
-                        Mapper::_load_relationship($object, $property_name);
+                        }
+
+                        
                     }
-                } elseif (isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true) {
-                    // if the property is set to be loaded when requested, we'll unset it now
-                    unset($object->$property_name);
                 }
-            }
             
         }
     }
