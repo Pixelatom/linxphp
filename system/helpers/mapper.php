@@ -288,13 +288,15 @@ class Mapper {
      */
 
     static public function insert($object) {
-
-        self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
-
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
         }
+        
+        self::save_relationships($object);
+        
+
+        
 
         $fields_names = array();
         $fields_values = array();
@@ -327,15 +329,18 @@ class Mapper {
     }
 
     static public function update($object) {
-
-        self::save_relationships($object);
         $sql_schema = self::get_sql_table_schema($object);
-
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
             self::insert($object);
             return;
         }
+        
+        
+        self::save_relationships($object);
+        
+
+        
 
         $field_updates = '';
         $fields_values = array();
@@ -747,6 +752,7 @@ class Mapper {
     }
 
     static public function _load_relationship($object, $property_name) {
+        
         $obj_schema = self::get_object_schema($object);
         $sql_schema = self::get_sql_table_schema($object);
 
@@ -817,10 +823,13 @@ class Mapper {
                         if (!in_array($sql_field, array_keys($obj_schema['properties'])))
                             unset($object->$sql_field);# remove property because it was not defined in the original class
                     }
+                    
 
-                    if (!empty($fore_keys))
+                    if (!empty($fore_keys)){
+
                         $object->$property_name = self::get_by_id($type_classname, $fore_keys);
-
+                        
+                    }
 
 
 
