@@ -73,7 +73,7 @@ class Mapper {
 
         foreach ($schema['properties'] as $property => &$prop) {
             // we'll ask this condition to avoid force loading of lazy loading properties
-            if ((!isset($prop['attributes']['lazy_load']) or $prop['attributes']['lazy_load'] == false)
+            if ((!isset($prop['attributes']['relationship']['lazy_load']) or $prop['attributes']['relationship']['lazy_load'] == false)
                     or isset($object->$property))
                 $prop['value'] = $object->$property;
         }
@@ -92,8 +92,8 @@ class Mapper {
 
         $schema['table_name'] = $obj_schema['type'];
 
-        if (isset($schema['attributes']['table']))
-            $schema['table_name'] = $schema['attributes']['table'];
+        if (isset($obj_schema['attributes']['table']))
+            $schema['table_name'] = $obj_schema['attributes']['table'];
 
         $schema['fields'] = array();
 
@@ -159,12 +159,12 @@ class Mapper {
                             $type_schema = self::get_class_schema($type_classname);
 
                             # we're going to define fore keys for this relationship
-                            if (!isset($property_attributes['attributes']['relationship'])) {
+                            if (!isset($property_attributes['attributes']['relationship']['type'])) {
                                 # relationship must be deffined in comments!
                                 throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
                             }
-                            //die(    $property_attributes['attributes']['relationship']);
-                            switch ($property_attributes['attributes']['relationship']) {
+                            //die(    $property_attributes['attributes']['relationship']['type']);
+                            switch ($property_attributes['attributes']['relationship']['type']) {
                                 case 'childs':
                                     // parents doesnt need a sql property for their childs
                                     break;
@@ -257,15 +257,15 @@ class Mapper {
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
 
-            if (isset($property_attributes['attributes']['relationship']) and $property_attributes['attributes']['relationship'] == 'childs') {
+            if (isset($property_attributes['attributes']['relationship']['type']) and $property_attributes['attributes']['relationship']['type'] == 'childs') {
                 // save child objects using inverse property name
                 if (is_object($object->$property_name)) {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
                         throw new Exception("Wrong class type in child object");
                     }
 
-                    if (isset($property_attributes['attributes']['inverse_property'])) {
-                        $inverse = $property_attributes['attributes']['inverse_property'];
+                    if (isset($property_attributes['attributes']['relationship']['inverse_property'])) {
+                        $inverse = $property_attributes['attributes']['relationship']['inverse_property'];
 
                         $object->$property_name->$inverse = $object;
                     }
@@ -275,9 +275,9 @@ class Mapper {
 
                     foreach ($object->$property_name as $child) {
 
-                        if (isset($property_attributes['attributes']['inverse_property'])) {
+                        if (isset($property_attributes['attributes']['relationship']['inverse_property'])) {
 
-                            $inverse = $property_attributes['attributes']['inverse_property'];
+                            $inverse = $property_attributes['attributes']['relationship']['inverse_property'];
 
                             $child->{$inverse} = $object;
                         }
@@ -341,12 +341,11 @@ class Mapper {
         $sql_schema = self::get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
-            return self::insert($object);
-            //return;
+            return false;
         }
-        
-         $sql_schema = self::get_sql_table_schema($object);
         self::save_relationships($object);
+         $sql_schema = self::get_sql_table_schema($object);
+        
         
 
         
@@ -403,7 +402,7 @@ class Mapper {
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
-            if (isset($property_attributes['attributes']['relationship']) and $property_attributes['attributes']['relationship'] == 'childs') {
+            if (isset($property_attributes['attributes']['relationship']['type']) and $property_attributes['attributes']['relationship']['type'] == 'childs') {
 
                 if (is_object($object->$property_name)) {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
@@ -614,13 +613,13 @@ class Mapper {
                 $type_sql_schema = self::get_sql_table_schema($type_classname);
 
                 # we're going to define fore keys for this relationship
-                if (!isset($property_attributes['attributes']['relationship'])) {
+                if (!isset($property_attributes['attributes']['relationship']['type'])) {
                     # relationship must be deffined in comments!
                     throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
                 }
                 $join_condition = '';
 
-                switch ($property_attributes['attributes']['relationship']) {
+                switch ($property_attributes['attributes']['relationship']['type']) {
                     case 'childs':
                         foreach ($sql_schema['primary_key'] as $primary_key) {
 
@@ -777,16 +776,16 @@ class Mapper {
             $type_sql_schema = self::get_sql_table_schema($type_classname);
 
             # we're going to define fore keys for this relationship
-            if (!isset($property_attributes['attributes']['relationship'])) {
+            if (!isset($property_attributes['attributes']['relationship']['type'])) {
                 # relationship must be deffined in comments!
                 throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
             }
 
-            switch ($property_attributes['attributes']['relationship']) {
+            switch ($property_attributes['attributes']['relationship']['type']) {
                 case 'childs':
 
                     # we're going to define fore keys for this relationship
-                    if (!isset($property_attributes['attributes']['inverse_property'])) {
+                    if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
                         # relationship must be deffined in comments!
                         throw new Exception("inverse_property attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
                     }
@@ -804,7 +803,7 @@ class Mapper {
 
                        // wrong condition builder, must use inverse property name instead property name
                        // $field = $type_sql_schema['table_name'] . '.' . $primary_key;
-                        $field =  $property_attributes['attributes']['inverse_property'] . '_' . $primary_key;
+                        $field =  $property_attributes['attributes']['relationship']['inverse_property'] . '_' . $primary_key;
 
 
                         $conditions .= " $field = '$value' ";
@@ -838,7 +837,7 @@ class Mapper {
 
 
                         // if the id is null then there is not an object related to it
-                        if ($object->$sql_field == NULL) {
+                        if (!isset($object->$sql_field) or $object->$sql_field == NULL) {
                             $object->$property_name = null;
                         } else {
                             $fore_keys[$type_primary_key] = $object->$sql_field;
@@ -877,15 +876,15 @@ class Mapper {
                 // check only properties of an object type
                 if (isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])) {
                     // first we check the property doesnt do lazy load
-                    if ((!array_key_exists('lazy_load', $property_attributes['attributes']) or $property_attributes['attributes']['lazy_load'] === false)) {
+                    if ((!array_key_exists('lazy_load', $property_attributes['attributes']) or $property_attributes['attributes']['relationship']['lazy_load'] === false)) {
                         // only fill null properties
                         if (is_null($object->$property_name)) {
                             Mapper::_load_relationship($object, $property_name);
                         }
-                    } elseif (isset($property_attributes['attributes']['lazy_load']) and $property_attributes['attributes']['lazy_load'] == true) {
+                    } elseif (isset($property_attributes['attributes']['relationship']['lazy_load']) and $property_attributes['attributes']['relationship']['lazy_load'] == true) {
                         // rpoperty with lazy load
                         if (!isset($object->$property_name)) {
-                            if ($force_loading == true /*and $property_attributes['attributes']['relationship'] == 'parent'*/)
+                            if ($force_loading == true /*and $property_attributes['attributes']['relationship']['type'] == 'parent'*/)
                             //force loading only by referencing the property
                                 $object->$property_name;
                             else
