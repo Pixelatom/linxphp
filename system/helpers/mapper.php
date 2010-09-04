@@ -243,6 +243,11 @@ class Mapper {
         return $update;
     }
 
+    /*
+     * saves childs properties
+     * @TODO: avoid force loading of lazy load properties
+     * instead do not save childs elements never loaded
+     */
     static protected function save_relationships($object) {
         // force loading of lazy load properties
         self::fill_relationship($object, true);
@@ -292,8 +297,12 @@ class Mapper {
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
         }
-        
+
+        //
+        // LOAD and save childs properties
         self::save_relationships($object);
+
+        $sql_schema = self::get_sql_table_schema($object);
         
 
         
@@ -332,11 +341,11 @@ class Mapper {
         $sql_schema = self::get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
             self::create_table($object);
-            self::insert($object);
-            return;
+            return self::insert($object);
+            //return;
         }
         
-        
+         $sql_schema = self::get_sql_table_schema($object);
         self::save_relationships($object);
         
 
@@ -589,7 +598,8 @@ class Mapper {
         $sql_schema = self::get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
-            return;
+            self::create_table($classname);
+            //return;
         }
 
         $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
@@ -731,6 +741,8 @@ class Mapper {
 
     static public function get($classname, $conditions=null, $order_by=null) {
         $sql = self::build_select_query($classname, $conditions, $order_by);
+//        if (empty($sql))
+//            die($conditions);
 
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
@@ -773,8 +785,16 @@ class Mapper {
             switch ($property_attributes['attributes']['relationship']) {
                 case 'childs':
 
+                    # we're going to define fore keys for this relationship
+                    if (!isset($property_attributes['attributes']['inverse_property'])) {
+                        # relationship must be deffined in comments!
+                        throw new Exception("inverse_property attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                    }
+
                     $conditions = '';
 
+
+                    
                     foreach ($sql_schema['primary_key'] as $primary_key) {
 
                         if (!empty($conditions))
@@ -782,11 +802,15 @@ class Mapper {
 
                         $value = $sql_schema['fields'][$primary_key]['value'];
 
-                        $field = $type_sql_schema['table_name'] . '.' . $primary_key;
-//                        $field = $primary_key;
+                       // wrong condition builder, must use inverse property name instead property name
+                       // $field = $type_sql_schema['table_name'] . '.' . $primary_key;
+                        $field =  $property_attributes['attributes']['inverse_property'] . '_' . $primary_key;
+
 
                         $conditions .= " $field = '$value' ";
                     }
+
+
 
 
                     /* TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
