@@ -612,6 +612,11 @@ class Mapper {
                 $type_schema = self::get_class_schema($type_classname);
                 $type_sql_schema = self::get_sql_table_schema($type_classname);
 
+
+                if (!db::table_exists($type_sql_schema['table_name'])) {
+                    self::create_table($type_classname);
+                }
+
                 # we're going to define fore keys for this relationship
                 if (!isset($property_attributes['attributes']['relationship']['type'])) {
                     # relationship must be deffined in comments!
