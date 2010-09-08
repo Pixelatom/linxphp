@@ -14,70 +14,19 @@
  */
 
 class Mapper {
-    /* options */
-
-    static protected $_convert_to_lowercase = true;
+    
 
     /* cache */
     static protected $_load_cache = array();
 
-    static protected function get_attributes($comments_string) {
-        $attributes = preg_replace('%/\*\*|^\s*?\*/\s*|^\s*?\*(?:\s?$| ){0,1}%sm', '', $comments_string);
-        return Spyc::YAMLLoadString($attributes);
-    }
+    
 
     static protected function get_class_schema($class_name) {
-        $schema = array();
-
-        $schema['type'] = $class_name;
-
-
-        $function = new ReflectionClass($class_name);
-
-        // get type name from class name
-        if (method_exists('ReflectionClass', 'getShortName'))
-            $schema['type'] = $function->getShortName();
-
-
-        $schema['attributes'] = self::get_attributes($function->getDocComment());
-
-
-
-        if (self::$_convert_to_lowercase) {
-            $schema['type'] = strtolower($schema['type']);
-        }
-
-        $properties = $function->getDefaultProperties();
-
-        $schema['properties'] = array();
-        foreach ($properties as $property => $value) {
-            $prop = array();
-            $prop['value'] = $value;
-            //$prop['value'] = $object->$property;
-
-            $method = new ReflectionProperty($class_name, $property);
-
-            // obtenemos los comentarios de la propiedad
-            $prop['attributes'] = self::get_attributes($method->getDocComment());
-
-
-            $schema['properties'][$property] = $prop;
-        }
-
-
-        return $schema;
+        return ModelDescriptor::describe($class_name);
     }
 
     static protected function get_object_schema($object) {
-        $schema = self::get_class_schema(get_class($object));
-
-        foreach ($schema['properties'] as $property => &$prop) {
-            // we'll ask this condition to avoid force loading of lazy loading properties
-            if ((!isset($prop['attributes']['relationship']['lazy_load']) or $prop['attributes']['relationship']['lazy_load'] == false)
-                    or isset($object->$property))
-                $prop['value'] = $object->$property;
-        }
-        return $schema;
+        return ModelDescriptor::describe($object);
     }
 
     static protected function get_sql_table_schema($object_or_classname) {
