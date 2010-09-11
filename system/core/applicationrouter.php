@@ -22,7 +22,15 @@ class ApplicationRouter implements IApplicationRouter {
     public $method=null;
     public $file=null;
     public $args=null;
+
+    protected $router_param = 'route';
     
+    public function get_router_param(){
+        return $this->router_param;
+    }
+    public function set_router_param($name){
+        $this->router_param = $name;
+    }
     /**
      * This function search for a controller and execute it.
      *
@@ -44,7 +52,7 @@ class ApplicationRouter implements IApplicationRouter {
         /*@var $url Url*/		
         $url=Application::$request_url;
         
-        $route=strtolower($url->get_param('route'));
+        $route=strtolower($url->get_param($this->router_param));
         
         if (empty($route)) $route = 'index';
         $cmd_path = Application::get_site_path().Configuration::get('paths','controllers').'/';

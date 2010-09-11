@@ -26,7 +26,9 @@ class Application{
      * this function only returns a value once that the router was executed
      */
     static public function get_controller(){
-        return self::$_router->controller;
+        if ( self::$_router->controller[0] == '/')
+            self::$_router->controller = substr( self::$_router->controller, 1);
+        return  self::$_router->controller;
     }
     /**
      * returns the current controller's function called
@@ -41,6 +43,10 @@ class Application{
      */
     static public function get_args(){
         return self::$_router->args;
+    }
+
+    static public function get_router_param(){
+        return self::$_router->get_router_param();
     }
     /**
      * PHP has functionality to automatically load files if a certain class has not been loaded yet. Linx employs this functionality.
@@ -84,7 +90,10 @@ class Application{
      * makes the router search for a controller to execute depending on the current application url.
      *@param boolean $redirect if true makes the browser redirect to the current application url
      */
-    static public function route($redirect=false){
+    static public function route($route=null,$redirect=false){
+        if (!empty($route)){
+            Application::$request_url->set_param(Application::get_router_param(),$route);
+        }
         if (!$redirect){
             self::$_router->delegate();
         }

@@ -20,7 +20,7 @@ class ModelDescriptor {
             $class_name = $model;
         }
         else{
-            throw new Exception("Class $class_name doesn't exists");
+            throw new Exception("Class $model doesn't exists");
         }
 
 
@@ -58,6 +58,16 @@ class ModelDescriptor {
 
 
             $schema['properties'][$property] = $prop;
+        }
+
+        $schema['primary_key'] = array();
+
+
+        foreach ($schema['properties'] as $property_name => $property_attributes) {
+            if (isset($property_attributes['attributes']['primary_key'])
+                    and $property_attributes['attributes']['primary_key'] == true) {
+                $schema['primary_key'][] = $property_name;
+            }
         }
 
         if (is_object($model)){
