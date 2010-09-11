@@ -91,6 +91,7 @@ class Application{
      *@param boolean $redirect if true makes the browser redirect to the current application url
      */
     static public function route($route=null,$redirect=false){
+        if (!is_string($route)) $route=null;
         if (!empty($route)){
             Application::$request_url->set_param(Application::get_router_param(),$route);
         }
