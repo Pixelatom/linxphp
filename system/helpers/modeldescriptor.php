@@ -56,6 +56,12 @@ class ModelDescriptor {
             // obtenemos los comentarios de la propiedad
             $prop['attributes'] = self::get_attributes($method->getDocComment());
 
+            $prop['attributes']['is_relationship'] = false;
+
+            if (isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
+                $prop['attributes']['is_relationship'] = true;
+            }
+
 
             $schema['properties'][$property] = $prop;
         }
