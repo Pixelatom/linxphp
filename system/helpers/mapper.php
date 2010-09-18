@@ -20,19 +20,19 @@ class Mapper {
 
     
 
-    static protected function get_class_schema($class_name) {
+     protected function get_class_schema($class_name) {
         return ModelDescriptor::describe($class_name);
     }
 
-    static protected function get_object_schema($object) {
+     protected function get_object_schema($object) {
         return ModelDescriptor::describe($object);
     }
 
-    static protected function get_sql_table_schema($object_or_classname) {
+     protected function get_sql_table_schema($object_or_classname) {
         if (is_object($object_or_classname)) {
-            $obj_schema = self::get_object_schema($object_or_classname);
+            $obj_schema = $this->get_object_schema($object_or_classname);
         } else {
-            $obj_schema = self::get_class_schema($object_or_classname);
+            $obj_schema = $this->get_class_schema($object_or_classname);
         }
 
 
@@ -104,7 +104,7 @@ class Mapper {
                         if (class_exists($property_attributes['attributes']['type'])) {
 
                             $type_classname = $property_attributes['attributes']['type'];
-                            $type_schema = self::get_class_schema($type_classname);
+                            $type_schema = $this->get_class_schema($type_classname);
 
                             # we're going to define fore keys for this relationship
                             if (!isset($property_attributes['attributes']['relationship']['type'])) {
@@ -126,10 +126,10 @@ class Mapper {
 
                                     if (is_object($property_attributes['value']))
                                     // if the relationship is not empty we'll get the values for the fields
-                                        $type_sql_schema = self::get_sql_table_schema($property_attributes['value']);
+                                        $type_sql_schema = $this->get_sql_table_schema($property_attributes['value']);
                                     else
                                     // if the relationship is empty we'll get the schema from the class name
-                                        $type_sql_schema = self::get_sql_table_schema($type_classname);
+                                        $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
                                         // we're going to copy the declaration of the primary keys
@@ -175,11 +175,11 @@ class Mapper {
      * Stupid function
      */
 
-    static public function save($object) {
-        $update = self::update($object);
+     public function save($object) {
+        $update = $this->update($object);
         if ($update == 0) {
             try {
-                return self::insert($object);
+                return $this->insert($object);
             } catch (PDOException $e) {
                 // if there where an update == 0 because the object wasn't modified
                 // then the insert will give an duplicated id error
@@ -194,11 +194,11 @@ class Mapper {
      * @TODO: avoid force loading of lazy load properties
      * instead do not save childs elements never loaded
      */
-    static protected function save_relationships($object) {
+     protected function save_relationships($object) {
         // force loading of lazy load properties
-        self::fill_relationship($object, true);
+        $this->fill_relationship($object, true);
 
-        $obj_schema = self::get_object_schema($object);
+        $obj_schema = $this->get_object_schema($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
@@ -216,7 +216,7 @@ class Mapper {
                         $object->$property_name->$inverse = $object;
                     }
 
-                    self::save($object->$property_name);
+                    $this->save($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
 
                     foreach ($object->$property_name as $child) {
@@ -227,7 +227,7 @@ class Mapper {
 
                             $child->{$inverse} = $object;
                         }
-                        self::save($child);
+                        $this->save($child);
                     }
                 }
             }
@@ -238,17 +238,17 @@ class Mapper {
      * CRUD functions
      */
 
-    static public function insert($object) {
-        $sql_schema = self::get_sql_table_schema($object);
+     public function insert($object) {
+        $sql_schema = $this->get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
-            self::create_table($object);
+            $this->create_table($object);
         }
 
         //
         // LOAD and save childs properties
-        self::save_relationships($object);
+        $this->save_relationships($object);
 
-        $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
         
 
         
@@ -283,14 +283,14 @@ class Mapper {
         return db::execute($sql, $fields_values, $bind_params);
     }
 
-    static public function update($object) {
-        $sql_schema = self::get_sql_table_schema($object);
+     public function update($object) {
+        $sql_schema = $this->get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
-            self::create_table($object);
+            $this->create_table($object);
             return false;
         }
-        self::save_relationships($object);
-         $sql_schema = self::get_sql_table_schema($object);
+        $this->save_relationships($object);
+         $sql_schema = $this->get_sql_table_schema($object);
         
         
 
@@ -340,11 +340,11 @@ class Mapper {
         return db::execute($sql, $fields_values, $bind_params);
     }
 
-    static protected function delete_relationships($object) {
+     protected function delete_relationships($object) {
         // force loading of lazy load properties
-        self::fill_relationship($object, true);
+        $this->fill_relationship($object, true);
 
-        $obj_schema = self::get_object_schema($object);
+        $obj_schema = $this->get_object_schema($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
@@ -354,10 +354,10 @@ class Mapper {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
                         throw new Exception("Wrong class type in child object");
                     }
-                    self::delete($object->$property_name);
+                    $this->delete($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
                     foreach ($object->$property_name as $child) {
-                        self::delete($child);
+                        $this->delete($child);
                     }
                 }
 
@@ -366,17 +366,17 @@ class Mapper {
         }
     }
 
-    static public function delete($object, $delete_childs=true) {
-        $sql_schema = self::get_sql_table_schema($object);
+     public function delete($object, $delete_childs=true) {
+        $sql_schema = $this->get_sql_table_schema($object);
 
         if (!db::table_exists($sql_schema['table_name'])) {
-            self::create_table($object);
-            self::insert($object);
+            $this->create_table($object);
+            $this->insert($object);
             return;
         }
 
         if ($delete_childs) {
-            self::delete_relationships($object);
+            $this->delete_relationships($object);
         }
 
         $where_id = '';
@@ -413,9 +413,9 @@ class Mapper {
      * Misc function
      */
 
-    static protected function create_table($object) {
-        $sql_schema = self::get_sql_table_schema($object);
-        if (count($schema['primary_key']) == 0) {
+     protected function create_table($object) {
+        $sql_schema = $this->get_sql_table_schema($object);
+        if (count($sql_schema['primary_key']) == 0) {
             throw new Exception('Objects must have a PRIMARY ID property.');
         }
         # field declarations
@@ -454,10 +454,10 @@ class Mapper {
      * same instance of an object
      */
 
-    static protected function add_to_cache($object) {
+     protected function add_to_cache($object) {
         $classname = get_class($object);
 
-        $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
 
         $id = array();
 
@@ -475,10 +475,10 @@ class Mapper {
         Registry::set($key, $object);
     }
 
-    static protected function is_object_in_cache($object) {
+     protected function is_object_in_cache($object) {
         $classname = get_class($object);
 
-        $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
 
         $id = array();
 
@@ -489,12 +489,12 @@ class Mapper {
             $id[$key] = (string) $value;
         }
 
-        return self::is_in_cache($classname, $id);
+        return $this->is_in_cache($classname, $id);
     }
 
-    static protected function is_in_cache($classname, $id) {
+     protected function is_in_cache($classname, $id) {
         if (!is_array($id)) {
-            $sql_schema = self::get_sql_table_schema($classname);
+            $sql_schema = $this->get_sql_table_schema($classname);
             $id = array($sql_schema['primary_key'][0] => (string) $id);
         }
 
@@ -503,10 +503,10 @@ class Mapper {
         return Registry::exists($key);
     }
 
-    static protected function get_object_from_cache($object) {
+     protected function get_object_from_cache($object) {
         $classname = get_class($object);
 
-        $sql_schema = self::get_sql_table_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
 
         $id = array();
 
@@ -522,9 +522,9 @@ class Mapper {
         return Registry::get($key);
     }
 
-    static protected function get_from_cache($classname, $id) {
+     protected function get_from_cache($classname, $id) {
         if (!is_array($id)) {
-            $sql_schema = self::get_sql_table_schema($classname);
+            $sql_schema = $this->get_sql_table_schema($classname);
             $id = array($sql_schema['primary_key'][0] => (string) $id);
         }
 
@@ -541,12 +541,12 @@ class Mapper {
      * utility function
      */
 
-    static protected function build_select_query($classname, $conditions=null, $order_by=null) {
-        $obj_schema = self::get_class_schema($classname);
-        $sql_schema = self::get_sql_table_schema($classname);
+     protected function build_select_query($classname, $conditions=null, $order_by=null) {
+        $obj_schema = $this->get_class_schema($classname);
+        $sql_schema = $this->get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
-            self::create_table($classname);
+            $this->create_table($classname);
             //return;
         }
 
@@ -558,12 +558,12 @@ class Mapper {
             if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
 
                 $type_classname = $property_attributes['attributes']['type'];
-                $type_schema = self::get_class_schema($type_classname);
-                $type_sql_schema = self::get_sql_table_schema($type_classname);
+                $type_schema = $this->get_class_schema($type_classname);
+                $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
 
                 if (!db::table_exists($type_sql_schema['table_name'])) {
-                    self::create_table($type_classname);
+                    $this->create_table($type_classname);
                 }
 
                 # we're going to define fore keys for this relationship
@@ -616,8 +616,8 @@ class Mapper {
      * SQL Functions wrapers
      */
 
-    static public function count($classname, $conditions=null) {
-        $sql = self::build_select_query($classname, $conditions);
+     public function count($classname, $conditions=null) {
+        $sql = $this->build_select_query($classname, $conditions);
 
         $sql = "select count(1) from ($sql) as selectquery";
 
@@ -628,15 +628,15 @@ class Mapper {
      * Loads one object by id -uses cache
      */
 
-    static public function get_by_id($classname, $id, $order_by=null) {
-        $sql_schema = self::get_sql_table_schema($classname);
+     public function get_by_id($classname, $id, $order_by=null) {
+        $sql_schema = $this->get_sql_table_schema($classname);
 
         if (!db::table_exists($sql_schema['table_name'])) {
             return;
         }
 
-        if (self::is_in_cache($classname, $id))
-            return self::get_from_cache($classname, $id);
+        if ($this->is_in_cache($classname, $id))
+            return $this->get_from_cache($classname, $id);
 
 
         $where_id = '';
@@ -684,18 +684,18 @@ class Mapper {
         $results = db::query($sql, $fields_values, $bind_params, $classname);
 
         if (isset($results[0])) {
-            self::add_to_cache($results[0]);
-            self::fill_relationship($results[0]);
+            $this->add_to_cache($results[0]);
+            $this->fill_relationship($results[0]);
             return $results[0];
         }
         else
             return;
     }
 
-    static public function get($classname, $conditions=null, $order_by=null) {
+     public function get($classname, $conditions=null, $order_by=null) {
 
-        $sql = call_user_func_array(array(self, 'build_select_query'), func_get_args());
-        //$sql = self::build_select_query($classname, $conditions, $order_by);
+        //$sql = call_user_func_array(array(self, 'build_select_query'), func_get_args());
+        $sql = $this->build_select_query($classname, $conditions, $order_by);
 //        if (empty($sql))
 //            die($conditions);
 
@@ -705,31 +705,31 @@ class Mapper {
 
             // revisa si cada uno de los objetos retornados esta en cache,
             // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
-            if (self::is_object_in_cache($object)) {
+            if ($this->is_object_in_cache($object)) {
                 // objects in cache are supposed to be already filled
 
-                $object = self::get_object_from_cache($object);
+                $object = $this->get_object_from_cache($object);
             } else {
-                self::add_to_cache($object);
-                self::fill_relationship($object);
+                $this->add_to_cache($object);
+                $this->fill_relationship($object);
             }
         }
 
         return $return;
     }
 
-    static public function _load_relationship($object, $property_name) {
+     public function _load_relationship($object, $property_name) {
         
-        $obj_schema = self::get_object_schema($object);
-        $sql_schema = self::get_sql_table_schema($object);
+        $obj_schema = $this->get_object_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
 
         $property_attributes = $obj_schema['properties'][$property_name];
 
         if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
 
             $type_classname = $property_attributes['attributes']['type'];
-            $type_schema = self::get_class_schema($type_classname);
-            $type_sql_schema = self::get_sql_table_schema($type_classname);
+            $type_schema = $this->get_class_schema($type_classname);
+            $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
             # we're going to define fore keys for this relationship
             if (!isset($property_attributes['attributes']['relationship']['type'])) {
@@ -770,7 +770,7 @@ class Mapper {
 
                     /* TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
                     // parents doesnt need a sql property for their childs
-                    $childs = self::get($type_classname, $conditions);
+                    $childs = $this->get($type_classname, $conditions);
 
 
                     // asignamos los childs at last
@@ -806,7 +806,7 @@ class Mapper {
 
                     if (!empty($fore_keys)){
 
-                        $object->$property_name = self::get_by_id($type_classname, $fore_keys);
+                        $object->$property_name = $this->get_by_id($type_classname, $fore_keys);
                         
                     }
 
@@ -822,9 +822,9 @@ class Mapper {
      * Complete relationship properties on load
      */
 
-    static protected function fill_relationship($object, $force_loading=false) {
+     protected function fill_relationship($object, $force_loading=false) {
 
-        $obj_schema = self::get_object_schema($object);
+        $obj_schema = $this->get_object_schema($object);
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
