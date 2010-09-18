@@ -16,8 +16,7 @@
 class Mapper {
     
 
-    /* cache */
-    static protected $_load_cache = array();
+    
 
     
 
@@ -167,9 +166,7 @@ class Mapper {
             $schema['fields'][$property_name] = $field;
         }
 
-        if (count($schema['primary_key']) == 0) {
-            throw new Exception('Objects must have a PRIMARY ID property.');
-        }
+        
 
         return $schema;
     }
@@ -336,8 +333,8 @@ class Mapper {
 
 
         $sql = "UPDATE {$sql_schema['table_name']}
-    SET $field_updates
-    WHERE $where_id";
+        SET $field_updates
+        WHERE $where_id";
 
 
         return db::execute($sql, $fields_values, $bind_params);
@@ -418,7 +415,9 @@ class Mapper {
 
     static protected function create_table($object) {
         $sql_schema = self::get_sql_table_schema($object);
-
+        if (count($schema['primary_key']) == 0) {
+            throw new Exception('Objects must have a PRIMARY ID property.');
+        }
         # field declarations
         $fields_declaration = "";
         foreach ($sql_schema['fields'] as $field => $attributes) {
@@ -443,8 +442,8 @@ class Mapper {
         }
 
         $sql = "CREATE TABLE {$sql_schema['table_name']}
-    ({$fields_declaration}
-    )";
+        ({$fields_declaration}
+        )";
 
         db::execute($sql);
     }
@@ -471,7 +470,9 @@ class Mapper {
 
         $key = md5($classname . json_encode($id));
 
-        self::$_load_cache[$key] = $object;
+
+
+        Registry::set($key, $object);
     }
 
     static protected function is_object_in_cache($object) {
@@ -499,8 +500,7 @@ class Mapper {
 
         $key = md5($classname . json_encode($id));
 
-
-        return isset(self::$_load_cache[$key]);
+        return Registry::exists($key);
     }
 
     static protected function get_object_from_cache($object) {
@@ -518,8 +518,8 @@ class Mapper {
         }
 
         $key = md5($classname . json_encode($id));
-
-        return self::$_load_cache[$key];
+        
+        return Registry::get($key);
     }
 
     static protected function get_from_cache($classname, $id) {
@@ -530,7 +530,7 @@ class Mapper {
 
         $key = md5($classname . json_encode($id));
 
-        return self::$_load_cache[$key];
+        return Registry::get($key);
     }
 
     /*
@@ -693,7 +693,9 @@ class Mapper {
     }
 
     static public function get($classname, $conditions=null, $order_by=null) {
-        $sql = self::build_select_query($classname, $conditions, $order_by);
+
+        $sql = call_user_func_array(array(self, 'build_select_query'), func_get_args());
+        //$sql = self::build_select_query($classname, $conditions, $order_by);
 //        if (empty($sql))
 //            die($conditions);
 
