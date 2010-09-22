@@ -238,7 +238,7 @@ class Mapper {
      * CRUD functions
      */
 
-     public function insert($object) {
+     public function insert(&$object) {
         $sql_schema = $this->get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
@@ -290,12 +290,8 @@ class Mapper {
             return false;
         }
         $this->save_relationships($object);
-         $sql_schema = $this->get_sql_table_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
         
-        
-
-        
-
         $field_updates = '';
         $fields_values = array();
         $bind_params = array();
@@ -624,20 +620,14 @@ class Mapper {
         return db::query_scalar($sql);
     }
 
-    /*
-     * Loads one object by id -uses cache
+    /**
+     * get object by id, but without using cache
+     * @param <type> $classname
+     * @param <type> $id
+     * @return <type>
      */
-
-     public function get_by_id($classname, $id, $order_by=null) {
+    protected function _get_by_id($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
-
-        if (!db::table_exists($sql_schema['table_name'])) {
-            return;
-        }
-
-        if ($this->is_in_cache($classname, $id))
-            return $this->get_from_cache($classname, $id);
-
 
         $where_id = '';
 
@@ -690,6 +680,19 @@ class Mapper {
         }
         else
             return;
+    }
+
+    /*
+     * Loads one object by id -uses cache
+     */
+
+     public function get_by_id($classname, $id) {
+        
+        if ($this->is_in_cache($classname, $id))
+            return $this->get_from_cache($classname, $id);
+
+
+        return $this->_get_by_id($classname, $id);
     }
 
      public function get($classname, $conditions=null, $order_by=null) {
