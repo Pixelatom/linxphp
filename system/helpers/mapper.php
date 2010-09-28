@@ -28,15 +28,44 @@ class Mapper {
         return ModelDescriptor::describe($object);
     }
 
-     protected function get_sql_table_schema($object_or_classname) {
-        if (is_object($object_or_classname)) {
-            $obj_schema = $this->get_object_schema($object_or_classname);
-        } else {
-            $obj_schema = $this->get_class_schema($object_or_classname);
+     // a little cache for storing ongoing processing in recursive functions
+     protected $cache = null;
+
+    
+     protected function get_sql_table_schema($model) {
+        // check if this is the first call of this recursive function and 
+        // starts the cache
+        $first_call = false;
+        if ($this->cache === null){
+            $first_call = true;
+            $this->cache = array();
+        }
+       
+        if (is_object($model)){
+            $class_name = get_class($model);
+        }
+        else{
+            $class_name = $model;
         }
 
+        if (is_object($model)){
+            $cache_id = spl_object_hash($model);
+        }
+        else{
+            $cache_id = $class_name;
+        }
 
-        $schema = array();
+        // uses the recursive cache to avoid entering in a loop
+        if (isset($this->cache[$cache_id])){
+            $schema = $this->cache[$cache_id];
+            return $schema;
+        }
+        else{
+            $this->cache[$cache_id] = array();
+            $schema = &$this->cache[$cache_id];
+        }
+        
+        $obj_schema = $this->get_class_schema($model);
 
         $schema['table_name'] = $obj_schema['type'];
 
@@ -49,7 +78,7 @@ class Mapper {
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-
+            //echo 'property: '.$property_name.'<br/>';
 
             $field = array();
 
@@ -166,7 +195,12 @@ class Mapper {
             $schema['fields'][$property_name] = $field;
         }
 
-        
+        // if this is the first call of this recursive function
+        // we'll reset the cache
+        if ($first_call == true){
+            $this->cache = null;
+        }
+
 
         return $schema;
     }

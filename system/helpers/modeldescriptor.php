@@ -28,9 +28,24 @@ class ModelDescriptor {
             throw new Exception("Class $model doesn't exists");
         }
 
-        if (isset(self::$cache[$class_name]))
-            return self::$cache[$class_name];
 
+
+        if (isset(self::$cache[$class_name])){
+            
+            $schema = self::$cache[$class_name];
+            
+            if (is_object($model)){
+                foreach ($schema['properties'] as $property => &$prop) {
+                    // we'll ask this condition to avoid force loading of lazy loading properties
+                    if ((!isset($prop['attributes']['relationship']['lazy_load'])
+                            or $prop['attributes']['relationship']['lazy_load'] == false)
+                            or isset($model->$property))
+                        $prop['value'] = $model->$property;
+                }
+            }
+            
+            return $schema;
+        }
 
         $schema = array();
 
@@ -85,15 +100,7 @@ class ModelDescriptor {
             }
         }
 
-        if (is_object($model)){
-            foreach ($schema['properties'] as $property => &$prop) {
-                // we'll ask this condition to avoid force loading of lazy loading properties
-                if ((!isset($prop['attributes']['relationship']['lazy_load'])
-                        or $prop['attributes']['relationship']['lazy_load'] == false)
-                        or isset($model->$property))
-                    $prop['value'] = $model->$property;
-            }
-        }
+        
 
         if (!isset(self::$cache[$class_name]))
             self::$cache[$class_name] = $schema;
