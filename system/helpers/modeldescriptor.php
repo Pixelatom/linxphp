@@ -3,13 +3,18 @@
 class ModelDescriptor {
     /* options */
 
+    static protected $cache = array();
+
     static protected $_convert_to_lowercase = true;
 
     static protected function get_attributes($comments_string) {
+
         $attributes = preg_replace('%/\*\*|^\s*?\*/\s*|^\s*?\*(?:\s?$| ){0,1}%sm', '', $comments_string);
         return Spyc::YAMLLoadString($attributes);
     }
     static public function describe($model){
+
+        
 
         if (is_object($model)){
             $class_name = get_class($model);
@@ -23,6 +28,9 @@ class ModelDescriptor {
             throw new Exception("Class $model doesn't exists");
         }
 
+        if (isset(self::$cache[$class_name]))
+            return self::$cache[$class_name];
+
 
         $schema = array();
 
@@ -34,7 +42,7 @@ class ModelDescriptor {
         if (method_exists('ReflectionClass', 'getShortName'))
             $schema['type'] = $function->getShortName();
 
-
+        
         $schema['attributes'] = self::get_attributes($function->getDocComment());
 
 
@@ -54,6 +62,7 @@ class ModelDescriptor {
             $method = new ReflectionProperty($class_name, $property);
 
             // obtenemos los comentarios de la propiedad
+            
             $prop['attributes'] = self::get_attributes($method->getDocComment());
 
             $prop['attributes']['is_relationship'] = false;
@@ -85,6 +94,9 @@ class ModelDescriptor {
                     $prop['value'] = $model->$property;
             }
         }
+
+        if (!isset(self::$cache[$class_name]))
+            self::$cache[$class_name] = $schema;
 
         return $schema;
     }

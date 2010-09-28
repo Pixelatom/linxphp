@@ -575,7 +575,8 @@ class Mapper {
 
                             if (!empty($join_condition))
                                 $join_condition .= " AND ";
-                            $field = $property_name . '_' . $primary_key;
+                            $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
+                            $field = $inverse_property . '_' . $primary_key;
 
                             $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
                         }

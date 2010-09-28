@@ -136,8 +136,8 @@ class DB {
     return $exists;
   }
 
-  static public function get_last_insert_id(){
-    return PDO::lastInsertId();
+  static public function get_last_insert_id($name = NULL ){
+    return self::$link->lastInsertId($name = NULL );
   }
 
 
