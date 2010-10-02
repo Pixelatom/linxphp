@@ -229,6 +229,7 @@ class Mapper {
      * instead do not save childs elements never loaded
      */
      protected function save_relationships($object) {
+        $count = 0;
         // force loading of lazy load properties
         $this->fill_relationship($object, true);
 
@@ -250,7 +251,7 @@ class Mapper {
                         $object->$property_name->$inverse = $object;
                     }
 
-                    $this->save($object->$property_name);
+                    $count += $this->save($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
 
                     foreach ($object->$property_name as $child) {
@@ -261,11 +262,12 @@ class Mapper {
 
                             $child->{$inverse} = $object;
                         }
-                        $this->save($child);
+                        $count += $this->save($child);
                     }
                 }
             }
         }
+        return $count;
     }
 
     /*
@@ -273,6 +275,7 @@ class Mapper {
      */
 
      public function insert(&$object) {
+
         $sql_schema = $this->get_sql_table_schema($object);
         if (!db::table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
@@ -280,7 +283,7 @@ class Mapper {
 
         //
         // LOAD and save childs properties
-        $this->save_relationships($object);
+        $count = $this->save_relationships($object);
 
         $sql_schema = $this->get_sql_table_schema($object);
         
@@ -314,7 +317,8 @@ class Mapper {
 
         $sql = "INSERT INTO {$sql_schema['table_name']} ($fields) VALUES ($params)";
 
-        return db::execute($sql, $fields_values, $bind_params);
+        $count += db::execute($sql, $fields_values, $bind_params);
+        return $count;
     }
 
      public function update($object) {
@@ -323,7 +327,7 @@ class Mapper {
             $this->create_table($object);
             return false;
         }
-        $this->save_relationships($object);
+        $count = $this->save_relationships($object);
         $sql_schema = $this->get_sql_table_schema($object);
         
         $field_updates = '';
@@ -367,7 +371,8 @@ class Mapper {
         WHERE $where_id";
 
 
-        return db::execute($sql, $fields_values, $bind_params);
+        $count += db::execute($sql, $fields_values, $bind_params);
+        return $count;
     }
 
      protected function delete_relationships($object) {
