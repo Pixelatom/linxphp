@@ -281,7 +281,8 @@ class Mapper {
             $this->create_table($object);
         }
 
-        //
+        $object->_before_insert();
+        
         // LOAD and save childs properties
         $count = $this->save_relationships($object);
 
@@ -327,6 +328,9 @@ class Mapper {
             $this->create_table($object);
             return false;
         }
+
+        $object->_before_update();
+
         $count = $this->save_relationships($object);
         $sql_schema = $this->get_sql_table_schema($object);
         
@@ -409,6 +413,9 @@ class Mapper {
             $this->insert($object);
             return;
         }
+
+        $object->_before_delete();
+        $sql_schema = $this->get_sql_table_schema($object);
 
         if ($delete_childs) {
             $this->delete_relationships($object);
