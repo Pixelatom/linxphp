@@ -1,4 +1,11 @@
 <?php
+/*
+ * Linx PHP Framework
+ * Author: Javier Arias
+ * Licensed under MIT License
+ */
+
+
 if (isset($_SERVER['REDIRECT_SUBDOMAIN_DOCUMENT_ROOT']))
 $application_directory = dirname(realpath($_SERVER['REDIRECT_SUBDOMAIN_DOCUMENT_ROOT'].$_SERVER['PHP_SELF']));
 else
@@ -6,12 +13,6 @@ $application_directory = dirname(realpath($_SERVER['DOCUMENT_ROOT'].$_SERVER['PH
 
 $system_directory = dirname(__FILE__);
 
-
-/*
- * Linx PHP Framework
- * Author: Javier Arias. *
- * Licensed under MIT License.
- */
 
 /*
  *  basic application configuration
