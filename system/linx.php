@@ -52,12 +52,23 @@ Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directo
 Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','controllers'));    
 
 // application classes
-if (file_exists(realpath(Application::get_site_path().Configuration::get('paths','classes').'/')))
-Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','classes'));
+$path_array = Application::get_site_path().Configuration::get('paths','classes');
+$path_array = explode(',', $path_array);
+foreach ($path_array as $path){
+    $path = trim($path);
+    if (file_exists(realpath($path.'/')))
+    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$path);
+}
+
 
 // models classes
-if (file_exists(realpath(Application::get_site_path().Configuration::get('paths','models').'/')))
-Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','models'));
+$path_array = Application::get_site_path().Configuration::get('paths','models');
+$path_array = explode(',', $path_array);
+foreach ($path_array as $path){
+    $path = trim($path);
+    if (file_exists(realpath($path.'/')))
+    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$path);
+}
 
 /*
  * PHP autoload behavior is configured here, so it make use of the Application class configuration.
