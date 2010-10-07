@@ -691,6 +691,11 @@ class Mapper {
     protected function _get_by_id($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
 
+
+        if (!db::table_exists($sql_schema['table_name'])) {
+            $this->create_table($classname);
+            //return;
+        }
         $where_id = '';
 
         if (count($sql_schema['primary_key']) != count($id)) {
