@@ -316,9 +316,12 @@ class Mapper {
         $params = implode(',', array_keys($fields_values));
 
 
-        $sql = "INSERT INTO {$sql_schema['table_name']} ($fields) VALUES ($params)";
+        $sql = "INSERT INTO `{$sql_schema['table_name']}` ($fields) VALUES ($params)";
 
         $count += db::execute($sql, $fields_values, $bind_params);
+        
+        $object->_after_insert();
+
         return $count;
     }
 
@@ -366,20 +369,24 @@ class Mapper {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "$key = :$key";
+            $where_id .= "`$key` = :$key";
         }
 
 
-        $sql = "UPDATE {$sql_schema['table_name']}
+        $sql = "UPDATE `{$sql_schema['table_name']}`
         SET $field_updates
         WHERE $where_id";
 
 
         $count += db::execute($sql, $fields_values, $bind_params);
+
+        $object->_after_update();
+
         return $count;
     }
 
      protected function delete_relationships($object) {
+        $count = 0;
         // force loading of lazy load properties
         $this->fill_relationship($object, true);
 
@@ -393,16 +400,18 @@ class Mapper {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
                         throw new Exception("Wrong class type in child object");
                     }
-                    $this->delete($object->$property_name);
+                    $count += $this->delete($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
                     foreach ($object->$property_name as $child) {
-                        $this->delete($child);
+                        $count += $this->delete($child);
                     }
                 }
 
                 $object->$property_name = null;
             }
         }
+
+        return $count;
     }
 
      public function delete($object, $delete_childs=true) {
@@ -417,8 +426,10 @@ class Mapper {
         $object->_before_delete();
         $sql_schema = $this->get_sql_table_schema($object);
 
+        $count = 0;
+
         if ($delete_childs) {
-            $this->delete_relationships($object);
+           $count += $this->delete_relationships($object);
         }
 
         $where_id = '';
@@ -432,7 +443,7 @@ class Mapper {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "$key = :$key";
+            $where_id .= "`$key` = :$key";
 
             $attributes = $sql_schema['fields'][$key];
 
@@ -445,10 +456,14 @@ class Mapper {
         }
 
 
-        $sql = "DELETE FROM {$sql_schema['table_name']} WHERE $where_id";
+        $sql = "DELETE FROM `{$sql_schema['table_name']}` WHERE $where_id";
 
 
-        return db::execute($sql, $fields_values, $bind_params);
+        $count += db::execute($sql, $fields_values, $bind_params);
+
+        $object->_after_delete();
+
+        return $count;
     }
 
     /*
@@ -483,7 +498,7 @@ class Mapper {
             $fields_declaration .= ", PRIMARY KEY (" . implode(',', $sql_schema['primary_key']) . ")";
         }
 
-        $sql = "CREATE TABLE {$sql_schema['table_name']}
+        $sql = "CREATE TABLE `{$sql_schema['table_name']}`
         ({$fields_declaration}
         )";
 
@@ -592,7 +607,7 @@ class Mapper {
             //return;
         }
 
-        $sql = "SELECT distinct {$sql_schema['table_name']}.* FROM {$sql_schema['table_name']}";
+        $sql = "SELECT distinct `{$sql_schema['table_name']}`.* FROM `{$sql_schema['table_name']}`";
 
 
         // create relationship properties with left joins
@@ -624,7 +639,7 @@ class Mapper {
                             $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
                             $field = $inverse_property . '_' . $primary_key;
 
-                            $join_condition .= " {$property_name}.$field = {$sql_schema['table_name']}.$primary_key ";
+                            $join_condition .= " `{$property_name}`.`$field` = `{$sql_schema['table_name']}`.`$primary_key` ";
                         }
                         break;
                     case 'parent':
@@ -636,12 +651,12 @@ class Mapper {
 
                             $field = $property_name . '_' . $primary_key;
 
-                            $join_condition .= " {$sql_schema['table_name']}.$field = {$property_name}.$primary_key ";
+                            $join_condition .= " `{$sql_schema['table_name']}`.`$field` = `{$property_name}`.`$primary_key` ";
                         }
                         break;
                 }
 
-                $sql .= " left join {$type_sql_schema['table_name']} {$property_name}  on $join_condition ";
+                $sql .= " left join `{$type_sql_schema['table_name']}` `{$property_name}`  on $join_condition ";
             }
         }
 
@@ -689,7 +704,7 @@ class Mapper {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "$key = :$key";
+            $where_id .= "`$key` = :$key";
 
             $attributes = $sql_schema['fields'][$key];
 
@@ -710,7 +725,7 @@ class Mapper {
         }
 
 
-        $sql = "SELECT * FROM {$sql_schema['table_name']}";
+        $sql = "SELECT * FROM `{$sql_schema['table_name']}`";
 
         $sql .= " WHERE $where_id";
 
@@ -723,7 +738,12 @@ class Mapper {
         if (isset($results[0])) {
             $this->add_to_cache($results[0]);
             $this->fill_relationship($results[0]);
-            return $results[0];
+
+            $object = $results[0];
+
+            $object->_after_load();
+
+            return $object;
         }
         else
             return;
@@ -762,6 +782,8 @@ class Mapper {
             } else {
                 $this->add_to_cache($object);
                 $this->fill_relationship($object);
+
+                $object->_after_load();
             }
         }
 

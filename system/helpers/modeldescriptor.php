@@ -69,25 +69,29 @@ class ModelDescriptor {
 
         $schema['properties'] = array();
         foreach ($properties as $property => $value) {
-            $prop = array();
-            $prop['default_value'] = $value;
-            $prop['value'] = $value;
-            //$prop['value'] = $object->$property;
+            $reflection = new ReflectionProperty($class_name, $property);
+            if ($reflection->isPublic() ){
+                $prop = array();
+                $prop['default_value'] = $value;
+                $prop['value'] = $value;
+                //$prop['value'] = $object->$property;
 
-            $method = new ReflectionProperty($class_name, $property);
+                $method = new ReflectionProperty($class_name, $property);
 
-            // obtenemos los comentarios de la propiedad
-            
-            $prop['attributes'] = self::get_attributes($method->getDocComment());
+                // obtenemos los comentarios de la propiedad
 
-            $prop['attributes']['is_relationship'] = false;
+                $prop['attributes'] = self::get_attributes($method->getDocComment());
 
-            if (isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
-                $prop['attributes']['is_relationship'] = true;
+                $prop['attributes']['is_relationship'] = false;
+
+                if (isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
+                    $prop['attributes']['is_relationship'] = true;
+                }
+
+
+                $schema['properties'][$property] = $prop;
             }
-
-
-            $schema['properties'][$property] = $prop;
+            
         }
 
         $schema['primary_key'] = array();
