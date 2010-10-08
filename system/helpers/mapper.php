@@ -612,8 +612,9 @@ class Mapper {
 
         // create relationship properties with left joins
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-            if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+            if ($property_attributes['attributes']['is_relationship']) {
 
+                
                 $type_classname = $property_attributes['attributes']['type'];
                 $type_schema = $this->get_class_schema($type_classname);
                 $type_sql_schema = $this->get_sql_table_schema($type_classname);
