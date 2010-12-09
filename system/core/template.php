@@ -17,8 +17,15 @@
  *
  */ 
 class Template extends BaseTemplate{
-	
-	protected $_default_template;
+
+        static protected $default_path = null;
+
+        static public function set_default_path($default_path){
+		self::$default_path = $default_path;
+	}
+
+
+        protected $_default_template;
 	protected $_custom_path=false;
 	
 	/**
@@ -32,6 +39,11 @@ class Template extends BaseTemplate{
 		
 	function __construct($default_template=null,$custom_path=null){
 		$this->set_default_template($default_template);
+
+                if (empty($custom_path)){
+                    $custom_path = self::$default_path;
+                }
+
 		$this->set_custom_path($custom_path);
 	}
 		
