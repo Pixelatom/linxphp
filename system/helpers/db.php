@@ -12,8 +12,17 @@ class DB {
 
     $dbh = new PDO($dsn, $user, $password);
     $dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);//drops exception when error
-    $dbh->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,TRUE);//necesary for not hanging mysql
+    if ($dbh->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
+        $dbh->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,TRUE);//necesary for not hanging mysql
+    }
+    
     self::$link = $dbh;
+  }
+
+  static public function get_pdolink(){
+      if(!self::$link)
+    self::connect();
+      return self::$link;
   }
 
   //static private function close(){

@@ -21,7 +21,8 @@ abstract class Model{
         $trace = debug_backtrace();
 
         
-        if(isset($trace[2]['class']) && ($trace[2]['class'] == 'Mapper' or in_array('Mapper', class_parents($trace[2]['class'])))) {
+        
+        if(isset($trace[2]['class']) && ($trace[2]['class'] == 'SQLMapperDriver' or in_array('SQLMapperDriver', class_parents($trace[2]['class'])))) {
             switch ($name){
                 case '_before_insert':
                     return $this->_before_insert($arguments);
@@ -59,12 +60,12 @@ abstract class Model{
         $function = new ReflectionClass($class_name);
         $properties = $function->getDefaultProperties();
 
-        $mapper = new Mapper();
+        
         
         if (array_key_exists($name,$properties)){
             $reflection = new ReflectionProperty($class_name, $name);
             if ($reflection->isPublic() ){
-                $mapper->_load_relationship($this,$name);
+                Mapper::_load_relationship($this,$name);
                 return $this->$name;
             }
         }
