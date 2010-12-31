@@ -73,6 +73,7 @@ class Template extends BaseTemplate {
         $onbuffer = false;
         $onbuffer = ob_start();
         try {
+            // si $name se trata de un objeto
             if (!empty($name) and is_object($name) and (get_class($name) == 'Template' or is_subclass_of($name, 'BaseTemplate'))) {
                 /* @var $name Template */
                 $name = clone $name;
@@ -121,8 +122,7 @@ class Template extends BaseTemplate {
         return $this;
     }
 
-    protected function include_template($name, &$vars) {
-
+    protected function include_template($name, &$vars) {        
         # va a mostrar template default
         if (empty($name)) {
             if (empty($this->_default_template))
