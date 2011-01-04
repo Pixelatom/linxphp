@@ -128,8 +128,8 @@ class SQLMapperDriver implements IMapperDriver {
 
                             # we're going to define fore keys for this relationship
                             if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                                # relationship must be deffined in comments!
-                                throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                                # relationship must be defined in comments!
+                                throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
                             }
                             //die(    $property_attributes['attributes']['relationship']['type']);
                             switch ($property_attributes['attributes']['relationship']['type']) {
@@ -235,6 +235,12 @@ class SQLMapperDriver implements IMapperDriver {
                 if (is_object($object->$property_name)) {
                     if ($property_attributes['attributes']['type'] != get_class($object->$property_name)) {
                         throw new Exception("Wrong class type in child object");
+                    }
+
+                    # we're going to define fore keys for this relationship
+                    if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
+                        # relationship must be defined in comments!
+                        throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
                     }
 
                     if (isset($property_attributes['attributes']['relationship']['inverse_property'])) {
@@ -618,8 +624,8 @@ class SQLMapperDriver implements IMapperDriver {
 
                 # we're going to define fore keys for this relationship
                 if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                    # relationship must be deffined in comments!
-                    throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                    # relationship must be defined in comments!
+                    throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
                 }
                 $join_condition = '';
 
@@ -629,6 +635,14 @@ class SQLMapperDriver implements IMapperDriver {
 
                             if (!empty($join_condition))
                                 $join_condition .= " AND ";
+
+
+                            # we're going to define fore keys for this relationship
+                            if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
+                                # relationship must be defined in comments!
+                                throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+                            }
+
                             $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
                             $field = $inverse_property . '_' . $primary_key;
 
@@ -671,6 +685,7 @@ class SQLMapperDriver implements IMapperDriver {
         $sql = $this->build_select_query($classname, $conditions);
 
         $sql = "select count(1) from ($sql) as selectquery";
+        
 
         return db::query_scalar($sql);
     }
@@ -803,8 +818,8 @@ class SQLMapperDriver implements IMapperDriver {
 
             # we're going to define fore keys for this relationship
             if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                # relationship must be deffined in comments!
-                throw new Exception("relationship attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                # relationship must be defined in comments!
+                throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
             }
 
             switch ($property_attributes['attributes']['relationship']['type']) {
@@ -812,8 +827,8 @@ class SQLMapperDriver implements IMapperDriver {
 
                     # we're going to define fore keys for this relationship
                     if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
-                        # relationship must be deffined in comments!
-                        throw new Exception("inverse_property attribute must be deffined for field $property_name in mode {$obj_schema['type']} ");
+                        # relationship must be defined in comments!
+                        throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
                     }
 
                     $conditions = '';
