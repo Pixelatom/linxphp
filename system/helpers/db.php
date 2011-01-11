@@ -110,18 +110,29 @@ class DB {
 
 
 
-  static public function query_scalar($sql){
+  static public function query_scalar($sql,$params=array(),$bind_params=array()){
     if(!self::$link)
     self::connect();
 
     /* Execute a prepared statement by passing an array of values */
-    $sth = self::$link->prepare($sql);
-    $params = func_get_args();
-    unset($params[0]);
-    $sth->execute(array_values($params));
-    $r = $sth->fetchAll(PDO::FETCH_BOTH);
+    $stmt = self::$link->prepare($sql);
+    foreach($params as $field_name=>&$value){
 
-    unset($sth);
+        if (isset($bind_params[$field_name]['data_type']) and isset($bind_params[$field_name]['length'])){
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type'], $bind_params[$field_name]['length']);
+        }
+        elseif (isset($bind_params[$field_name]['data_type'])){
+          $stmt->bindParam($field_name, $value, $bind_params[$field_name]['data_type']);
+        }
+        else{
+          $stmt->bindParam($field_name, $value);
+        }
+
+      }
+    $stmt->execute();
+    $r = $stmt->fetchAll(PDO::FETCH_BOTH);
+
+    unset($stmt);
 
     return $r[0][0];
   }

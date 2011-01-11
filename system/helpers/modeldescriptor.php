@@ -29,12 +29,13 @@ class ModelDescriptor {
         }
 
 
-
+        // will return the description stored in cache
         if (isset(self::$cache[$class_name])){
             
             $schema = self::$cache[$class_name];
             
             if (is_object($model)){
+                // set the value for the cached properties
                 foreach ($schema['properties'] as $property => &$prop) {
                     // we'll ask this condition to avoid force loading of lazy loading properties
                     if ((!isset($prop['attributes']['relationship']['lazy_load'])
@@ -42,6 +43,17 @@ class ModelDescriptor {
                             or isset($model->$property))
                         $prop['value'] = $model->$property;
                 }
+                //for model instances we add a new property describing the unique identifier
+                $unique = array();
+                foreach ($schema['properties'] as $property_name => $property_attributes) {
+                    if (isset($property_attributes['attributes']['primary_key'])
+                            and $property_attributes['attributes']['primary_key'] == true) {
+                        if (!is_null($schema['properties'][$property_name]['value']))
+                         $unique[$property_name] = $schema['properties'][$property_name]['value'];
+                    }
+                }
+                if (!empty($unique))
+                $schema['unique'] = $unique;
             }
             
             return $schema;
@@ -95,14 +107,15 @@ class ModelDescriptor {
         }
 
         $schema['primary_key'] = array();
-
-
         foreach ($schema['properties'] as $property_name => $property_attributes) {
             if (isset($property_attributes['attributes']['primary_key'])
                     and $property_attributes['attributes']['primary_key'] == true) {
                 $schema['primary_key'][] = $property_name;
             }
         }
+
+        
+
 
         
 

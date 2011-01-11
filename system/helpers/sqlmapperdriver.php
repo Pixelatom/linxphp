@@ -201,6 +201,18 @@ class SQLMapperDriver implements IMapperDriver {
      */
 
     public function save($object) {
+
+        $schema = ModelDescriptor::describe($object);
+
+        if (isset($schema['unique']) and $this->exists(get_class($object),$schema['unique'])){
+            return $this->update($object);
+        }
+        else{
+            return $this->insert($object);
+        }
+
+
+        /*
         $update = $this->update($object);
         if ($update == 0) {
             try {
@@ -212,6 +224,8 @@ class SQLMapperDriver implements IMapperDriver {
             }
         }
         return $update;
+        */
+
     }
 
     /*
@@ -690,6 +704,62 @@ class SQLMapperDriver implements IMapperDriver {
         return db::query_scalar($sql);
     }
 
+    /**
+     * return true if the ID passed as argument already exists on database
+     * @param <type> $classname
+     * @param <type> $id
+     * @return <type>
+     */
+    protected function exists($classname, $id) {
+        $sql_schema = $this->get_sql_table_schema($classname);
+
+
+        if (!db::table_exists($sql_schema['table_name'])) {
+            $this->create_table($classname);
+            //return;
+        }
+        $where_id = '';
+
+        if (count($sql_schema['primary_key']) != count($id)) {
+            throw new Exception('Incorrect number of values for primary key');
+        }
+
+        $fields_values = array();
+        $bind_params = array();
+
+        foreach ($sql_schema['primary_key'] as $key) {
+            if (!empty($where_id))
+                $where_id .= " AND ";
+
+            $where_id .= "`$key` = :$key";
+
+            $attributes = $sql_schema['fields'][$key];
+
+            if (!is_array($id))
+                $value = $id;
+            else {
+                if (!isset($id[$key]))
+                    throw new Exception("Missing key '$key' in primary keys argument");
+
+                $value = $id[$key];
+            }
+
+            # proccess value with hooks (just in case it needs to be processed)
+            Event::run('mapper.process_field_value', $key, $attributes, $value);
+
+            $fields_values[':' . $key] = $value;
+            $bind_params[':' . $key] = $attributes['pdo_bind_params'];
+        }
+
+
+        $sql = "select count(1)  FROM `{$sql_schema['table_name']}`";
+
+        $sql .= " WHERE $where_id";
+
+        
+
+        return db::query_scalar($sql,$fields_values,$bind_params) > 0;
+    }
     /**
      * get object by id, but without using cache
      * @param <type> $classname
