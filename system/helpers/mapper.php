@@ -72,7 +72,9 @@ class Mapper {
 
     static public function get($classname, $conditions=null, $order_by=null) {
         self::setup();
-        return self::$driver->get($classname, $conditions , $order_by );
+        $args = func_get_args();
+        return call_user_func_array(array(self::$driver, "get"), $args);
+        //return self::$driver->get($classname, $conditions , $order_by );
     }
 
     static public function _load_relationship($object, $property_name) {

@@ -7,9 +7,9 @@
  */
 class MySQLMapperDriver extends SQLMapperDriver{
 
-     public function insert($object) {
-         $return = parent::insert($object);
-         if ($return){
+     protected function _insert($object){
+         $return = parent::_insert($object);
+         if ($return>0){
              $d = ModelDescriptor::describe($object);
              foreach ($d['properties'] as $property=>$property_attributes){
                  if ((isset($property_attributes['attributes']['auto_increment'])

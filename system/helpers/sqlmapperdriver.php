@@ -243,7 +243,7 @@ class SQLMapperDriver implements IMapperDriver {
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
-
+            // saves only CHILD properties
             if (isset($property_attributes['attributes']['relationship']['type']) and $property_attributes['attributes']['relationship']['type'] == 'childs') {
                 // save child objects using inverse property name
                 if (is_object($object->$property_name)) {
@@ -285,23 +285,16 @@ class SQLMapperDriver implements IMapperDriver {
     /*
      * CRUD functions
      */
-
-    public function insert($object) {
-
-        $sql_schema = $this->get_sql_table_schema($object);
-        if (!db::table_exists($sql_schema['table_name'])) {
-            $this->create_table($object);
-        }
-
-        $object->_before_insert();
-
-        // LOAD and save childs properties
-        $count = $this->save_relationships($object);
+    /**
+     * build and execute the insert SQL statement for a single model
+     * @param <type> $object
+     * @return <type>
+     */
+    protected function _insert($object){
+        // quantity of entities saved (to be returned by the function)
+        $count = 0;
 
         $sql_schema = $this->get_sql_table_schema($object);
-
-
-
 
         $fields_names = array();
         $fields_values = array();
@@ -332,7 +325,26 @@ class SQLMapperDriver implements IMapperDriver {
 
         $count += db::execute($sql, $fields_values, $bind_params);
 
+        return $count;
+    }
+    public function insert($object) {
+
+        $sql_schema = $this->get_sql_table_schema($object);
+        if (!db::table_exists($sql_schema['table_name'])) {
+            $this->create_table($object);
+        }
+
+        $object->_before_insert();
+        
+        $count = $this->_insert($object);
+
         $object->_after_insert();
+
+
+        if ($count>0){
+            // LOAD and save childs properties
+            $count += $this->save_relationships($object);
+        }
 
         return $count;
     }
@@ -344,9 +356,12 @@ class SQLMapperDriver implements IMapperDriver {
             return false;
         }
 
+        // quantity of entities saved (to be returned by the function)
+        $count = 0;
+
         $object->_before_update();
 
-        $count = $this->save_relationships($object);
+        
         $sql_schema = $this->get_sql_table_schema($object);
 
         $field_updates = '';
@@ -393,6 +408,8 @@ class SQLMapperDriver implements IMapperDriver {
         $count += db::execute($sql, $fields_values, $bind_params);
 
         $object->_after_update();
+
+        $count += $this->save_relationships($object);
 
         return $count;
     }
