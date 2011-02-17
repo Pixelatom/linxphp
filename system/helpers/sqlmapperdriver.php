@@ -700,7 +700,7 @@ class SQLMapperDriver implements IMapperDriver {
         
         
         $processed_paths = array();
-        if (!empty($conditions) and !empty($order_by)) {
+        if (!empty($conditions) or !empty($order_by)) {
             // we'll search for possible uses of extended fieds that may need joins
             preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+\.\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
 
