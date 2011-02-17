@@ -697,7 +697,113 @@ class SQLMapperDriver implements IMapperDriver {
                 $sql .= " left join `{$type_sql_schema['table_name']}` `{$property_name}`  on $join_condition ";
             }
         }
+        
+        
+        $processed_paths = array();
+        if (!empty($conditions) and !empty($order_by)) {
+            // we'll search for possible uses of extended fieds that may need joins
+            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+\.\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
 
+            foreach ($result["joinfield"] as $field){
+                
+                $tables = explode('.', $field);
+
+                $path = array();
+                $pathstring = '';
+                $realpath = '';
+                $prev_pathstring = '';
+
+                $type_schema = $obj_schema;
+                $type_sql_schema = $sql_schema;
+                
+
+                foreach ($tables as $property_name){
+
+                    if (count($path) == count($tables)-1) break;
+
+                    $prev_pathstring = $pathstring;
+
+                    if (count($path)>0){
+                        $pathstring .= '_';
+                        $realpath .= '.';
+                    }
+
+                    $pathstring .= $property_name;
+                    $realpath .= $property_name;
+
+                    $path[$realpath] = $pathstring;
+
+
+                    $property_attributes = $type_schema['properties'][$property_name];
+
+                    // previous object schema to be used on the joins
+                    $prev_sql_schema = $type_sql_schema;
+                    $prev_obj_schema = $type_schema;
+
+                    // current part of the path schemas
+                    $type_classname = $property_attributes['attributes']['type'];
+                    $type_schema = $this->get_class_schema($type_classname);
+                    $type_sql_schema = $this->get_sql_table_schema($type_classname);
+
+                    if (in_array($pathstring, $processed_paths)) continue;
+                    $processed_paths[$realpath] = $pathstring;
+                    
+
+                    if (!db::table_exists($type_sql_schema['table_name'])) {
+                        $this->create_table($type_classname);
+                    }
+
+                    // we asume first part of the field is already included
+                    if (count($path)==1) continue;
+
+                    
+
+                    # we're going to define fore keys for this relationship
+                    if (!isset($property_attributes['attributes']['relationship']['type'])) {
+                        # relationship must be defined in comments!
+                        throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+                    }
+                    $join_condition = '';
+
+                    switch ($property_attributes['attributes']['relationship']['type']) {
+                        case 'childs':
+                            foreach ($prev_sql_schema['primary_key'] as $primary_key) {
+
+                                if (!empty($join_condition))
+                                    $join_condition .= " AND ";
+
+
+                                # we're going to define fore keys for this relationship
+                                if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
+                                    # relationship must be defined in comments!
+                                    throw new Exception("inverse_property attribute must be defined for field $property_name in model {$prev_obj_schema['type']} ");
+                                }
+
+                                $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
+                                $field = $inverse_property . '_' . $primary_key;
+
+                                $join_condition .= " `{$pathstring}`.`$field` = `{$prev_pathstring}`.`$primary_key` ";
+                            }
+                            break;
+                        case 'parent':
+
+                            foreach ($type_sql_schema['primary_key'] as $primary_key) {
+
+                                if (!empty($join_condition))
+                                    $join_condition .= " AND ";
+
+                                $field = $property_name . '_' . $primary_key;
+
+                                $join_condition .= " `{$prev_pathstring}`.`$field` = `{$pathstring}`.`$primary_key` ";
+                            }
+                            break;
+                    }
+
+                    $sql .= " left join `{$type_sql_schema['table_name']}` `{$pathstring}`  on $join_condition ";
+                    
+                }                
+            }            
+        }
 
         if (!empty($conditions))
             $sql .= " WHERE $conditions";
@@ -705,6 +811,15 @@ class SQLMapperDriver implements IMapperDriver {
         if (!empty($order_by))
             $sql .= " ORDER BY $order_by";
 
+        // in case the sql contains extra join we will replace them for their alias
+        foreach ($processed_paths as $search => $replace){
+
+            $sql = preg_replace('/([^\'"]{0,1})('.  preg_quote($search) .')([^\'"]{0,1})/', '$1'.$replace.'$3', $sql);
+        }
+/*
+        if (!empty($processed_paths))
+            die($sql);
+*/
         return $sql;
     }
 
