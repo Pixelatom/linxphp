@@ -107,17 +107,17 @@ class SQLMapperDriver implements IMapperDriver {
                         $pdo_bind_params = array('data_type' => PDO::PARAM_INT);
                         $type = 'INTEGER';
                         break;
-                    /*
-                      case 'float':
-                      $type = 'FLOAT';
-                      break;
-                      case 'date':
-                      $type = 'DATE';
-                      break;
-                      case 'datetime':
-                      $type = 'DATETIME';
-                      break;
-                     */
+                    
+                    case 'float':
+                        $type = 'FLOAT';
+                        break;
+                    case 'date':
+                        $type = 'DATE';
+                        break;
+                    case 'datetime':
+                        $type = 'DATETIME';
+                        break;
+                    
                     default:
                         # unrecognized type! let's see if it's a class name
 
@@ -638,7 +638,7 @@ class SQLMapperDriver implements IMapperDriver {
 
         $sql = "SELECT distinct `{$sql_schema['table_name']}`.* FROM `{$sql_schema['table_name']}`";
 
-
+/*
         // create relationship properties with left joins
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
             if ($property_attributes['attributes']['is_relationship']) {
@@ -697,19 +697,21 @@ class SQLMapperDriver implements IMapperDriver {
                 $sql .= " left join `{$type_sql_schema['table_name']}` `{$property_name}`  on $join_condition ";
             }
         }
-        
+  */
         
         $processed_paths = array();
         if (!empty($conditions) or !empty($order_by)) {
             // we'll search for possible uses of extended fieds that may need joins
-            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+\.\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
+            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
 
             foreach ($result["joinfield"] as $field){
                 
                 $tables = explode('.', $field);
 
-                $path = array();
-                $pathstring = '';
+                $path = array(
+                    $sql_schema['table_name'] => $sql_schema['table_name'],
+                );
+                $pathstring = $sql_schema['table_name'];
                 $realpath = '';
                 $prev_pathstring = '';
 
@@ -718,23 +720,44 @@ class SQLMapperDriver implements IMapperDriver {
                 
 
                 foreach ($tables as $property_name){
+                    // non existing property are ignored
+                    if (!isset($type_schema['properties'][$property_name])) continue;
+                    
+                    $property_attributes = $type_schema['properties'][$property_name];
 
-                    if (count($path) == count($tables)-1) break;
+                    // if property is not a relationship we'll stop here
+                    if (!$property_attributes['attributes']['is_relationship']) break;
+
+                    
+                    
 
                     $prev_pathstring = $pathstring;
 
-                    if (count($path)>0){
+                    if (count($path)>1){
                         $pathstring .= '_';
                         $realpath .= '.';
+                        $pathstring .= $property_name;
+                        $realpath .= $property_name;
+                    }
+                    else{
+                        $pathstring = $property_name;
+                        $realpath = $property_name;
                     }
 
-                    $pathstring .= $property_name;
-                    $realpath .= $property_name;
+                    
 
                     $path[$realpath] = $pathstring;
 
+                    
 
-                    $property_attributes = $type_schema['properties'][$property_name];
+                    if (count($path) == count($tables) -1 ) break;
+
+                    
+
+
+
+
+
 
                     // previous object schema to be used on the joins
                     $prev_sql_schema = $type_sql_schema;
@@ -752,10 +775,10 @@ class SQLMapperDriver implements IMapperDriver {
                     if (!db::table_exists($type_sql_schema['table_name'])) {
                         $this->create_table($type_classname);
                     }
-
+/*
                     // we asume first part of the field is already included
                     if (count($path)==1) continue;
-
+*/
                     
 
                     # we're going to define fore keys for this relationship
