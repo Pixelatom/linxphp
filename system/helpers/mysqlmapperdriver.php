@@ -87,6 +87,8 @@ class MySQLMapperDriver extends SQLMapperDriver{
         $sql = "CREATE TABLE {$sql_schema['table_name']}
         ({$fields_declaration}
         )";
+
+        //echo $sql;
         
         db::execute($sql);
     }
