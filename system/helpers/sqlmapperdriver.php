@@ -701,8 +701,11 @@ class SQLMapperDriver implements IMapperDriver {
         
         $processed_paths = array();
         if (!empty($conditions) or !empty($order_by)) {
+            
             // we'll search for possible uses of extended fieds that may need joins
             preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
+
+            
 
             foreach ($result["joinfield"] as $field){
                 
@@ -728,9 +731,6 @@ class SQLMapperDriver implements IMapperDriver {
                     // if property is not a relationship we'll stop here
                     if (!$property_attributes['attributes']['is_relationship']) break;
 
-                    
-                    
-
                     $prev_pathstring = $pathstring;
 
                     if (count($path)>1){
@@ -744,20 +744,12 @@ class SQLMapperDriver implements IMapperDriver {
                         $realpath = $property_name;
                     }
 
-                    
-
                     $path[$realpath] = $pathstring;
 
+                    //if (count($path) == count($tables)  ) break;
                     
-
-                    if (count($path) == count($tables) -1 ) break;
-
+                    //echo $property_name.'<br>';
                     
-
-
-
-
-
 
                     // previous object schema to be used on the joins
                     $prev_sql_schema = $type_sql_schema;
