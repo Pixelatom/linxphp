@@ -100,8 +100,8 @@ class ModelDescriptor {
                     $prop['attributes']['is_relationship'] = true;
                 }
 
-
-                $schema['properties'][$property] = $prop;
+		if(!isset($prop['attributes']['model']) or $prop['attributes']['model']!='ignore')
+		    $schema['properties'][$property] = $prop;
             }
             
         }
