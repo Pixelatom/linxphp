@@ -14,7 +14,8 @@
  */
 
 class SQLMapperDriver implements IMapperDriver {
-	protected $escape = '';
+
+    protected $escape = '';
 
     protected function get_class_schema($class_name) {
         return ModelDescriptor::describe($class_name);
@@ -108,7 +109,7 @@ class SQLMapperDriver implements IMapperDriver {
                         $pdo_bind_params = array('data_type' => PDO::PARAM_INT);
                         $type = 'INTEGER';
                         break;
-                    
+
                     case 'float':
                         $type = 'FLOAT';
                         break;
@@ -118,7 +119,7 @@ class SQLMapperDriver implements IMapperDriver {
                     case 'datetime':
                         $type = 'DATETIME';
                         break;
-                    
+
                     default:
                         # unrecognized type! let's see if it's a class name
 
@@ -205,28 +206,26 @@ class SQLMapperDriver implements IMapperDriver {
 
         $schema = ModelDescriptor::describe($object);
 
-        if (isset($schema['unique']) and $this->exists(get_class($object),$schema['unique'])){
+        if (isset($schema['unique']) and $this->exists(get_class($object), $schema['unique'])) {
             return $this->update($object);
-        }
-        else{
+        } else {
             return $this->insert($object);
         }
 
 
         /*
-        $update = $this->update($object);
-        if ($update == 0) {
-            try {
-                return $this->insert($object);
-            } catch (PDOException $e) {
-                // if there where an update == 0 because the object wasn't modified
-                // then the insert will give an duplicated id error
-                // we chatch here
-            }
-        }
-        return $update;
-        */
-
+          $update = $this->update($object);
+          if ($update == 0) {
+          try {
+          return $this->insert($object);
+          } catch (PDOException $e) {
+          // if there where an update == 0 because the object wasn't modified
+          // then the insert will give an duplicated id error
+          // we chatch here
+          }
+          }
+          return $update;
+         */
     }
 
     /*
@@ -282,29 +281,35 @@ class SQLMapperDriver implements IMapperDriver {
         }
         return $count;
     }
-	
-	protected function table_exists($tableName){
-    
-     
-	// Other RDBMS.  Graceful degradation
-	$exists = true;
-	$cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
-	db::query($cmdOthers);
-     
-    
 
-    return $exists;
-  }
+    protected function table_exists($tableName) {
+
+
+        // Other RDBMS.  Graceful degradation
+        $exists = true;
+        try{
+            $cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
+            db::query_scalar($cmdOthers);
+        }
+        catch (Exception $e){
+            $exists = false;
+        }
+
+
+
+        return $exists;
+    }
 
     /*
      * CRUD functions
      */
+
     /**
      * build and execute the insert SQL statement for a single model
      * @param <type> $object
      * @return <type>
      */
-    protected function _insert($object){
+    protected function _insert($object) {
         // quantity of entities saved (to be returned by the function)
         $count = 0;
 
@@ -336,11 +341,12 @@ class SQLMapperDriver implements IMapperDriver {
 
 
         $sql = "INSERT INTO {$this->escape}{$sql_schema['table_name']}{$this->escape} ($fields) VALUES ($params)";
-die($sql);
+
         $count += db::execute($sql, $fields_values, $bind_params);
 
         return $count;
     }
+
     public function insert($object) {
 
         $sql_schema = $this->get_sql_table_schema($object);
@@ -349,13 +355,13 @@ die($sql);
         }
 
         $object->_before_insert();
-        
+
         $count = $this->_insert($object);
 
         $object->_after_insert();
 
 
-        if ($count>0){
+        if ($count > 0) {
             // LOAD and save childs properties
             $count += $this->save_relationships($object);
         }
@@ -375,7 +381,7 @@ die($sql);
 
         $object->_before_update();
 
-        
+
         $sql_schema = $this->get_sql_table_schema($object);
 
         $field_updates = '';
@@ -652,77 +658,77 @@ die($sql);
 
         $sql = "SELECT distinct {$this->escape}{$sql_schema['table_name']}{$this->escape}.* FROM {$this->escape}{$sql_schema['table_name']}{$this->escape}";
 
-/*
-        // create relationship properties with left joins
-        foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-            if ($property_attributes['attributes']['is_relationship']) {
+        /*
+          // create relationship properties with left joins
+          foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
+          if ($property_attributes['attributes']['is_relationship']) {
 
 
-                $type_classname = $property_attributes['attributes']['type'];
-                $type_schema = $this->get_class_schema($type_classname);
-                $type_sql_schema = $this->get_sql_table_schema($type_classname);
+          $type_classname = $property_attributes['attributes']['type'];
+          $type_schema = $this->get_class_schema($type_classname);
+          $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
 
-                if (!$this->table_exists($type_sql_schema['table_name'])) {
-                    $this->create_table($type_classname);
-                }
+          if (!$this->table_exists($type_sql_schema['table_name'])) {
+          $this->create_table($type_classname);
+          }
 
-                # we're going to define fore keys for this relationship
-                if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                    # relationship must be defined in comments!
-                    throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
-                }
-                $join_condition = '';
+          # we're going to define fore keys for this relationship
+          if (!isset($property_attributes['attributes']['relationship']['type'])) {
+          # relationship must be defined in comments!
+          throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+          }
+          $join_condition = '';
 
-                switch ($property_attributes['attributes']['relationship']['type']) {
-                    case 'childs':
-                        foreach ($sql_schema['primary_key'] as $primary_key) {
+          switch ($property_attributes['attributes']['relationship']['type']) {
+          case 'childs':
+          foreach ($sql_schema['primary_key'] as $primary_key) {
 
-                            if (!empty($join_condition))
-                                $join_condition .= " AND ";
+          if (!empty($join_condition))
+          $join_condition .= " AND ";
 
 
-                            # we're going to define fore keys for this relationship
-                            if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
-                                # relationship must be defined in comments!
-                                throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
-                            }
+          # we're going to define fore keys for this relationship
+          if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
+          # relationship must be defined in comments!
+          throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+          }
 
-                            $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
-                            $field = $inverse_property . '_' . $primary_key;
+          $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
+          $field = $inverse_property . '_' . $primary_key;
 
-                            $join_condition .= " {$this->escape}{$property_name}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
-                        }
-                        break;
-                    case 'parent':
+          $join_condition .= " {$this->escape}{$property_name}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
+          }
+          break;
+          case 'parent':
 
-                        foreach ($type_sql_schema['primary_key'] as $primary_key) {
+          foreach ($type_sql_schema['primary_key'] as $primary_key) {
 
-                            if (!empty($join_condition))
-                                $join_condition .= " AND ";
+          if (!empty($join_condition))
+          $join_condition .= " AND ";
 
-                            $field = $property_name . '_' . $primary_key;
+          $field = $property_name . '_' . $primary_key;
 
-                            $join_condition .= " {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$property_name}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
-                        }
-                        break;
-                }
+          $join_condition .= " {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$property_name}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
+          }
+          break;
+          }
 
-                $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$property_name}{$this->escape}  on $join_condition ";
-            }
-        }
-  */
-        
+          $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$property_name}{$this->escape}  on $join_condition ";
+          }
+          }
+         */
+
         $processed_paths = array();
         if (!empty($conditions) or !empty($order_by)) {
-            
+
             // we'll search for possible uses of extended fieds that may need joins
             preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
 
-            
 
-            foreach ($result["joinfield"] as $field){
-                
+
+            foreach ($result["joinfield"] as $field) {
+
                 $tables = explode('.', $field);
 
                 $path = array(
@@ -734,26 +740,27 @@ die($sql);
 
                 $type_schema = $obj_schema;
                 $type_sql_schema = $sql_schema;
-                
 
-                foreach ($tables as $property_name){
+
+                foreach ($tables as $property_name) {
                     // non existing property are ignored
-                    if (!isset($type_schema['properties'][$property_name])) continue;
-                    
+                    if (!isset($type_schema['properties'][$property_name]))
+                        continue;
+
                     $property_attributes = $type_schema['properties'][$property_name];
 
                     // if property is not a relationship we'll stop here
-                    if (!$property_attributes['attributes']['is_relationship']) break;
+                    if (!$property_attributes['attributes']['is_relationship'])
+                        break;
 
                     $prev_pathstring = $pathstring;
 
-                    if (count($path)>1){
+                    if (count($path) > 1) {
                         $pathstring .= '_';
                         $realpath .= '.';
                         $pathstring .= $property_name;
                         $realpath .= $property_name;
-                    }
-                    else{
+                    } else {
                         $pathstring = $property_name;
                         $realpath = $property_name;
                     }
@@ -761,10 +768,7 @@ die($sql);
                     $path[$realpath] = $pathstring;
 
                     //if (count($path) == count($tables)  ) break;
-                    
                     //echo $property_name.'<br>';
-                    
-
                     // previous object schema to be used on the joins
                     $prev_sql_schema = $type_sql_schema;
                     $prev_obj_schema = $type_schema;
@@ -774,18 +778,19 @@ die($sql);
                     $type_schema = $this->get_class_schema($type_classname);
                     $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
-                    if (in_array($pathstring, $processed_paths)) continue;
+                    if (in_array($pathstring, $processed_paths))
+                        continue;
                     $processed_paths[$realpath] = $pathstring;
-                    
+
 
                     if (!$this->table_exists($type_sql_schema['table_name'])) {
                         $this->create_table($type_classname);
                     }
-/*
-                    // we asume first part of the field is already included
-                    if (count($path)==1) continue;
-*/
-                    
+                    /*
+                      // we asume first part of the field is already included
+                      if (count($path)==1) continue;
+                     */
+
 
                     # we're going to define fore keys for this relationship
                     if (!isset($property_attributes['attributes']['relationship']['type'])) {
@@ -829,9 +834,8 @@ die($sql);
                     }
 
                     $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$pathstring}{$this->escape}  on $join_condition ";
-                    
-                }                
-            }            
+                }
+            }
         }
 
         if (!empty($conditions))
@@ -841,14 +845,14 @@ die($sql);
             $sql .= " ORDER BY $order_by";
 
         // in case the sql contains extra join we will replace them for their alias
-        foreach ($processed_paths as $search => $replace){
+        foreach ($processed_paths as $search => $replace) {
 
-            $sql = preg_replace('/([^\'"]{0,1})('.  preg_quote($search) .')([^\'"]{0,1})/', '$1'.$replace.'$3', $sql);
+            $sql = preg_replace('/([^\'"]{0,1})(' . preg_quote($search) . ')([^\'"]{0,1})/', '$1' . $replace . '$3', $sql);
         }
-/*
-        if (!empty($processed_paths))
-            die($sql);
-*/
+        /*
+          if (!empty($processed_paths))
+          die($sql);
+         */
         return $sql;
     }
 
@@ -860,7 +864,7 @@ die($sql);
         $sql = $this->build_select_query($classname, $conditions);
 
         $sql = "select count(1) from ($sql) as selectquery";
-        
+
 
         return db::query_scalar($sql);
     }
@@ -917,10 +921,11 @@ die($sql);
 
         $sql .= " WHERE $where_id";
 
-        
 
-        return db::query_scalar($sql,$fields_values,$bind_params) > 0;
+
+        return db::query_scalar($sql, $fields_values, $bind_params) > 0;
     }
+
     /**
      * get object by id, but without using cache
      * @param <type> $classname
@@ -1168,4 +1173,5 @@ die($sql);
     }
 
 }
+
 ?>
