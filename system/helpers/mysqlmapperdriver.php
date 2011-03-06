@@ -7,6 +7,8 @@
  */
 class MySQLMapperDriver extends SQLMapperDriver{
 
+	protected $escape = '`';
+
      protected function _insert($object){
          $return = parent::_insert($object);
          if ($return>0){

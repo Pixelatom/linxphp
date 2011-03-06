@@ -14,6 +14,7 @@
  */
 
 class SQLMapperDriver implements IMapperDriver {
+	protected $escape = '';
 
     protected function get_class_schema($class_name) {
         return ModelDescriptor::describe($class_name);
@@ -281,6 +282,19 @@ class SQLMapperDriver implements IMapperDriver {
         }
         return $count;
     }
+	
+	protected function table_exists($tableName){
+    
+     
+	// Other RDBMS.  Graceful degradation
+	$exists = true;
+	$cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
+	db::query($cmdOthers);
+     
+    
+
+    return $exists;
+  }
 
     /*
      * CRUD functions
@@ -321,8 +335,8 @@ class SQLMapperDriver implements IMapperDriver {
         $params = implode(',', array_keys($fields_values));
 
 
-        $sql = "INSERT INTO `{$sql_schema['table_name']}` ($fields) VALUES ($params)";
-
+        $sql = "INSERT INTO {$this->escape}{$sql_schema['table_name']}{$this->escape} ($fields) VALUES ($params)";
+die($sql);
         $count += db::execute($sql, $fields_values, $bind_params);
 
         return $count;
@@ -330,7 +344,7 @@ class SQLMapperDriver implements IMapperDriver {
     public function insert($object) {
 
         $sql_schema = $this->get_sql_table_schema($object);
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
         }
 
@@ -351,7 +365,7 @@ class SQLMapperDriver implements IMapperDriver {
 
     public function update($object) {
         $sql_schema = $this->get_sql_table_schema($object);
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
             return false;
         }
@@ -396,11 +410,11 @@ class SQLMapperDriver implements IMapperDriver {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "`$key` = :$key";
+            $where_id .= "{$this->escape}$key{$this->escape} = :$key";
         }
 
 
-        $sql = "UPDATE `{$sql_schema['table_name']}`
+        $sql = "UPDATE {$this->escape}{$sql_schema['table_name']}{$this->escape}
         SET $field_updates
         WHERE $where_id";
 
@@ -446,7 +460,7 @@ class SQLMapperDriver implements IMapperDriver {
     public function delete($object, $delete_childs=true) {
         $sql_schema = $this->get_sql_table_schema($object);
 
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
             $this->insert($object);
             return;
@@ -472,7 +486,7 @@ class SQLMapperDriver implements IMapperDriver {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "`$key` = :$key";
+            $where_id .= "{$this->escape}$key{$this->escape} = :$key";
 
             $attributes = $sql_schema['fields'][$key];
 
@@ -485,7 +499,7 @@ class SQLMapperDriver implements IMapperDriver {
         }
 
 
-        $sql = "DELETE FROM `{$sql_schema['table_name']}` WHERE $where_id";
+        $sql = "DELETE FROM {$this->escape}{$sql_schema['table_name']}{$this->escape} WHERE $where_id";
 
 
         $count += db::execute($sql, $fields_values, $bind_params);
@@ -527,7 +541,7 @@ class SQLMapperDriver implements IMapperDriver {
             $fields_declaration .= ", PRIMARY KEY (" . implode(',', $sql_schema['primary_key']) . ")";
         }
 
-        $sql = "CREATE TABLE `{$sql_schema['table_name']}`
+        $sql = "CREATE TABLE {$this->escape}{$sql_schema['table_name']}{$this->escape}
         ({$fields_declaration}
         )";
 
@@ -631,12 +645,12 @@ class SQLMapperDriver implements IMapperDriver {
         $obj_schema = $this->get_class_schema($classname);
         $sql_schema = $this->get_sql_table_schema($classname);
 
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
             //return;
         }
 
-        $sql = "SELECT distinct `{$sql_schema['table_name']}`.* FROM `{$sql_schema['table_name']}`";
+        $sql = "SELECT distinct {$this->escape}{$sql_schema['table_name']}{$this->escape}.* FROM {$this->escape}{$sql_schema['table_name']}{$this->escape}";
 
 /*
         // create relationship properties with left joins
@@ -649,7 +663,7 @@ class SQLMapperDriver implements IMapperDriver {
                 $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
 
-                if (!db::table_exists($type_sql_schema['table_name'])) {
+                if (!$this->table_exists($type_sql_schema['table_name'])) {
                     $this->create_table($type_classname);
                 }
 
@@ -677,7 +691,7 @@ class SQLMapperDriver implements IMapperDriver {
                             $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
                             $field = $inverse_property . '_' . $primary_key;
 
-                            $join_condition .= " `{$property_name}`.`$field` = `{$sql_schema['table_name']}`.`$primary_key` ";
+                            $join_condition .= " {$this->escape}{$property_name}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
                         }
                         break;
                     case 'parent':
@@ -689,12 +703,12 @@ class SQLMapperDriver implements IMapperDriver {
 
                             $field = $property_name . '_' . $primary_key;
 
-                            $join_condition .= " `{$sql_schema['table_name']}`.`$field` = `{$property_name}`.`$primary_key` ";
+                            $join_condition .= " {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$property_name}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
                         }
                         break;
                 }
 
-                $sql .= " left join `{$type_sql_schema['table_name']}` `{$property_name}`  on $join_condition ";
+                $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$property_name}{$this->escape}  on $join_condition ";
             }
         }
   */
@@ -764,7 +778,7 @@ class SQLMapperDriver implements IMapperDriver {
                     $processed_paths[$realpath] = $pathstring;
                     
 
-                    if (!db::table_exists($type_sql_schema['table_name'])) {
+                    if (!$this->table_exists($type_sql_schema['table_name'])) {
                         $this->create_table($type_classname);
                     }
 /*
@@ -797,7 +811,7 @@ class SQLMapperDriver implements IMapperDriver {
                                 $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
                                 $field = $inverse_property . '_' . $primary_key;
 
-                                $join_condition .= " `{$pathstring}`.`$field` = `{$prev_pathstring}`.`$primary_key` ";
+                                $join_condition .= " {$this->escape}{$pathstring}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$prev_pathstring}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
                             }
                             break;
                         case 'parent':
@@ -809,12 +823,12 @@ class SQLMapperDriver implements IMapperDriver {
 
                                 $field = $property_name . '_' . $primary_key;
 
-                                $join_condition .= " `{$prev_pathstring}`.`$field` = `{$pathstring}`.`$primary_key` ";
+                                $join_condition .= " {$this->escape}{$prev_pathstring}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$pathstring}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
                             }
                             break;
                     }
 
-                    $sql .= " left join `{$type_sql_schema['table_name']}` `{$pathstring}`  on $join_condition ";
+                    $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$pathstring}{$this->escape}  on $join_condition ";
                     
                 }                
             }            
@@ -861,7 +875,7 @@ class SQLMapperDriver implements IMapperDriver {
         $sql_schema = $this->get_sql_table_schema($classname);
 
 
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
             //return;
         }
@@ -878,7 +892,7 @@ class SQLMapperDriver implements IMapperDriver {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "`$key` = :$key";
+            $where_id .= "{$this->escape}$key{$this->escape} = :$key";
 
             $attributes = $sql_schema['fields'][$key];
 
@@ -899,7 +913,7 @@ class SQLMapperDriver implements IMapperDriver {
         }
 
 
-        $sql = "select count(1)  FROM `{$sql_schema['table_name']}`";
+        $sql = "select count(1)  FROM {$this->escape}{$sql_schema['table_name']}{$this->escape}";
 
         $sql .= " WHERE $where_id";
 
@@ -917,7 +931,7 @@ class SQLMapperDriver implements IMapperDriver {
         $sql_schema = $this->get_sql_table_schema($classname);
 
 
-        if (!db::table_exists($sql_schema['table_name'])) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
             //return;
         }
@@ -934,7 +948,7 @@ class SQLMapperDriver implements IMapperDriver {
             if (!empty($where_id))
                 $where_id .= " AND ";
 
-            $where_id .= "`$key` = :$key";
+            $where_id .= "{$this->escape}$key{$this->escape} = :$key";
 
             $attributes = $sql_schema['fields'][$key];
 
@@ -955,7 +969,7 @@ class SQLMapperDriver implements IMapperDriver {
         }
 
 
-        $sql = "SELECT * FROM `{$sql_schema['table_name']}`";
+        $sql = "SELECT * FROM {$this->escape}{$sql_schema['table_name']}{$this->escape}";
 
         $sql .= " WHERE $where_id";
 

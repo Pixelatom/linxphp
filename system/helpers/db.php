@@ -137,24 +137,7 @@ class DB {
     return $r[0][0];
   }
 
-  static public function table_exists($tableName){
-    if(!self::$link)
-    self::connect();
-      try
-      {
-        // Other RDBMS.  Graceful degradation
-        $exists = true;
-        $cmdOthers = "select 1 from `" . $tableName . "` where 1 = 0";
-        self::query($cmdOthers);
-      }
-      catch(Exception $e1)
-      {
-        $exists = false;
-      }
-    
-
-    return $exists;
-  }
+  
 
   static public function get_last_insert_id($name = NULL ){
     return self::$link->lastInsertId($name = NULL );
