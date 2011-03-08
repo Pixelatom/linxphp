@@ -70,7 +70,7 @@ class Mapper {
         return self::$driver->get_by_id($classname, $id);
     }
 
-    static public function get($classname, $conditions=null, $order_by=null) {
+    static public function get($classname, $conditions=null, $order_by=null, $limit = null, $offset = null) {
         self::setup();
         $args = func_get_args();
         return call_user_func_array(array(self::$driver, "get"), $args);
