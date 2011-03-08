@@ -289,7 +289,7 @@ class SQLMapperDriver implements IMapperDriver {
         $exists = true;
         try{
             $cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
-            db::query_scalar($cmdOthers);
+            db::query($cmdOthers);
         }
         catch (Exception $e){
             $exists = false;
