@@ -95,7 +95,7 @@ class MySQLMapperDriver extends SQLMapperDriver{
         db::execute($sql);
     }
 
-     protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null , $offset = 1) {
+     protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null , $offset = 0) {
         $sql = parent::build_select_query($classname, $conditions, $order_by);
 
         if (!is_null($limit)){
@@ -109,11 +109,7 @@ class MySQLMapperDriver extends SQLMapperDriver{
 
         
         $sql = $this->build_select_query($classname, $conditions, $order_by, $limit , $offset);
-
-        
-
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
-
         foreach ($return as &$object) {
 
             // revisa si cada uno de los objetos retornados esta en cache,
