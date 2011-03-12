@@ -1,0 +1,31 @@
+Controllers
+===========
+
+A Controller is a class file that stands in between the models and the views in an application. It passes information on to the model when data needs to be changed and it requests information from the model when data needs to be loaded. Controllers then pass on the information of the model to the views where the final output can be rendered for the users. Controllers essentially control the flow of the application.
+
+Controllers are called by the Application::route() function based on the Route that the url matched. Be sure to read the *routing documentation* to understand how to use routes to map urls to your controllers.
+
+###Creating Controllers
+
+In order to function, a controller must do the following:
+
+* Reside in applications/controllers (or a sub-directory)
+* Filename must be lowercase, e.g. articles.php
+* The class name must map to the filename, finish in 'Controller' and each word is capitalized
+* Must have the Controller class as a (grand)parent
+
+Some examples of controller names and filename:
+
+	// application/controllers/admin.php
+	class AdminController extends Controller {
+
+Controllers can be in sub-folders and extends other controllers.
+You can also have a controller extend another controller to share common things, such as requiring you to be logged in to use all of those controllers.
+
+	// application/controllers/admin.php
+	class AdminController extends Controller {
+		// This controller would have a checks if the user is logged in
+	 
+	// application/controllers/plugins.php
+	class PluginsController extends AdminController {
+		// Because this controller extends AdminController, it would have the same logged in check
