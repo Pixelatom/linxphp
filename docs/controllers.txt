@@ -5,7 +5,8 @@ A Controller is a class file that stands in between the models and the views in 
 
 Controllers are called by the Application::route() function based on the Route that the url matched. Be sure to read the *routing documentation* to understand how to use routes to map urls to your controllers.
 
-###Creating Controllers
+Creating Controllers
+--------------------
 
 In order to function, a controller must do the following:
 
@@ -29,3 +30,15 @@ You can also have a controller extend another controller to share common things,
 	// application/controllers/plugins.php
 	class PluginsController extends AdminController {
 		// Because this controller extends AdminController, it would have the same logged in check
+
+Routing
+-------
+
+LinxPHP provides a very powerful routing system. In essence, routes provide an interface between the urls and your controllers and actions. With the correct routes you could make almost any url scheme correspond to almost any arrangement of controllers, and you could change one without impacting the other.
+
+### LinxPHP URLs
+
+URLs in Linx are composed of segments. A typical segmented URL is http://localhost/directory/control/action/arg1/arg2
+
+The segments correspond (in order ) to a directory (optional), a controller, a controller method, and the method arguments.
+
