@@ -211,21 +211,6 @@ class SQLMapperDriver implements IMapperDriver {
         } else {
             return $this->insert($object);
         }
-
-
-        /*
-          $update = $this->update($object);
-          if ($update == 0) {
-          try {
-          return $this->insert($object);
-          } catch (PDOException $e) {
-          // if there where an update == 0 because the object wasn't modified
-          // then the insert will give an duplicated id error
-          // we chatch here
-          }
-          }
-          return $update;
-         */
     }
 
     /*
@@ -652,78 +637,17 @@ class SQLMapperDriver implements IMapperDriver {
         $sql_schema = $this->get_sql_table_schema($classname);
 
         if (!$this->table_exists($sql_schema['table_name'])) {
-            $this->create_table($classname);
-            //return;
+            $this->create_table($classname);   
         }
 
         $sql = "SELECT distinct {$this->escape}{$sql_schema['table_name']}{$this->escape}.* FROM {$this->escape}{$sql_schema['table_name']}{$this->escape}";
 
-        /*
-          // create relationship properties with left joins
-          foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-          if ($property_attributes['attributes']['is_relationship']) {
-
-
-          $type_classname = $property_attributes['attributes']['type'];
-          $type_schema = $this->get_class_schema($type_classname);
-          $type_sql_schema = $this->get_sql_table_schema($type_classname);
-
-
-          if (!$this->table_exists($type_sql_schema['table_name'])) {
-          $this->create_table($type_classname);
-          }
-
-          # we're going to define fore keys for this relationship
-          if (!isset($property_attributes['attributes']['relationship']['type'])) {
-          # relationship must be defined in comments!
-          throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
-          }
-          $join_condition = '';
-
-          switch ($property_attributes['attributes']['relationship']['type']) {
-          case 'childs':
-          foreach ($sql_schema['primary_key'] as $primary_key) {
-
-          if (!empty($join_condition))
-          $join_condition .= " AND ";
-
-
-          # we're going to define fore keys for this relationship
-          if (!isset($property_attributes['attributes']['relationship']['inverse_property'])) {
-          # relationship must be defined in comments!
-          throw new Exception("inverse_property attribute must be defined for field $property_name in model {$obj_schema['type']} ");
-          }
-
-          $inverse_property = $property_attributes['attributes']['relationship']['inverse_property'];
-          $field = $inverse_property . '_' . $primary_key;
-
-          $join_condition .= " {$this->escape}{$property_name}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
-          }
-          break;
-          case 'parent':
-
-          foreach ($type_sql_schema['primary_key'] as $primary_key) {
-
-          if (!empty($join_condition))
-          $join_condition .= " AND ";
-
-          $field = $property_name . '_' . $primary_key;
-
-          $join_condition .= " {$this->escape}{$sql_schema['table_name']}{$this->escape}.{$this->escape}$field{$this->escape} = {$this->escape}{$property_name}{$this->escape}.{$this->escape}$primary_key{$this->escape} ";
-          }
-          break;
-          }
-
-          $sql .= " left join {$this->escape}{$type_sql_schema['table_name']}{$this->escape} {$this->escape}{$property_name}{$this->escape}  on $join_condition ";
-          }
-          }
-         */
 
         $processed_paths = array();
         if (!empty($conditions) or !empty($order_by)) {
 
             // we'll search for possible uses of extended fieds that may need joins
-            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', $conditions . ' ' . $order_by, $result, PREG_PATTERN_ORDER);
+            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', ' '.$conditions . ' ' . $order_by . ' ', $result, PREG_PATTERN_ORDER);
 
 
 
