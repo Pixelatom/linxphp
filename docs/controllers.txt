@@ -42,3 +42,55 @@ URLs in Linx are composed of segments. A typical segmented URL is http://localho
 
 The segments correspond (in order ) to a directory (optional), a controller, a controller method, and the method arguments.
 
+* Example *
+
+	http://localhost/index.php?route=/admin/users/edit/1
+	// or the same URL with url rewriting on
+	http://localhost/admin/users/edit/1
+
+Linx can interpretate this URL in many different ways, depending on how the controller files are stored and organized on the application/controllers folder.
+
+an example on some possible controller organization can be:
+
+* application/controllers/index.php
+  - IndexController, the controller class
+  - admin, the public method)
+  - edit, the first argument
+  - 1, the second argument  
+* application/controllers/admin.php
+  - AdminController, the controller class
+  - users, the public method
+  - edit, the first argument
+  - 1. the second argument
+* application/controllers/admin/index.php
+  - admin, the directory
+  - IndexController, the controller class
+  - users, the public method
+  - edit, the first argument
+  - 1. the second argument
+* application/controllers/admin/users.php
+  - admin, the directory
+  - UsersController, the controller class
+  - edit, the public method  
+  - 1. the first argument
+  
+Using directories, you can build urls as long as you want. 
+As you can see, you can build an URL in many different ways, but when Linx finds a suitable conbination, it stops searching for more.
+
+If a non-existing combination is set for the url, it'll trigger a 404.
+
+Note: You cannot pass arguments to an index method.
+
+### URL rewriting
+
+By default, Linx urls contain index.php. This does not look very nice and also is not optimized for search engines. See the difference between the following urls.
+
+	http://localhost/index.php/articles/edit/1/my-first-article
+	// or the same URL with url rewriting on
+	http://localhost/articles/edit/1/my-first-article
+
+The latter looks nicer and is SEO proof.
+
+There is an example .htaccess included with Linx, which should be part of your installation files.
+
+
