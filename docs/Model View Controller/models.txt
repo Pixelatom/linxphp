@@ -17,3 +17,8 @@ To create a model for the table members in your database, create the file applic
 		...
 	}
 
+Defining Model properties
+-------------------------
+
+By default, all public properties of a Model object will be mapped to the database as text fields, but it can be changed setting some configurations directly on the model file. 
+Desinging the model is possible adding comments in to the class and it properties using [YAML]<http://www.yaml.org/> syntax. 
