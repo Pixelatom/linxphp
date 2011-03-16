@@ -1,6 +1,5 @@
 Models
 ======
-
 From Wikipedia:
 
 > The model manages the behavior and data of the application domain, responds to requests for information about its state (usually from the view), and responds to instructions to change state (usually from the controller).
@@ -9,7 +8,6 @@ Linx includes a powerful Object Relational Mapping (ORM) module that allows for 
 
 Creating your Model
 -------------------
-
 To create a model for the table members in your database, create the file application/models/member.php with the following syntax:
 
 	class Member extends Model
@@ -17,8 +15,71 @@ To create a model for the table members in your database, create the file applic
 		...
 	}
 
-Defining Model properties
--------------------------
-
+### Defining Model properties
 By default, all public properties of a Model object will be mapped to the database as text fields, but it can be changed setting some configurations directly on the model file. 
-Desinging the model is possible adding comments in to the class and it properties using [YAML]<http://www.yaml.org/> syntax. 
+Desinging the model is possible adding comments (doc comments format) into the class and it properties using [YAML](http://www.yaml.org/) syntax. This way, all the information related to a model resides in one file.
+
+> YAML is a human friendly data serialization standard for all programming languages.
+
+Example:
+
+	class Member extends Model
+	{
+		/**
+		 * lenght: 32
+		 */
+		public $name;
+	}
+
+### Overriding the Table name
+If you wish to change the database table that a model uses, just override it adding a doc comment like this:
+
+	/**
+	 * table: users
+	 */
+	class Member extends Model
+	{
+		/**
+		 * lenght: 32
+		 */
+		public $name;
+	}
+
+### Changing the primary key
+Linx assumes each model (and database table) has an id column that is indexed and unique. If your primary key column isn't named id, that's fine - just make sure you set an id for every Model.
+
+	/**
+     * type: integer
+     * primary_key: true
+     * auto_increment: true     
+     */
+    public $id;
+
+`auto_increment` can be set to `false` in case you want to manage programatically your id value.
+
+Basic Usage
+-----------
+
+### Load a new model instance
+To create a new Model User instance:
+
+	$user = new User();
+	
+### Inserting
+To insert a new record into the database, create a new instance of the model:
+
+	$user = new User();
+
+Then, assign values for each of the properties;
+
+	$user->first_name = 'Trent';
+	$user->last_name = 'Reznor';
+	$user->city = 'Mercer';
+	$user->state = 'PA';
+
+Insert the new record into the database by running Mapper::save:
+
+	Mapper::save($user);
+
+Mapper::save checks to see if a value is set for the primary key (id by default). If the primary key is set, then Mapper will execute an UPDATE otherwise it will execute an INSERT.
+
