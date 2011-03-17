@@ -83,6 +83,9 @@ Insert the new record into the database by running Mapper::save:
 
 Mapper::save checks to see if a value is set for the primary key (id by default). If the primary key is set, then Mapper will execute an UPDATE otherwise it will execute an INSERT.
 
+Note: if the table does not exists, Mapper will try to create it.
+If the table already exists but the properties are not the same, Mapper won't remove or modify it, for avoid loosing of data.
+
 ### Finding an object
 There are two ways for finding an object, by its id property, or by SQL conditions.
 
@@ -115,3 +118,18 @@ And if you want to save the changes you just made back to the database, just run
 To delete an object, you can call the Mapper::delete method on a loaded model.
 
 	Mapper::delete($user);
+
+Model Properties
+----------------
+As mentioned previously, model properties can be configured using YAML in doc comments. This method allows you to set properties types, lenght and relationships between models.
+
+### Model Configuration
+Currently the only configuration supported at Model level is the table name:
+	/**
+	 * table: users
+	 */
+	class Member extends Model
+	{
+		...
+	}
+
