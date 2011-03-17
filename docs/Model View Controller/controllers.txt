@@ -54,7 +54,7 @@ an example on some possible controller organization can be:
 
 * application/controllers/index.php
   - IndexController, the controller class
-  - admin, the public method)
+  - admin, the public method
   - edit, the first argument
   - 1, the second argument  
 * application/controllers/admin.php
