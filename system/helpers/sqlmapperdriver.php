@@ -1,16 +1,16 @@
 <?php
 
 /*
-  ANSI data type	Oracle        MySql           PostGreSQL            Most Portable
-  integer         NUMBER(38)    integer(11)     integer               integer
-  smallint        NUMBER(38)    smallint(6)     smallint              smallint
-  tinyint         *	tinyint(4)  *               numeric(4,0)
-  numeric(p,s)    NUMBER(p,s)   decimal(p,s)    numeric(p,s)          numeric(p,s)
-  varchar(n)      VARCHAR2(n)   varchar(n)      character varying(n)	varchar(n)
-  char(n)         CHAR(n)       varchar(n)      character(n)          char(n)
-  datetime        DATE          datetime        timestamp no timezone have to autodetect
-  float           FLOAT(126)    float           double precision      float
-  real            FLOAT(63)     double          real                  real
+  ANSI data type	Oracle        MySql           PostGreSQL                  Most Portable
+  integer               NUMBER(38)    integer(11)     integer                     integer
+  smallint              NUMBER(38)    smallint(6)     smallint                    smallint
+  tinyint               *	      tinyint(4)      *                           numeric(4,0)
+  numeric(p,s)          NUMBER(p,s)   decimal(p,s)    numeric(p,s)                numeric(p,s)
+  varchar(n)            VARCHAR2(n)   varchar(n)      character varying(n)	  varchar(n)
+  char(n)               CHAR(n)       varchar(n)      character(n)                char(n)
+  datetime              DATE          datetime        timestamp no timezone       have to autodetect
+  float                 FLOAT(126)    float           double precision            float
+  real                  FLOAT(63)     double          real                        real
  */
 
 class SQLMapperDriver implements IMapperDriver {
@@ -93,8 +93,7 @@ class SQLMapperDriver implements IMapperDriver {
             if (isset($property_attributes['attributes']['type'])) {
                 switch ($property_attributes['attributes']['type']) {
                     case 'string':
-
-
+                    case 'varchar':
                         $type = 'VARCHAR';
                         if (!empty($length))
                             $type .= "($length)";
@@ -105,21 +104,19 @@ class SQLMapperDriver implements IMapperDriver {
 
                         break;
                     case 'integer':
-
                         $pdo_bind_params = array('data_type' => PDO::PARAM_INT);
                         $type = 'INTEGER';
                         break;
-
+                    case 'smallint':
+                    case 'tinyint':
                     case 'float':
-                        $type = 'FLOAT';
-                        break;
-                    case 'date':
-                        $type = 'DATE';
-                        break;
+                    //numeric(p,s)
+                    case 'char':
+                    case 'real':
                     case 'datetime':
-                        $type = 'DATETIME';
+                        $type = strtoupper($property_attributes['attributes']['type']);
                         break;
-
+                    
                     default:
                         # unrecognized type! let's see if it's a class name
 

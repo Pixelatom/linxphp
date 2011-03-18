@@ -119,17 +119,3 @@ To delete an object, you can call the Mapper::delete method on a loaded model.
 
 	Mapper::delete($user);
 
-Model Properties
-----------------
-As mentioned previously, model properties can be configured using YAML in doc comments. This method allows you to set properties types, lenght and relationships between models.
-
-### Model Configuration
-Currently the only configuration supported at Model level is the table name:
-	/**
-	 * table: users
-	 */
-	class Member extends Model
-	{
-		...
-	}
-
