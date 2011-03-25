@@ -12,8 +12,8 @@ class Event{
         
         if (!isset(self::$_listeners[strtolower($eventName)]))
         self::$_listeners[strtolower($eventName)]=array();
-        
-        self::$_listeners[strtolower($eventName)][]=$function;
+
+        array_unshift(self::$_listeners[strtolower($eventName)], $function);
         
     }
     /**
