@@ -53,6 +53,9 @@ Model properties can be set to a particular DB type. Currently, models supports 
 * float 
 * real
 
+
+Example:
+
     /**
      * type: integer
      */
