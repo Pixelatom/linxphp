@@ -104,6 +104,12 @@ The function Mapper::get allows you to pass as argument the SQL conditions you w
 	// finding by conditions
 	$user = Mapper::get('User',"first_name = 'Trent' and last_name = 'Reznor'");
 
+#### Sorting the query
+The function Mapper::get allows you to pass, as argument, the SQL sorting conditions.
+
+	// finding by conditions and sorting by user last_name
+	$user = Mapper::get('User',"last_name = 'Reznor'","last_name desc");
+
 ### Updating and Saving
 Once an model has been loaded, you can modify a model's properties like this:
 
