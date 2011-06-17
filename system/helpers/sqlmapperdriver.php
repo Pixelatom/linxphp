@@ -1071,7 +1071,7 @@ class SQLMapperDriver implements IMapperDriver {
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
             // check only properties of an object type
-            if (isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])) {
+            if (isset($property_attributes['attributes']['relationship']) and isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])) {
                 // first we check the property doesnt do lazy load
                 if ((!array_key_exists('lazy_load', $property_attributes['attributes']) or $property_attributes['attributes']['relationship']['lazy_load'] === false)) {
                     // only fill null properties
