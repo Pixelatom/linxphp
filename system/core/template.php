@@ -53,6 +53,8 @@ class Template extends BaseTemplate {
         return $this;
     }
 
+    // set to true if the template being rendered is inside another template
+    static protected $_status_rendering_child_template = false;
     /**
      * renders the output of the View.
      *
@@ -66,6 +68,14 @@ class Template extends BaseTemplate {
      */
     function show($name=null) {
         Event::run('template.show_call', $this, $name);
+
+        $restore_rendering_status = false;
+
+        if (!self::$_status_rendering_child_template){
+            // this is the 'parent' template
+            self::$_status_rendering_child_template = true;
+            $restore_rendering_status = true;
+        }
 
         # sumamos a las variables seteadas con los metodos comunes, las variables seteadas dinamicamente.
         $vars = array_merge(get_object_vars($this), $this->_vars);
@@ -116,9 +126,14 @@ class Template extends BaseTemplate {
             ob_end_clean();
 
 
-            Event::run('template.show', $output, $this, $name);
+            Event::run('template.show', $output, $this, $name, $is_parent_template = $restore_rendering_status);
             echo $output;
         }
+
+        if ($restore_rendering_status == true)
+        self::$_status_rendering_child_template = false;
+
+
         return $this;
     }
 
