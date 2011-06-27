@@ -17,6 +17,8 @@ class DB {
     }
     
     self::$link = $dbh;
+    //self::query("SET NAMES 'UTF-8'");
+    self::execute("SET NAMES utf8");
   }
 
   static public function get_pdolink(){
