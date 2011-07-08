@@ -308,7 +308,7 @@ class SQLMapperDriver implements IMapperDriver {
             $value = $attributes['value'];
 
             if (!is_scalar($value) and !$value == null)
-                throw new Exception('Field Values must be scalars!');
+                throw new Exception('Incorrect value type for field: '.$field.' (It must be scalar, '.gettype($value) .' given)');
 
 
             # proccess value with hooks (just in case it needs to be processed)

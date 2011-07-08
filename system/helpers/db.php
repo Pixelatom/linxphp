@@ -17,7 +17,7 @@ class DB {
     }
     
     self::$link = $dbh;
-    //self::query("SET NAMES 'UTF-8'");
+		//self::query("SET NAMES 'UTF-8'");
     self::execute("SET NAMES utf8");
   }
 
@@ -79,7 +79,13 @@ class DB {
     //var_dump($bind_params);
     //die();
     if (empty($params)){
-      $count = self::$link->exec($sql);
+      try{
+	$count = self::$link->exec($sql);
+      }
+      catch(Exception $e)
+      {
+	  die($e->getMessage().'<br>'.$sql);
+      }
     }
     else{
       if (isset(self::$prepared_queries[$sql]))
