@@ -151,9 +151,7 @@ class Database {
  * static wrapper for class Database
  */
 class DB {
-
     static protected $database;
-
     static protected $connections;
     /**
      *
@@ -171,8 +169,6 @@ class DB {
             return $database;
         }
     }
-
-
 
     static public function query($sql, $params=array(), $bind_params=array(), $class_name = 'stdClass') {
         if (!self::$database)
