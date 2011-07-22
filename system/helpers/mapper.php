@@ -12,7 +12,7 @@
  */
 class Mapper {
 
-    static protected $driver = null;
+    static protected $driver = array();
 
     static protected $registered_drivers = array(
         'mysql' => 'MySQLMapperDriver',
@@ -22,64 +22,88 @@ class Mapper {
         self::$registered_drivers[$drivername] = $classname;
     }
 
-    static public function set_driver(IMapperDriver $driver) {
-        self::$driver = $driver;
+    static public function set_driver(IMapperDriver $driver,$configuration = 'database') {
+        self::$driver[$configuration] = $driver;
     }
 
-    static protected function setup() {
-        if (self::$driver == null) {
-            $drivername = DB::get_pdolink()->getAttribute(PDO::ATTR_DRIVER_NAME);
+    static protected function setup($configuration = 'database') {
+        if (!isset(self::$driver[$configuration])) {
+            $drivername = DB::connect($configuration)->get_pdolink()->getAttribute(PDO::ATTR_DRIVER_NAME);
             
             if (array_key_exists($drivername, self::$registered_drivers)){
                 $classname = self::$registered_drivers[$drivername];
-                self::set_driver(new $classname());    
+                self::set_driver(new $classname(),$configuration);
             }
             else{
-                self::set_driver(new SQLMapperDriver());    
+                self::set_driver(new SQLMapperDriver(),$configuration);
             }
         }
     }
 
     static public function save($object) {
-        self::setup();
-        return self::$driver->save($object);
+        $schema = ModelDescriptor::describe($object);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->save($object);
     }
 
     static public function insert($object) {
-        self::setup();
-        return self::$driver->insert($object);
+        $schema = ModelDescriptor::describe($object);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->insert($object);
     }
 
     static public function update($object) {
-        self::setup();
-        return self::$driver->update($object);
+        $schema = ModelDescriptor::describe($object);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->update($object);
     }
 
     static public function delete($object, $delete_childs=true) {
-        self::setup();
-        return self::$driver->delete($object, $delete_childs);
+        $schema = ModelDescriptor::describe($object);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->delete($object, $delete_childs);
     }
 
     static public function count($classname, $conditions=null) {
-        self::setup();
-        return self::$driver->count($classname, $conditions );
+        $schema = ModelDescriptor::describe($classname);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->count($classname, $conditions );
     }
 
     static public function get_by_id($classname, $id) {
-        self::setup();
-        return self::$driver->get_by_id($classname, $id);
+        $schema = ModelDescriptor::describe($classname);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->get_by_id($classname, $id);
     }
 
     static public function get($classname, $conditions=null, $order_by=null, $limit = null, $offset = 0) {
-        self::setup();
+        $schema = ModelDescriptor::describe($classname);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
         $args = func_get_args();
-        return call_user_func_array(array(self::$driver, "get"), $args);
+        return call_user_func_array(array(self::$driver[$configuration], "get"), $args);
         //return self::$driver->get($classname, $conditions , $order_by );
     }
 
     static public function _load_relationship($object, $property_name) {
-        self::setup();
-        return self::$driver->_load_relationship($object, $property_name);
+        $schema = ModelDescriptor::describe($object);
+        $configuration = $schema['connection'];
+        self::setup($configuration);
+
+        return self::$driver[$configuration]->_load_relationship($object, $property_name);
     }
 
 }
