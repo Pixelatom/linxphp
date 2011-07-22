@@ -81,4 +81,14 @@ By default, all public properties are mapped as database fields. If you want to 
      */
     public $url;
 
+### Setting a different connection configuration.
+By default, the connection configuration is called 'database' and it's defined as a values group in the config.ini file.
+If you want to define a different configuration for a specific model, you have to create another group in the config.ini file, with the same value names, and then name the group as you want.
+Once you wave your own Configuration name, you can set it to you model as shown in the following example:
 
+    /**
+     * connection: myconfig
+     */
+    class Anothermodel extends Model{
+     ...
+    
