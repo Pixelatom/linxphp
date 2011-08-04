@@ -636,7 +636,7 @@ class SQLMapperDriver implements IMapperDriver {
     protected function build_select_query($classname, $conditions=null, $order_by=null) {
         $obj_schema = $this->get_class_schema($classname);
         $sql_schema = $this->get_sql_table_schema($classname);
-        $d = ModelDescriptor::describe($model);
+        $d = ModelDescriptor::describe($classname);
         if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
             $this->create_table($classname);   
         }
