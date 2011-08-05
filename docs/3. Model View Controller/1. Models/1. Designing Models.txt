@@ -1,0 +1,94 @@
+Designing Models
+================
+As mentioned previously, model properties can be configured using YAML in doc comments. This method allows you to set properties types, lenght and relationships between models.
+
+Model Configuration
+-------------------
+Currently the only configuration supported at Model level is the table name:
+	/**
+	 * table: users
+	 */
+	class Member extends Model
+	{
+		...
+	}
+
+Properties Configuration
+------------------------
+
+### Setting id property
+The following example shows how to create an numeric, auto-increment, single id property.
+	
+    /**
+     * type: integer
+     * primary_key: true
+     * auto_increment: true
+     */
+    public $id;
+
+The following example shows how to set multiple properties as id (composite idetifier).
+
+    /**
+     * type: integer
+     * primary_key: true
+     */
+    public $property1;
+	
+    /**
+     * type: string
+     * primary_key: true
+     */
+    public $property2;
+
+
+### Setting the type of the DB field
+Model properties can be set to a particular DB type. Currently, models supports the following ANSI SQL data types:
+
+* integer
+* smallint
+* tinyint
+* varchar | string
+* char
+* datetime 
+* float 
+* real
+
+
+Example:
+
+    /**
+     * type: integer
+     */
+    public $age;
+
+If the data type is not specified, it'll be string by default.
+	
+### Setting the lenght of the DB field
+Lenght of DB fields can be set the following way:
+
+    /**
+     * lenght: 32
+     */
+    public $password;
+
+If the lenght is not specified, 255 will be the default value.
+
+### Ignore a property.
+By default, all public properties are mapped as database fields. If you want to create a public property but you won't to store it on the database, you can do as following:
+
+    /**
+     * model: false
+     */
+    public $url;
+
+### Setting a different connection configuration.
+By default, the connection configuration is called 'database' and it's defined as a values group in the config.ini file.
+If you want to define a different configuration for a specific model, you have to create another group in the config.ini file, with the same value names, and then name the group as you want.
+Once you wave your own Configuration name, you can set it to you model as shown in the following example:
+
+    /**
+     * connection: myconfig
+     */
+    class Anothermodel extends Model{
+     ...
+    
