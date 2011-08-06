@@ -1,0 +1,52 @@
+LinxPHP Basics
+===================
+
+What is LinxPHP?
+---------------
+
+LinxPHP is an open source, object oriented MVC web framework built using PHP5 that aims to be swift, simple, and small.
+
+LinxPHP is licensed under a [MIT license](http://www.opensource.org/licenses/mit-license.php), so you can legally use it for any kind of open source, commercial, or personal project.
+
+Getting Started
+---------------
+
+### Class Names and File Location
+
+Class names in LinxPHP follow a strict convention to facilitate autoloading.
+
+The following conventions apply:
+
+1. The PHP file name must be the same as the class name.
+2. All class file names and directory names are lowercase.
+3. All classes should be in the application/classes directory.
+
+### Coding Standards
+
+In order to produce highly consistent source code, we ask that everyone follow the coding standards as closely as possible.
+
+#### Naming Conventions
+
+##### Classes
+
+We use CamelCase for classes:
+	
+	class AdminController extends Controller{ 
+
+##### Functions and Methods
+
+Functions should be all lowercase, and use under_scores to separate words:
+
+	function drink_beverage($beverage)
+	{
+
+##### Variables
+All variables should be lowercase and use under_score, not camelCase:
+
+	// Correct:
+	$foo = 'bar';
+	$long_example = 'uses underscores';
+	 
+	// Incorrect:
+	$weDontWantThis = 'understood?';
+
