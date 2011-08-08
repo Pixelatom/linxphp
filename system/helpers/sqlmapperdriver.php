@@ -409,7 +409,7 @@ class SQLMapperDriver implements IMapperDriver {
         WHERE $where_id";
 
         $d = ModelDescriptor::describe($object);
-        $count += db::conect($d['connection'])->execute($sql, $fields_values, $bind_params);
+        $count += db::connect($d['connection'])->execute($sql, $fields_values, $bind_params);
 
         $object->_after_update();
 
