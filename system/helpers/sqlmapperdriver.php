@@ -264,14 +264,14 @@ class SQLMapperDriver implements IMapperDriver {
         return $count;
     }
 
-    protected function table_exists($tableName,$configuration = 'database') {
+    protected function table_exists($tableName) {
 
 
         // Other RDBMS.  Graceful degradation
         $exists = true;
         try{
             $cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
-            db::connect($configuration)->query($cmdOthers);
+            db::query($cmdOthers);
         }
         catch (Exception $e){
             $exists = false;
@@ -324,16 +324,15 @@ class SQLMapperDriver implements IMapperDriver {
 
         $sql = "INSERT INTO {$this->escape}{$sql_schema['table_name']}{$this->escape} ($fields) VALUES ($params)";
 
-        $d = ModelDescriptor::describe($object);
-        $count += db::connect($d['connection'])->execute($sql, $fields_values, $bind_params);
+        $count += db::execute($sql, $fields_values, $bind_params);
 
         return $count;
     }
 
     public function insert($object) {
-        $d = ModelDescriptor::describe($object);
+
         $sql_schema = $this->get_sql_table_schema($object);
-        if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
         }
 
@@ -353,9 +352,8 @@ class SQLMapperDriver implements IMapperDriver {
     }
 
     public function update($object) {
-        $d = ModelDescriptor::describe($object);
         $sql_schema = $this->get_sql_table_schema($object);
-        if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
             return false;
         }
@@ -408,8 +406,8 @@ class SQLMapperDriver implements IMapperDriver {
         SET $field_updates
         WHERE $where_id";
 
-        $d = ModelDescriptor::describe($object);
-        $count += db::connect($d['connection'])->execute($sql, $fields_values, $bind_params);
+
+        $count += db::execute($sql, $fields_values, $bind_params);
 
         $object->_after_update();
 
@@ -449,8 +447,8 @@ class SQLMapperDriver implements IMapperDriver {
 
     public function delete($object, $delete_childs=true) {
         $sql_schema = $this->get_sql_table_schema($object);
-        $d = ModelDescriptor::describe($object);
-        if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
+
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($object);
             $this->insert($object);
             return;
@@ -491,8 +489,8 @@ class SQLMapperDriver implements IMapperDriver {
 
         $sql = "DELETE FROM {$this->escape}{$sql_schema['table_name']}{$this->escape} WHERE $where_id";
 
-        $d = ModelDescriptor::describe($object);
-        $count += db::connect($d['connection'])->execute($sql, $fields_values, $bind_params);
+
+        $count += db::execute($sql, $fields_values, $bind_params);
 
         $object->_after_delete();
 
@@ -535,9 +533,7 @@ class SQLMapperDriver implements IMapperDriver {
         ({$fields_declaration}
         )";
 
-        $d = ModelDescriptor::describe($object);
-
-        db::connect($d['connection'])->execute($sql);
+        db::execute($sql);
     }
 
     /*
@@ -636,8 +632,8 @@ class SQLMapperDriver implements IMapperDriver {
     protected function build_select_query($classname, $conditions=null, $order_by=null) {
         $obj_schema = $this->get_class_schema($classname);
         $sql_schema = $this->get_sql_table_schema($classname);
-        $d = ModelDescriptor::describe($classname);
-        if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
+
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);   
         }
 
@@ -707,9 +703,8 @@ class SQLMapperDriver implements IMapperDriver {
                         continue;
                     $processed_paths[$realpath] = $pathstring;
 
-                    $type_d = ModelDescriptor::describe($type_classname);
 
-                    if (!$this->table_exists($type_sql_schema['table_name'],$type_d['connection'])) {
+                    if (!$this->table_exists($type_sql_schema['table_name'])) {
                         $this->create_table($type_classname);
                     }
                     /*
@@ -791,8 +786,8 @@ class SQLMapperDriver implements IMapperDriver {
 
         $sql = "select count(1) from ($sql) as selectquery";
 
-        $d = ModelDescriptor::describe($classname);
-        return db::connect($d['connection'])->query_scalar($sql);
+
+        return db::query_scalar($sql);
     }
 
     /**
@@ -804,8 +799,8 @@ class SQLMapperDriver implements IMapperDriver {
     protected function exists($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
 
-        $d = ModelDescriptor::describe($classname);
-        if (!$this->table_exists($sql_schema['table_name'],($d['connection']))) {
+
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
             //return;
         }
@@ -847,9 +842,9 @@ class SQLMapperDriver implements IMapperDriver {
 
         $sql .= " WHERE $where_id";
 
-        $d = ModelDescriptor::describe($classname);
 
-        return db::connect($d['connection'])->query_scalar($sql, $fields_values, $bind_params) > 0;
+
+        return db::query_scalar($sql, $fields_values, $bind_params) > 0;
     }
 
     /**
@@ -861,8 +856,8 @@ class SQLMapperDriver implements IMapperDriver {
     protected function _get_by_id($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
 
-        $d = ModelDescriptor::describe($classname);
-        if (!$this->table_exists($sql_schema['table_name'], ($d['connection']))) {
+
+        if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
             //return;
         }
@@ -907,8 +902,8 @@ class SQLMapperDriver implements IMapperDriver {
         if (!empty($order_by))
             $sql .= " ORDER BY $order_by";
 
-        $d = ModelDescriptor::describe($classname);
-        $results = db::connect($d['connection'])->query($sql, $fields_values, $bind_params, $classname);
+
+        $results = db::query($sql, $fields_values, $bind_params, $classname);
 
         if (isset($results[0])) {
             $this->add_to_cache($results[0]);
@@ -943,8 +938,8 @@ class SQLMapperDriver implements IMapperDriver {
         $sql = $this->build_select_query($classname, $conditions, $order_by);
 //        if (empty($sql))
 //            die($conditions);
-        $d = ModelDescriptor::describe($classname);
-        $return = db::connect($d['connection'])->query($sql, $fields_values = array(), $bind_params = array(), $classname);
+
+        $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
         foreach ($return as &$object) {
 

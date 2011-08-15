@@ -14,6 +14,8 @@ class ModelDescriptor {
     }
     static public function describe($model){
 
+        
+
         if (is_object($model)){
             $class_name = get_class($model);
         }
@@ -113,7 +115,7 @@ class ModelDescriptor {
         }
 
         
-        $schema['connection'] = (isset($schema['attributes']['connection'])?$schema['attributes']['connection']:'database');
+
 
         
 

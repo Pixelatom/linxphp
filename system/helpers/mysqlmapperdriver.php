@@ -16,7 +16,7 @@ class MySQLMapperDriver extends SQLMapperDriver{
              foreach ($d['properties'] as $property=>$property_attributes){
                  if ((isset($property_attributes['attributes']['auto_increment'])
                     and $property_attributes['attributes']['auto_increment'] == true)) {
-                     $object->$property = db::connect($d['connection'])->get_last_insert_id($property);
+                     $object->$property = db::get_last_insert_id($property);
                  }
              }
          }
@@ -91,8 +91,8 @@ class MySQLMapperDriver extends SQLMapperDriver{
         )";
 
         //echo $sql;
-        $d = ModelDescriptor::describe($object);
-        db::connect($d['connection'])->execute($sql);
+        
+        db::execute($sql);
     }
 
      protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null , $offset = 0) {
@@ -106,10 +106,10 @@ class MySQLMapperDriver extends SQLMapperDriver{
         return $sql;
     }
      public function get($classname, $conditions=null, $order_by=null, $limit = null , $offset = 0) {
-        $d = ModelDescriptor::describe($classname);
+
         
         $sql = $this->build_select_query($classname, $conditions, $order_by, $limit , $offset);
-        $return = db::connect($d['connection'])->query($sql, $fields_values = array(), $bind_params = array(), $classname);
+        $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
         foreach ($return as &$object) {
 
             // revisa si cada uno de los objetos retornados esta en cache,
