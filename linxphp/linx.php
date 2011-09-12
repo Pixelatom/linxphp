@@ -59,6 +59,14 @@ foreach ($path_array as $path){
     $path = trim($path);
     if (file_exists(realpath($path.'/')))
     Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$path);
+    
+    // adds subfolders inside class folder as well
+    $path = $path.'/';
+    $path_len = strlen($path);
+    
+    foreach(glob($path . '*', GLOB_ONLYDIR) as $dir) {        
+        Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$dir);    
+    }
 }
 
 
@@ -68,7 +76,7 @@ $path_array = explode(',', $path_array);
 foreach ($path_array as $path){
     $path = trim($path);
     if (file_exists(realpath($path.'/')))
-    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$path);
+    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$path);    
 }
 
 /*
