@@ -38,16 +38,16 @@ class ModelDescriptor {
                 // set the value for the cached properties
                 foreach ($schema['properties'] as $property => &$prop) {
                     // we'll ask this condition to avoid force loading of lazy loading properties
-                    if ((!isset($prop['attributes']['relationship']['lazy_load'])
-                            or $prop['attributes']['relationship']['lazy_load'] == false)
-                            or isset($model->$property))
+                    if (!$prop['attributes']['is_relationship'] or
+                        !$prop['attributes']['relationship']['lazy_load'] or
+                        isset($model->$property))
                         $prop['value'] = $model->$property;
                 }
                 //for model instances we add a new property describing the unique identifier
                 $unique = array();
                 foreach ($schema['properties'] as $property_name => $property_attributes) {
-                    if (isset($property_attributes['attributes']['primary_key'])
-                            and $property_attributes['attributes']['primary_key'] == true) {
+                    if (array_key_exists('primary_key', $property_attributes['attributes'])
+                          and $property_attributes['attributes']['primary_key'] == true) {
                         if (!is_null($schema['properties'][$property_name]['value']))
                          $unique[$property_name] = $schema['properties'][$property_name]['value'];
                     }
@@ -108,24 +108,21 @@ class ModelDescriptor {
 
         $schema['primary_key'] = array();
         foreach ($schema['properties'] as $property_name => $property_attributes) {
-            if (isset($property_attributes['attributes']['primary_key'])
+            if (array_key_exists('primary_key',$property_attributes['attributes'])                
                     and $property_attributes['attributes']['primary_key'] == true) {
                 $schema['primary_key'][] = $property_name;
             }
             
             if ($property_attributes['attributes']['is_relationship']){
-                if (!isset($property_attributes['attributes']['relationship']))
+                if (!array_key_exists('relationship', $property_attributes['attributes']))
                     throw new Exception('Missing attribute \'relationship\' for field \''.$property_name.'\' in model '. $class_name);
+                
+                if (!array_key_exists('lazy_load', $property_attributes['attributes']['relationship']))
+                    $property_attributes['attributes']['relationship']['lazy_load'] = true;    
             }
             
-            if (!isset($property_attributes['attributes']['relationship']['lazy_load']))
-                $property_attributes['attributes']['relationship']['lazy_load'] = true;
+            
         }
-
-        
-
-
-        
 
         if (!isset(self::$cache[$class_name]))
             self::$cache[$class_name] = $schema;
