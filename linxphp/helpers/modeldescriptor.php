@@ -107,7 +107,7 @@ class ModelDescriptor {
         }
 
         $schema['primary_key'] = array();
-        foreach ($schema['properties'] as $property_name => $property_attributes) {
+        foreach ($schema['properties'] as $property_name => &$property_attributes) {
             if (array_key_exists('primary_key',$property_attributes['attributes'])                
                     and $property_attributes['attributes']['primary_key'] == true) {
                 $schema['primary_key'][] = $property_name;
