@@ -112,6 +112,14 @@ class ModelDescriptor {
                     and $property_attributes['attributes']['primary_key'] == true) {
                 $schema['primary_key'][] = $property_name;
             }
+            
+            if ($property_attributes['attributes']['is_relationship']){
+                if (!isset($property_attributes['attributes']['relationship']))
+                    throw new Exception('Missing attribute \'relationship\' for field \''.$property_name.'\' in model '. $class_name);
+            }
+            
+            if (!isset($property_attributes['attributes']['relationship']['lazy_load']))
+                $property_attributes['attributes']['relationship']['lazy_load'] = true;
         }
 
         
