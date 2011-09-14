@@ -1073,12 +1073,12 @@ class SQLMapperDriver implements IMapperDriver {
             // check only properties of an object type
             if (isset($property_attributes['attributes']['relationship']) and isset($property_attributes['attributes']['type']) and class_exists($property_attributes['attributes']['type'])) {
                 // first we check the property doesnt do lazy load
-                if ((!array_key_exists('lazy_load', $property_attributes['attributes']) or $property_attributes['attributes']['relationship']['lazy_load'] === false)) {
+                if ((!array_key_exists('lazy_load', $property_attributes['attributes']['relationship']) or $property_attributes['attributes']['relationship']['lazy_load'] == false)) {
                     // only fill null properties
                     if (is_null($object->$property_name)) {
                         Mapper::_load_relationship($object, $property_name);
                     }
-                } elseif (isset($property_attributes['attributes']['relationship']['lazy_load']) and $property_attributes['attributes']['relationship']['lazy_load'] == true) {
+                } elseif (array_key_exists('lazy_load',$property_attributes['attributes']['relationship']) and $property_attributes['attributes']['relationship']['lazy_load'] == true) {
                     // rpoperty with lazy load
                     if (!isset($object->$property_name)) {
                         if ($force_loading == true /* and $property_attributes['attributes']['relationship']['type'] == 'parent' */)
