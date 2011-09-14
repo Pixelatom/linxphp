@@ -1059,6 +1059,9 @@ class SQLMapperDriver implements IMapperDriver {
         }
     }
 
+    public function _fill_relationship($object){
+        self::fill_relationship($object);
+    }
     /*
      * Complete relationship properties on load
      */

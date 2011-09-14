@@ -23,6 +23,10 @@ abstract class Model{
             }
         }
     }
+    public function __wakeup()
+    {
+        Mapper::_fill_relationship($this);
+    }
     /*
     function  __set($name, $value) {
         // we'll check if the unset variable is part of the model
@@ -46,8 +50,8 @@ abstract class Model{
             }
         }
     }
-     * 
-     */
+    */
+    
     function  __get($name) {
         // when checking for unset variables
         // we'll check if the unset variable is part of the model
