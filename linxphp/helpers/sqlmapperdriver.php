@@ -1081,7 +1081,7 @@ class SQLMapperDriver implements IMapperDriver {
                     if (is_null($object->$property_name)) {
                         Mapper::_load_relationship($object, $property_name);
                     }
-                } elseif (!isset($property_attributes['attributes']['relationship']['lazy_load']) or $property_attributes['attributes']['relationship']['lazy_load'] == true) {
+                } elseif ($property_attributes['attributes']['relationship']['lazy_load'] == true) {
                     // property with lazy load
                     if (!isset($object->$property_name)) {
                         if ($force_loading == true /* and $property_attributes['attributes']['relationship']['type'] == 'parent' */)
