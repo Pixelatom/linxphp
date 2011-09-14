@@ -380,7 +380,7 @@ class SQLMapperDriver implements IMapperDriver {
 
 
             if (!is_scalar($value) and !$value == null)
-                throw new Exception('Field Values must be scalars!');
+                throw new Exception('Incorrect value type for field: '.$field.' (It must be scalar, '.gettype($value) .' given)');
 
             # proccess value with hooks (just in case it needs to be processed)
             Event::run('mapper.process_field_value', $field, $attributes, $value);
@@ -1059,6 +1059,9 @@ class SQLMapperDriver implements IMapperDriver {
         }
     }
 
+    public function _fill_relationship($object){
+        self::fill_relationship($object);
+    }
     /*
      * Complete relationship properties on load
      */
