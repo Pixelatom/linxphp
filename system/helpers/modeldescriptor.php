@@ -21,7 +21,7 @@ class ModelDescriptor {
         }
         elseif (class_exists($model)){
             if(!in_array('Model', class_parents($model)))
-                    throw new Exception("Class $class_name doesn't extends Model");
+                    throw new Exception("Class $model doesn't extends Model");
             $class_name = $model;
         }
         else{
@@ -96,7 +96,7 @@ class ModelDescriptor {
 
                 $prop['attributes']['is_relationship'] = false;
 
-                if (isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
+                if (isset($prop['attributes']['relationship']) and isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
                     $prop['attributes']['is_relationship'] = true;
                 }
 
