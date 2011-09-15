@@ -12,6 +12,7 @@ interface IMapperDriver {
     public function count($classname, $conditions=null);
     public function get_by_id($classname, $id);
     public function get($classname, $conditions=null, $order_by=null);
+    public function _fill_relationship($object);
     public function _load_relationship($object, $property_name);
 
 }
