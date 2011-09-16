@@ -151,14 +151,22 @@ class SQLMapperDriver implements IMapperDriver {
                                         $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
-                                        // we're going to copy the declaration of the primary keys
+					// we're going to copy the declaration of the primary keys
                                         // to build the fore keys
+                                        $forekey = $property_name . '_' . $type_primary_key;
+                                        
                                         $field = array();
-                                        $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
+                                        
                                         $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
                                         $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
-
-                                        $schema['fields'][$property_name . '_' . $type_primary_key] = $field;
+                                        
+                                        // if it's a lazy_load property and we have the temporal id value we'll use it
+                                        if (is_object($model) and isset($model->$forekey))
+                                        $field['value'] = $model->$forekey;
+                                        else
+                                        $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
+                                        
+                                        $schema['fields'][$forekey] = $field;
                                     }
 
                                     break;
