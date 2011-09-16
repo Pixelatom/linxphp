@@ -120,7 +120,7 @@ class SQLMapperDriver implements IMapperDriver {
                     default:
                         # unrecognized type! let's see if it's a class name
 
-                        if (class_exists($property_attributes['attributes']['type'])) {
+                        if ($property_attributes['attributes']['is_relationship']) {
 
                             $type_classname = $property_attributes['attributes']['type'];
                             $type_schema = $this->get_class_schema($type_classname);
