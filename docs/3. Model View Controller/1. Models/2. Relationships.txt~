@@ -52,7 +52,7 @@ Following the avobe example, you would order them as following:
 
 This dynamic new method on your models support the following arguments:
 
-	Model::child_relation($conditions=null, $order_by=null, $limit = null, $offset = 0);
+	
 
 Lazy Loading
 ------------
