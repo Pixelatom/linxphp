@@ -1,0 +1,92 @@
+Views
+=====
+
+Views are files that contain the display information for your application. This is most commonly HTML, CSS and Javascript but can be anything you require such as XML or JSON for AJAX output. The purpose of views is to keep this information separate from your application logic for easy reusability and cleaner code.
+
+Views themselves can contain code used for displaying the data you pass into them. For example, looping through an array of product information and display each one on a new table row. Views are still PHP files so you can use any code you normally would. However, you should try to keep your views as "dumb" as possible and retreive all data you need in your controllers, then pass it to the view.
+
+Creating View Files
+-------------------
+View files are stored in the templates directory of the application folder. You can also create sub-directories within the templates directory to organize your files. All of the following examples are reasonable view files:
+
+application/templates/home.php
+application/templates/pages/about.php
+application/templates/products/details.php
+
+Loading Templates
+-----------------
+
+Templates will typically be created inside a Controller using the Templates's constructor method. 
+
+	public function about()
+	{
+		$template = new Template('pages/about');
+		$template->show();
+	}
+
+Variables in Templates
+----------------------
+
+Once template has been loaded, variables can be assigned to it using the Template::set method.
+
+
+	public function roadtrip()
+	{
+		$view = new Template('user/roadtrip');
+		$view->set('places', array('Rome', 'Paris', 'London', 'New York', 'Tokyo'));
+	 
+		// The view will have $places variable
+		$view->show();
+	}
+
+You can also assign variables directly to the Template object. This is identical to calling set();
+
+
+	public function roadtrip()
+	{
+		$view = Template('user/roadtrip');
+	 
+		$view->places = array('Rome', 'Paris', 'London', 'New York', 'Tokyo');
+		
+	 
+		// The view will have $places variable
+		$view->show();
+	}
+
+Templates Within Templates
+--------------------------
+
+You can include a template within a template like adding a variable to the Template object.
+
+	// In your controller:
+	 
+	public function index()
+	{
+		$view = new Template('common/template);
+	 
+		$view->title = "Some title";
+		$view->body = new Template('pages/foobar');
+		$view->show();
+	}
+	 
+	// In templates/common/template.php:
+	 
+	<html>
+	<head>
+		<title><?php echo $title></title>
+	</head>
+	 
+	<body>
+		<?php echo $body ?>
+	</body>
+	</html>
+
+### Inherited Variables
+
+An application may have several view files that need access to the same variables. For example, to display a page title in both the header of your template and in the body of the page content. 
+
+Templates within Templates can access to the variables set on the parent template. In case a variable with the same name is already set for the child Template, the parent variable will be overriden only inside the child Template.
+
+
+
+

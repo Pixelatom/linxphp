@@ -1,0 +1,23 @@
+System Requirements
+===================
+
+System requirements for this framework are not actually a big deal. However there are some considerations to have in mind in order to use linxPHP at a 100%.
+
+Minimal requirements
+--------------------
+
+The system requires, at least, the following system set-up:
+
+* Apache or IIS (Apache recomended)
+* PHP 5.2 or higher
+
+Recomended Requirements
+-----------------------
+
+* Linux
+* Apache 2
+* Mod Rewrite
+* Mysql 5 (only if ORM and models will be used)
+
+
+LinxPHP has a very simple yet powerful routing system, that's why if you want to support friendly URL, we highly recomend using Apache mod rewrite on. However, the system can be used with apache get parameters in the old fashioned way.
