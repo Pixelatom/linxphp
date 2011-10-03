@@ -24,6 +24,7 @@ $app_config=array(
         'classes'=>'application/classes',
         'hooks'=>'application/hooks',
         'models'=>'application/models',
+        'models'=>'application/modules',
     ),
     'errors'=>array(
         'useexceptions'=>false,
@@ -123,6 +124,37 @@ if (file_exists(realpath(Application::get_site_path().Configuration::get('paths'
 }
 
 
+/*
+ * load all modules
+ */
+
+# checks if the modules folder exists
+if (file_exists(realpath(Application::get_site_path().Configuration::get('paths','modules').'/'))){
+    # read all modules folders
+    $moduledir = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','modules').'/'));
+    foreach ($moduledir as $file){
+        if(!$file->isDot() && $file->isDir()) {
+            
+            # extracts module folder
+            $module = ($moduledir->getPath().'/'.$file->getFilename());
+
+            # module classes
+            if (file_exists(realpath($module.'/classes/'))){
+                Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$module.'/classes');
+            }
+            # module hooks
+            if (file_exists(realpath($module.'/hooks/'))){
+                $hookdirs[] = new DirectoryIterator(realpath($module.'/hooks/'));
+            }
+
+            /*@todo: make this works */ 
+            # Template::add_cascade_dir(realpath($module.'/hooks/'),$priority);
+        }
+    }
+}
+
+
+# include all hook files.
 foreach ($hookdirs as $dir){
     foreach ($dir as $file){
         if(!$file->isDot() && !$file->isDir() && preg_match("/\.php$/",$file->getFilename())) {
@@ -134,6 +166,7 @@ foreach ($hookdirs as $dir){
     }
 }
 
+# execute hooks
 Event::run('system.ready');
 
 ?>
