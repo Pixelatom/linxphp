@@ -87,6 +87,21 @@ An application may have several view files that need access to the same variable
 
 Templates within Templates can access to the variables set on the parent template. In case a variable with the same name is already set for the child Template, the parent variable will be overriden only inside the child Template.
 
+Cascading Filesystem
+--------------------
 
+The Templates filesystem is a heirarchy of similar directory structures that cascade. The heirarchy in Linx (used when a template is loaded) is in the following order:
 
+* User defined Paths
+* Application Path
+* Module Paths
 
+Files that are in directories higher up the include path order take precedence over files of the same name lower down the order, which makes it is possible to overload any file by placing a file with the same name in a "higher" directory.
+
+### User defined Paths
+
+You can define your own paths using the following method of the Template class:
+
+	Template::add_path($path);
+
+This method can be called at the start of your Application using the hook 'system.ready'

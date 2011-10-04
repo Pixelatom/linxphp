@@ -2,7 +2,7 @@
 
 /*
  * Linx PHP Framework
- * Author: Javier Arias. *
+ * Author: Javier Arias.
  * Licensed under MIT License.
  */
 /**
@@ -21,6 +21,29 @@ class Template extends BaseTemplate {
 
     protected $_default_template;
     protected $_custom_path = false;
+
+    static protected $_paths = array();
+
+    /**
+     * adds a path where the template can be searched for
+     * the last path added is the first where the template will be searched in
+     * if the template is found, it'll be used, so it means you ca design a cascade filsystem where templates can be optionally overriden
+     */
+    static public function add_path($path){
+        array_unshift(self::$_paths, $path);
+    }
+
+    static public function clear_paths(){
+        self::$_paths = array();
+    }
+    static public function remove_path($path){
+        $index=array_search($path,self::$_paths,true);
+        if ($index!==false){
+            unset(self::$_paths[$index]);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * This method is static. Parameters are the same as creating a new instance.
@@ -137,7 +160,8 @@ class Template extends BaseTemplate {
         return $this;
     }
 
-    protected function include_template($name, &$vars) {        
+    protected function include_template($name, &$vars) {
+        // self::$_paths
         # va a mostrar template default
         if (empty($name)) {
             if (empty($this->_default_template))
@@ -145,13 +169,21 @@ class Template extends BaseTemplate {
             $name = $this->_default_template;
         }
 
-        if (empty($this->_custom_path))
-            $path = Application::get_site_path() . Configuration::get('paths', 'templates') . '/' . $name . '.php';
+        $path = '';
+
+        if (empty($this->_custom_path)){
+            foreach (self::$_paths as $dir){                
+                if (file_exists($dir . '/' . $name . '.php')){
+                    $path = $dir . '/' . $name . '.php';
+                    break; 
+                }
+            }    
+        }            
         else
             $path = realpath($this->_custom_path) . '/' . $name . '.php';
 
         if (!file_exists($path))
-            throw new Exception('Template `' . $name . '` does not exists');
+            throw new Exception('Template `' . $name . '` does not exists or can not be found');
 
 
         $this->clousure($path, $vars);

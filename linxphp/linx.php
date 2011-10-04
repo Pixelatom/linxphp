@@ -24,7 +24,7 @@ $app_config=array(
         'classes'=>'application/classes',
         'hooks'=>'application/hooks',
         'models'=>'application/models',
-        'models'=>'application/modules',
+        'modules'=>'application/modules',
     ),
     'errors'=>array(
         'useexceptions'=>false,
@@ -147,8 +147,10 @@ if (file_exists(realpath(Application::get_site_path().Configuration::get('paths'
                 $hookdirs[] = new DirectoryIterator(realpath($module.'/hooks/'));
             }
 
-            /*@todo: make this works */ 
-            # Template::add_cascade_dir(realpath($module.'/hooks/'),$priority);
+            # module templates
+            if (file_exists(realpath($module.'/templates/'))){
+                Template::add_path(realpath($module.'/templates/'));
+            }
         }
     }
 }
@@ -165,6 +167,9 @@ foreach ($hookdirs as $dir){
         }
     }
 }
+
+# finally we add the application template path (we add this at the last path so it's the first to be used)
+Template::add_path(Application::get_site_path() . Configuration::get('paths', 'templates'));
 
 # execute hooks
 Event::run('system.ready');

@@ -20,7 +20,6 @@ class Event{
      * Clear all callbacks from an event.
      */
     public static function clear($eventName){
-        die('NOOOO');
         unset(self::$_listeners[strtolower($eventName)]);
     }
     
