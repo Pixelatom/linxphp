@@ -210,7 +210,9 @@ class SQLMapperDriver implements IMapperDriver {
     public function save($object) {
 
         $schema = ModelDescriptor::describe($object);
-
+        /* TODO mysql update if exists */
+        /* TODO count how many recrds with the same id */
+        // check if the object was loaded or if it's new
         if (isset($schema['unique']) and $this->exists(get_class($object), $schema['unique'])) {
             return $this->update($object);
         } else {

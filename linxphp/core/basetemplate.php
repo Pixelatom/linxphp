@@ -69,8 +69,9 @@ abstract class BaseTemplate{
         try{
             $this->show();
         }
-        catch(Exception $e){
-            die($e->__toString());
+        catch(Exception $e){ 
+        	ob_end_clean();
+        	throw $e;
         }
 
         $return=ob_get_contents();
