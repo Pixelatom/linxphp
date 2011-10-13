@@ -129,27 +129,33 @@ if (file_exists(realpath(Application::get_site_path().Configuration::get('paths'
  */
 
 # checks if the modules folder exists
-if (file_exists(realpath(Application::get_site_path().Configuration::get('paths','modules').'/'))){
-    # read all modules folders
-    $moduledir = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','modules').'/'));
-    foreach ($moduledir as $file){
-        if(!$file->isDot() && $file->isDir()) {
-            
-            # extracts module folder
-            $module = ($moduledir->getPath().'/'.$file->getFilename());
+// support for multiple paths separated by comma.
+$path_array = Application::get_site_path().Configuration::get('paths','modules');
+$path_array = explode(',', $path_array);
+foreach ($path_array as $path){
+    $path = trim($path);
+    if (file_exists(realpath($path.'/'))){
+        # read all modules folders
+        $moduledir = new DirectoryIterator(realpath(Application::get_site_path().Configuration::get('paths','modules').'/'));
+        foreach ($moduledir as $file){
+            if(!$file->isDot() && $file->isDir()) {
+                
+                # extracts module folder
+                $module = ($moduledir->getPath().'/'.$file->getFilename());
 
-            # module classes
-            if (file_exists(realpath($module.'/classes/'))){
-                Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$module.'/classes');
-            }
-            # module hooks
-            if (file_exists(realpath($module.'/hooks/'))){
-                $hookdirs[] = new DirectoryIterator(realpath($module.'/hooks/'));
-            }
+                # module classes
+                if (file_exists(realpath($module.'/classes/'))){
+                    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$module.'/classes');
+                }
+                # module hooks
+                if (file_exists(realpath($module.'/hooks/'))){
+                    $hookdirs[] = new DirectoryIterator(realpath($module.'/hooks/'));
+                }
 
-            # module templates
-            if (file_exists(realpath($module.'/templates/'))){
-                Template::add_path(realpath($module.'/templates/'));
+                # module templates
+                if (file_exists(realpath($module.'/templates/'))){
+                    Template::add_path(realpath($module.'/templates/'));
+                }
             }
         }
     }
