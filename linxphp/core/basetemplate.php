@@ -71,7 +71,10 @@ abstract class BaseTemplate{
         }
         catch(Exception $e){ 
         	ob_end_clean();
-        	throw $e;
+        	if (ini_get('display_errors'))
+        		return  $e->__toString() ;
+        	else
+        		throw $e;
         }
 
         $return=ob_get_contents();
