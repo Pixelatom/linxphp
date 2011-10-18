@@ -654,12 +654,12 @@ class SQLMapperDriver implements IMapperDriver {
         if (!empty($conditions) or !empty($order_by)) {
 
             // we'll search for possible uses of extended fieds that may need joins
-            preg_match_all('/[^\'"]{0,1}(?P<joinfield>\w+(?:\.\w+)+)[^\'"]{0,1}/', ' '.$conditions . ' ' . $order_by . ' ', $result, PREG_PATTERN_ORDER);
+            preg_match_all('/[^\'"]{0,1}(?P<joinfield>['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1}(?:\.['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1})+)[^\'"]{0,1}/', ' '.$conditions . ' ' . $order_by . ' ', $result, PREG_PATTERN_ORDER);
 
 
 
             foreach ($result["joinfield"] as $field) {
-
+                $field = str_replace($this->escape, '', $field);
                 $tables = explode('.', $field);
 
                 $path = array(
@@ -777,13 +777,13 @@ class SQLMapperDriver implements IMapperDriver {
 
         // in case the sql contains extra join we will replace them for their alias
         foreach ($processed_paths as $search => $replace) {
-
-            $sql = preg_replace('/([^\'"]{0,1})(' . preg_quote($search) . ')([^\'"]{0,1})/', '$1' . $replace . '$3', $sql);
+            $search = str_replace($this->escape, '', $search);
+            $sql = preg_replace('/([^\'"]{0,1}['.$this->escape.']{0,1})(' . preg_quote($search) . ')(['.$this->escape.']{0,1}[^\'"]{0,1})/', '$1' . $replace . '$3', $sql);
         }
         /*
           if (!empty($processed_paths))
           die($sql);
-         */
+        */
         return $sql;
     }
 
