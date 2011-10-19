@@ -127,6 +127,8 @@ class ModelDescriptor {
         if (!isset(self::$cache[$class_name]))
             self::$cache[$class_name] = $schema;
 
+        
+
         return $schema;
     }
 }
