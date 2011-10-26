@@ -147,9 +147,20 @@ foreach ($path_array as $path){
                 if (file_exists(realpath($module.'/classes/'))){
                     Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$module.'/classes');
                 }
+
+                # module controllers (I'm not quite sure it's a good idea, let's try)                
+                if (file_exists(realpath($module.'/controllers/'))){                
+                    Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",$module.'/controllers');   
+                }
+
                 # module hooks
                 if (file_exists(realpath($module.'/hooks/'))){
                     $hookdirs[] = new DirectoryIterator(realpath($module.'/hooks/'));
+                }
+
+                # module models
+                if (file_exists(realpath($module.'/models/'))){
+                    Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$module.'/models');
                 }
 
                 # module templates
