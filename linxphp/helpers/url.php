@@ -263,7 +263,10 @@ class Url {
      *@param string $value the new value for the paramenter
      */
     public function set_param($name,$value) {
-        $this->_params[$name]=$value;
+        if (empty($value))
+            $this->remove_param($name);
+        else
+            $this->_params[$name]=$value;
         return $this;
     }
     /**
