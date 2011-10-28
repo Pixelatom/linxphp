@@ -25,7 +25,7 @@ abstract class CrudRolesController extends CrudController{
         	if (empty($object->id)){
 	        	$name = $this->view->form->widget('name')->value;
 	        	if (Mapper::count('Role','name = "'.addslashes($name).'"')>0){
-	        		$this->view->form->widget('name')->error = "Este nombre de rol ya existe.";
+	        		$this->view->form->widget('name')->error = "The Role name already exists.";
 	        		$return = false;
 	        	}
         	}
@@ -73,7 +73,7 @@ abstract class CrudRolesController extends CrudController{
 		$this->view->current_action = 'permissions';
 
 		if (!Authorization::has_access('permissions_admin')){
-            $this->show_message("No tienes permisos para acceder a esta página.", self::ERROR_MSG);
+            $this->show_message("You don't have permission to access this page.", self::ERROR_MSG);
             Application::route('index', true);
         }
 		

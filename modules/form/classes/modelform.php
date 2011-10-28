@@ -12,7 +12,7 @@ class ModelForm extends FormTemplate {
         // add submit button
         $form['submit'] = array(
             'type' => 'submit',
-            'label' => 'Guardar',
+            'label' => 'Save',
         );
    
         $schema = ModelDescriptor::describe($model);

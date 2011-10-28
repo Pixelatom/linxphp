@@ -30,7 +30,7 @@ abstract class CrudUsersController extends CrudController{
 	 * in case to be editting own user we'll change the permission to check
 	 */
 	protected function access($action, $id = null){
-		if ($action == 'edit' and $id == Authorization::get_logged_user()){
+		if (($action == 'edit' or $action == 'remove') and $id == Authorization::get_logged_user()){
 			return strtolower($this->modelname).'_'.$action.'_own';
 		}
 		else{		
@@ -58,7 +58,7 @@ abstract class CrudUsersController extends CrudController{
 			}
 
 			if (Mapper::count('User',$condition)>0 ){
-				$username->error = "El nombre de usuario ya está siendo usado por otro.";
+				$username->error = "The Username is already taken by anoher user.";
 				$valid = false;
 			}
 

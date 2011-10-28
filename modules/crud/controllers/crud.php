@@ -73,7 +73,7 @@ abstract class CrudController extends AppController {
             $this->show_message('Sorry, you don\'t have access to this page',self::WARNING_MSG);
             Application::route('index',true);
         }
-
+             
         $this->view->current_action = 'list';
 
         if (!empty($_POST['list'])) {
@@ -271,11 +271,11 @@ abstract class CrudController extends AppController {
         
         // set page title is case it's empty
         if (empty($this->view->page_title)) {
-            $this->view->page_title = 'Editar ' . ucfirst($this->modelname);
+            $this->view->page_title = 'Edit ' . ucfirst($this->modelname);
             if (isset($modeldescription["attributes"]["form"]["label"])) {
                 $label = $modeldescription["attributes"]["form"]["label"];
 
-                $this->view->page_title = 'Editar ' . $label;
+                $this->view->page_title = 'Edit ' . $label;
                 $this->view->label = $label;
             }
         }
@@ -296,7 +296,7 @@ abstract class CrudController extends AppController {
                 
                 try{
                     if (Mapper::save($object));
-                    $this->show_message('changes saved successfully', self::SUCCESS_MSG);
+                    $this->show_message('Changes saved successfully', self::SUCCESS_MSG);
                 }
                 catch(Exception $e){
                     $this->show_message($e->getMessage(), self::ERROR_MSG);
@@ -325,7 +325,7 @@ abstract class CrudController extends AppController {
 
         // permission & access control
        if (!Authorization::has_access($this->access($this->action))){
-            $this->show_message('Sorry, you don\'t have access to perform this action',self::NOTICE_MSG);
+            $this->show_message('Sorry, you don\'t have access to perform this action',self::WARNING_MSG);
             Application::route('index',true);
         }
 
@@ -334,12 +334,12 @@ abstract class CrudController extends AppController {
 
         // set page title..
         if (empty($this->view->page_title)) {
-            $this->view->page_title = 'Agregar ' . ucfirst($this->modelname);
+            $this->view->page_title = 'Add ' . ucfirst($this->modelname);
 
             if (isset($modeldescription["attributes"]["form"]["label"])) {
                 $label = $modeldescription["attributes"]["form"]["label"];
 
-                $this->view->page_title = 'Agregar ' . $label;
+                $this->view->page_title = 'Add ' . $label;
                 $this->view->label = $label;
             }
         }
@@ -363,7 +363,7 @@ abstract class CrudController extends AppController {
                         $route = "{$this->controllername}/edit/" . $object->id;
                         Application::route($route, true);
                     } else {
-                        $this->show_message('an error occurred, please try again', CrudController::ERROR_MSG);
+                        $this->show_message('An error have occurred, please try again', CrudController::ERROR_MSG);
                     }
                 }
                 catch(Exception $e){
@@ -389,7 +389,7 @@ abstract class CrudController extends AppController {
 
         // permission & access control
         if (!Authorization::has_access($this->access($this->action, $_POST['list']))){
-            $this->show_message('Sorry, you don\'t have access to perform this action',self::NOTICE_MSG);
+            $this->show_message('Sorry, you don\'t have access to perform this action',self::WARNING_MSG);
             Application::route('index',true);
         }
 
@@ -411,7 +411,7 @@ abstract class CrudController extends AppController {
         if ($error != true) {
             $this->show_message('Items removed', self::SUCCESS_MSG);
         } else {
-            $this->show_message('an error occurred, please try again', self::ERROR_MSG);
+            $this->show_message('An error have occurred, please try again', self::ERROR_MSG);
         }
 
         // redirects to the default cotroller action
