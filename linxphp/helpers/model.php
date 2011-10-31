@@ -102,7 +102,7 @@ abstract class Model{
     }
     */
 
-    function __set($name){
+    function __set($name, $value){
          // we'll check if the unset variable is part of the model
         $class_name = get_class($this);
         $function = new ReflectionClass($class_name);
