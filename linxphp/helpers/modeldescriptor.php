@@ -96,7 +96,7 @@ class ModelDescriptor {
 
                 $prop['attributes']['is_relationship'] = false;
 
-                if (isset($prop['attributes']['relationship']) and isset($prop['attributes']['type']) and class_exists($prop['attributes']['type'])){
+                if (isset($prop['attributes']['relationship']) and isset($prop['attributes']['type']) and class_exists($prop['attributes']['type']) and array_key_exists('relationship', $prop['attributes'])){
                     $prop['attributes']['is_relationship'] = true;
                 }
 
