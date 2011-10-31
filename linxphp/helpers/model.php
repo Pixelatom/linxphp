@@ -101,6 +101,25 @@ abstract class Model{
         }
     }
     */
+
+    function __set($name){
+         // we'll check if the unset variable is part of the model
+        $class_name = get_class($this);
+        $function = new ReflectionClass($class_name);
+        $properties = $function->getDefaultProperties();
+
+        if (array_key_exists($name,$properties)){
+            $reflection = new ReflectionProperty($class_name, $name);
+            if ($reflection->isPublic() ){
+                // is part of the model!!
+                // force the loading of the current value before setting the new one
+                Mapper::_load_relationship($this,$name);
+
+                // set the non accesible internal property
+                $this->$name = $value;
+            }
+        }
+    }
     
     function  __get($name) {
         // when checking for unset variables
