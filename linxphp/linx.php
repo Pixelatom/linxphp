@@ -65,7 +65,7 @@ foreach ($path_array as $path){
     $path = $path.'/';
     $path_len = strlen($path);
     
-    foreach(glob($path . '*', GLOB_ONLYDIR) as $dir) {        
+    foreach(glob($path . '*', GLOB_ONLYDIR) as $dir) {
         Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$dir);    
     }
 }
