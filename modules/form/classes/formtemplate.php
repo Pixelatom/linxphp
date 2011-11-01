@@ -154,8 +154,9 @@ class FormTemplate extends Template {
      */
     public function add_field($name, $properties, $sibling, $position = 'before') {
         if (!is_array($properties)) {
-            $properties = array('text' => $properties, 'type' => 'plain');
+            $properties = array('text' => $properties, 'type' => 'text');
         }
+        $properties['name'] = $name;
         $keys = array_keys($this->fields);
         $values = array_values($this->fields);
 
