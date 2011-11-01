@@ -1106,12 +1106,12 @@ class SQLMapperDriver implements IMapperDriver {
                     }
                 } elseif ($property_attributes['attributes']['relationship']['lazy_load'] == true) {
                     // property with lazy load
-                    if (!isset($object->$property_name)) {
+                    if (!$this->_is_relationship_loaded($object,$property_name)) {
                         if ($force_loading == true /* and $property_attributes['attributes']['relationship']['type'] == 'parent' */)
                         //force loading only by referencing the property
                             $object->$property_name;
                         else
-                        // if the property is set to be loaded when requested, we'll unset it now
+                        // if the property is lazy_load , we'll unset it now, to enable magic methods on Model classes that will load it when requested
                             unset($object->$property_name);
                     }
                 }

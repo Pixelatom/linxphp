@@ -1,30 +1,6 @@
 <?php
 abstract class Model{
-    /*
-     * experimental getter and setter support
-    function  __construct() {
-        $class_name = get_class($this);
-        $function = new ReflectionClass($class_name);
-        $properties = $function->getDefaultProperties();
-
-        // removes variables when there are getters and setters in the format __get_variable
-        foreach ($properties as $name=>$value){
-            
-            $methods_name = array('__get_'.$name,'__set_'.$name);
-            foreach($methods_name as $method_name){
-                
-                if (method_exists($this, $method_name)){
-
-                    unset($this->$name);
-                    //die('accessible false');
-                    //$prop = $function->getProperty($name);
-                    //$prop->setAccessible(false); // we are making this property private here.. I think
-                    
-                }
-            }
-        }
-    }
-    */
+    
     
     /**
      * relation properties filters support :)
@@ -76,9 +52,8 @@ abstract class Model{
     {
         Mapper::_fill_relationship($this);
     }
-    /*
-     * experimental getter and setter 
-    function  __set($name, $value) {
+    
+    public function __isset($name) {
         // we'll check if the unset variable is part of the model
         $class_name = get_class($this);
         $function = new ReflectionClass($class_name);
@@ -87,23 +62,18 @@ abstract class Model{
         if (array_key_exists($name,$properties)){
             $reflection = new ReflectionProperty($class_name, $name);
             if ($reflection->isPublic() ){
-                // is part of the model!!
-
-                // we check if there is a getter existing
-                $methodname = '__set_'.$name;
-                if (method_exists($this, $methodname)){
-                    return $this->$methodname($value);
-                }
-
-                // set the non accesible internal property
-                $this->$name = $value;
+                // is part of the model (but lazy load)
+                return true;
             }
         }
+        else{
+            // not part of the model
+            return false;
+        }
     }
-    */
 
     function __set($name, $value){
-         // we'll check if the unset variable is part of the model
+        // we'll check if the unset variable is part of the model
         $class_name = get_class($this);
         $function = new ReflectionClass($class_name);
         $properties = $function->getDefaultProperties();
@@ -137,15 +107,7 @@ abstract class Model{
             $reflection = new ReflectionProperty($class_name, $name);
             if ($reflection->isPublic() ){
                 // is part of the model!!
-
-                /*
-                // we check if there is a getter existing
-                $methodname = '__get_'.$name;
-                if (method_exists($this, $methodname)){
-                    return $this->$methodname();
-                }
-                */
-
+                
                 // then we try to return a lazy_load property
                 Mapper::_load_relationship($this,$name);
                 return $this->$name;

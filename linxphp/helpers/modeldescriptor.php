@@ -38,9 +38,7 @@ class ModelDescriptor {
                 // set the value for the cached properties
                 foreach ($schema['properties'] as $property => &$prop) {
                     // we'll ask this condition to avoid force loading of lazy loading properties
-                    if (!$prop['attributes']['is_relationship'] or
-                        !$prop['attributes']['relationship']['lazy_load'] or
-                        isset($model->$property))
+                    if (!($prop['attributes']['is_relationship'] and $prop['attributes']['relationship']['lazy_load']) )
                         $prop['value'] = $model->$property;
                 }
                 //for model instances we add a new property describing the unique identifier
