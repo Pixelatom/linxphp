@@ -14,6 +14,6 @@ interface IMapperDriver {
     public function get($classname, $conditions=null, $order_by=null);
     public function _fill_relationship($object);
     public function _load_relationship($object, $property_name);
-
+    public function _is_relationship_loaded($object, $property_name);
 }
 ?>

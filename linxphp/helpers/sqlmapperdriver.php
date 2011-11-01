@@ -977,17 +977,13 @@ class SQLMapperDriver implements IMapperDriver {
 
         $property_attributes = $obj_schema['properties'][$property_name];
 
-        if (isset($property_attributes['attributes']['type']) AND class_exists($property_attributes['attributes']['type'])) {
+        if ($property_attributes['attributes']['is_relationship']) {
 
             $type_classname = $property_attributes['attributes']['type'];
             $type_schema = $this->get_class_schema($type_classname);
             $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
-            # we're going to define fore keys for this relationship
-            if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                # relationship must be defined in comments!
-                throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
-            }
+            # we're going to define fore keys for this relationship            
 
             switch ($property_attributes['attributes']['relationship']['type']) {
                 case 'childs':
@@ -999,8 +995,6 @@ class SQLMapperDriver implements IMapperDriver {
                     }
 
                     $conditions = '';
-
-
 
                     foreach ($sql_schema['primary_key'] as $primary_key) {
 
@@ -1017,25 +1011,16 @@ class SQLMapperDriver implements IMapperDriver {
                         $conditions .= " $field = '$value' ";
                     }
 
-
-
-
                     /* TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
                     // parents doesnt need a sql property for their childs
                     $childs = $this->get($type_classname, $conditions);
-
-
+                    
                     // asignamos los childs at last
-
                     $object->$property_name = $childs;
 
                     break;
                 case 'parent':
-                    //
-
-
-
-
+                    
                     $fore_keys = array();
 
                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
@@ -1047,6 +1032,7 @@ class SQLMapperDriver implements IMapperDriver {
                         // if the id is null then there is not an object related to it
                         if (!isset($object->$sql_field) or $object->$sql_field == NULL) {
                             $object->$property_name = null;
+                            // shall we break?                            
                         } else {
                             $fore_keys[$type_primary_key] = $object->$sql_field;
                         }
@@ -1056,17 +1042,44 @@ class SQLMapperDriver implements IMapperDriver {
                     }
 
 
-                    if (!empty($fore_keys)) {
-
+                    if (!empty($fore_keys)){
                         $object->$property_name = $this->get_by_id($type_classname, $fore_keys);
                     }
-
-
-
 
                     break;
             }
         }
+    }
+
+    /**
+     * returns true when a relationship property is loaded, false if not loaded yet (when using lazy_load)
+     */
+    public function _is_relationship_loaded($object, $property_name){
+        $obj_schema = $this->get_object_schema($object);
+        $sql_schema = $this->get_sql_table_schema($object);
+        $property_attributes = $obj_schema['properties'][$property_name];
+        if ($property_attributes['attributes']['is_relationship']) {
+
+            $type_classname = $property_attributes['attributes']['type'];
+            $type_schema = $this->get_class_schema($type_classname);
+            $type_sql_schema = $this->get_sql_table_schema($type_classname);
+
+            # we're going to define fore keys for this relationship
+
+            switch ($property_attributes['attributes']['relationship']['type']) {
+                case 'childs':
+                    return isset($object->$property_name) and is_array($object->$property_name);                    
+                case 'parent':                    
+                    $fore_keys = array();
+                    // guess the name of the temporal forekey property on the object
+                    foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
+                        $sql_field = $property_name . '_' . $type_primary_key;
+                        return !isset($object->$sql_field);
+                    }
+            }
+        }
+        else 
+            return true;
     }
 
     public function _fill_relationship($object){

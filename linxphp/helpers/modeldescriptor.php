@@ -96,6 +96,12 @@ class ModelDescriptor {
 
                 $prop['attributes']['is_relationship'] = false;
 
+                
+                if (isset($prop['attributes']['relationship']) and !isset($prop['attributes']['type'])) {
+                    # relationship must be defined in comments!
+                    throw new Exception("relationship type attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+                }
+
                 if (isset($prop['attributes']['relationship']) and isset($prop['attributes']['type']) and class_exists($prop['attributes']['type']) and array_key_exists('relationship', $prop['attributes'])){
                     $prop['attributes']['is_relationship'] = true;
                 }

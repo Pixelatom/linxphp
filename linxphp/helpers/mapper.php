@@ -77,13 +77,27 @@ class Mapper {
         //return self::$driver->get($classname, $conditions , $order_by );
     }
     
+    // these following methods are used internally by the models objects
+    /**
+     * load all relationships in an object
+     */
     static public function _fill_relationship($object) {
         self::setup();
         return self::$driver->_fill_relationship($object);
     }
+    /**
+     * load one relationship property
+     */
     static public function _load_relationship($object, $property_name) {
         self::setup();
         return self::$driver->_load_relationship($object, $property_name);
+    }
+    /**
+     * returns true if the relationship property is already loaded
+     */
+    static public function _is_relationship_loaded($object, $property_name) {
+        self::setup();
+        return self::$driver->_is_relationship_loaded($object, $property_name);
     }
 
 }
