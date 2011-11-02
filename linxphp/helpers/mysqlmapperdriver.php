@@ -59,7 +59,7 @@ class MySQLMapperDriver extends SQLMapperDriver{
         $fields_declaration = "";
         foreach ($sql_schema['fields'] as $field => $attributes) {
 
-            $declaration = "$field {$attributes['data_type']}";
+            $declaration = "{$this->escape}$field{$this->escape} {$attributes['data_type']}";
 
             if (isset($attributes['auto_increment']) and $attributes['auto_increment'] == true) {
                 $declaration .= ' AUTO_INCREMENT';
@@ -83,7 +83,7 @@ class MySQLMapperDriver extends SQLMapperDriver{
 
         # composite primary key
         if (isset($sql_schema['primary_key']) and count($sql_schema['primary_key']) > 1) {
-            $fields_declaration .= ", PRIMARY KEY (" . implode(',', $sql_schema['primary_key']) . ")";
+            $fields_declaration .= ", PRIMARY KEY ({$this->escape}" . implode("{$this->escape},{$this->escape}", $sql_schema['primary_key']) . "{$this->escape})";
         }
 
         $sql = "CREATE TABLE {$sql_schema['table_name']}
