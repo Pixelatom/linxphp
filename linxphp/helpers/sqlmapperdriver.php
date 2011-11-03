@@ -327,7 +327,7 @@ class SQLMapperDriver implements IMapperDriver {
             $bind_params[':' . $field] = $attributes['pdo_bind_params'];
         }
 
-        $fields = implode(',', $fields_names);
+        $fields = $this->escape.implode("{$this->escape},{$this->escape}", $fields_names).$this->escape;
 
         $params = implode(',', array_keys($fields_values));
 
@@ -383,7 +383,7 @@ class SQLMapperDriver implements IMapperDriver {
             if (!empty($field_updates))
                 $field_updates .= ", ";
 
-            $field_updates .= "$field = :$field";
+            $field_updates .= "{$this->escape}$field{$this->escape} = :$field";
 
             $value = $attributes['value'];
             //$value = $object->{$attributes['name']};
