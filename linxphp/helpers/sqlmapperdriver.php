@@ -151,7 +151,7 @@ class SQLMapperDriver implements IMapperDriver {
                                         $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
                                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
-					// we're going to copy the declaration of the primary keys
+					                    // we're going to copy the declaration of the primary keys
                                         // to build the fore keys
                                         $forekey = $property_name . '_' . $type_primary_key;
                                         
@@ -161,11 +161,16 @@ class SQLMapperDriver implements IMapperDriver {
                                         $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
                                         
                                         // if it's a lazy_load property and we have the temporal id value we'll use it
-                                        if (is_object($model) and isset($model->$forekey))
-                                        $field['value'] = $model->$forekey;
-                                        else
-                                        $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
-                                        
+                                        if (is_object($model) and isset($model->$forekey)){
+                                            $field['value'] = $model->$forekey;
+                                        }
+                                        if (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)){
+                                            // si es una instancia con la relación asignada usamos el valor que tenemos en memoria o forzamos la carga 
+                                            $field['value'] = $model->$property_name->$type_primary_key; 
+                                        }
+                                        else{
+                                            $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
+                                        }
                                         $schema['fields'][$forekey] = $field;
                                     }
 
@@ -333,6 +338,8 @@ class SQLMapperDriver implements IMapperDriver {
 
 
         $sql = "INSERT INTO {$this->escape}{$sql_schema['table_name']}{$this->escape} ($fields) VALUES ($params)";
+
+        //throw new Exception(print_r($fields_values,true));
 
         $count += db::execute($sql, $fields_values, $bind_params);
 
