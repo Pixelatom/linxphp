@@ -13,7 +13,7 @@ abstract class BaseController extends Controller {
 
     public function __construct() {
         // check the user is logged in
-        if ($this->login_required and !Authorization::is_user_logged_in() and Application:request_url->get_param('route') != 'login') {
+        if ($this->login_required and !Authorization::is_user_logged_in() and Application::$request_url->get_param('route') != 'login') {
             Application::route('login'); //executes login page without redirecting
             die();
         }
