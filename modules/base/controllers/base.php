@@ -8,16 +8,23 @@ abstract class BaseController extends Controller {
     // default template
     protected $view;
 
+    // if true, the an user must be logged in to access to the controller.
+    protected $login_required = true;
+
     public function __construct() {
         // check the user is logged in
-        if (!Authorization::is_user_logged_in() and Application::$request_url->get_param('route') != 'login') {
+        if ($this->login_required and !Authorization::is_user_logged_in() and Application:request_url->get_param('route') != 'login') {
             Application::route('login'); //executes login page without redirecting
             die();
         }
 
         // load default template
         $this->view = new Template('layout');
-        $this->view->logged_user = Mapper::get_by_id('User', Authorization::get_logged_user());
+        
+        if (Authorization::is_user_logged_in())
+            $this->view->logged_user = Mapper::get_by_id('User', Authorization::get_logged_user());
+        else
+            $this->view->logged_user = null;
         
         $this->view->breadcrumb = array('index' => 'Dashboard');
     }
