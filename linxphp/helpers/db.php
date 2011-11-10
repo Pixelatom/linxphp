@@ -141,8 +141,10 @@ class DB {
     $r = $stmt->fetchAll(PDO::FETCH_BOTH);
 
     unset($stmt);
-
-    return $r[0][0];
+    if (isset($r[0][0]))
+        return $r[0][0];
+    else
+        return false;
   }
 
   
