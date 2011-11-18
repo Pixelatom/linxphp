@@ -51,7 +51,7 @@ abstract class FormWidget extends Template {
 
         $this->type = (!isset($properties['type']))? 'text' : $properties['type'];
 
-        $this->label = (!isset($properties['label']))?  $properties['name'] : $properties['label'];
+        $this->label = (!isset($properties['label']))?  $name : $properties['label'];
 
         $this->default = (!isset($properties['default']))?  '' : $properties['default'];
 

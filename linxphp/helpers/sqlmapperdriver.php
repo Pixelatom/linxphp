@@ -661,7 +661,7 @@ class SQLMapperDriver implements IMapperDriver {
         if (!empty($conditions) or !empty($order_by)) {
 
             // we'll search for possible uses of extended fieds that may need joins
-            preg_match_all('/[^\'"]{0,1}(?P<joinfield>['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1}(?:\.['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1})+)[^\'"]{0,1}/', ' '.$conditions . ' ' . $order_by . ' ', $result, PREG_PATTERN_ORDER);
+            preg_match_all('/[^\'"]{0,1}(?P<joinfield>['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1}(?:\.['.$this->escape.']{0,1}\w+['.$this->escape.']{0,1})+)[^\'"]{0,1}/', ' '.$conditions . '  ' . $order_by . ' ', $result, PREG_PATTERN_ORDER);
 
 
 
@@ -781,6 +781,9 @@ class SQLMapperDriver implements IMapperDriver {
 
         if (!empty($order_by))
             $sql .= " ORDER BY $order_by";
+
+        // order values from bigger to smaller strings to replace
+        arsort($processed_paths);
 
         // in case the sql contains extra join we will replace them for their alias
         foreach ($processed_paths as $search => $replace) {
@@ -1060,6 +1063,9 @@ class SQLMapperDriver implements IMapperDriver {
 
     /**
      * returns true when a relationship property is loaded, false if not loaded yet (when using lazy_load)
+     * to determinate when a lazy load property is loaded we use the following logic:
+     * - childs: si la propiedad es un array. (no se que es si no esta cargada. me preocupa pensar que puede estar trayendo todo el array )
+     * - parent: si estan seteadas las propiedades temporales (forekeys) que hacen referencia al registro padre quiere decir que todavia no se cargó el modelo, pero tenemos un problema, si serializamos el objeto sin cargar el lazy_load, cuando se desserialice quizas perdamos las vars temporales.
      */
     public function _is_relationship_loaded($object, $property_name){
         $obj_schema = $this->get_object_schema($object);
