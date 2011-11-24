@@ -4,6 +4,11 @@
  * Author: Javier Arias. *
  * Licensed under MIT License.
  */
+
+// compatibility fix for PHP < 5.3
+ if (!defined('E_DEPRECATED')){
+ 	define('E_DEPRECATED',8192);
+ }
  
 class WarningException extends ErrorException {}
 class FatalErrorException extends ErrorException {}
