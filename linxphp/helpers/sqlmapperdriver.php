@@ -161,10 +161,15 @@ class SQLMapperDriver implements IMapperDriver {
                                         $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
                                         
                                         // if it's a lazy_load property and we have the temporal id value we'll use it
+                                        /*
+                                        echo 'tipo de modelo';
+                                        var_dump($model);
+                                        */
                                         if (is_object($model) and isset($model->$forekey)){
+                                            //echo 'existefore :'.$model->$forekey;
                                             $field['value'] = $model->$forekey;
                                         }
-                                        if (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)){
+                                        elseif (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)){
                                             // si es una instancia con la relación asignada usamos el valor que tenemos en memoria o forzamos la carga 
                                             $field['value'] = $model->$property_name->$type_primary_key; 
                                         }
@@ -173,6 +178,11 @@ class SQLMapperDriver implements IMapperDriver {
                                         }
                                         $schema['fields'][$forekey] = $field;
                                     }
+                                    /*
+                                    echo 'resultado campo';
+                                    echo '<pre>' .$property_name;
+                                    var_dump($field);
+                                    */
 
                                     break;
                             }
