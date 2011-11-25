@@ -1,8 +1,5 @@
-linxphp Basics
-===================
-
 What is linxphp?
----------------
+======
 
 linxphp is an open source, object oriented MVC web framework built using PHP5 that aims to be swift, simple, and small.
 
@@ -11,7 +8,7 @@ linxphp is licensed under a [MIT license](http://www.opensource.org/licenses/mit
 The number 1.000.000 PHP MVC framework
 -----
 
-Why another MVC framework for PHP?
+Why another MVC framework?
 
 Most known PHP Framework out there have grown a lot, and turned overcomplicated in the process. 
 
