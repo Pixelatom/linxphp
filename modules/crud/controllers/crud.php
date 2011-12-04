@@ -105,10 +105,18 @@ abstract class CrudController extends AppController {
 
             foreach ($this->columns as $property) {
                 $field = "`$table`.`$property`";
-                if (isset($modeldescription['properties'][$property]['attributes']['form'])) {
-                    if (isset($modeldescription['properties'][$property]['attributes']['form']['display_property'])) {
+                if ($modeldescription['properties'][$property]['attributes']['is_relationship']==true) {
+
+                    $typedescription = ModelDescriptor::describe($modeldescription['properties'][$property]['attributes']['type']);
+                    if (isset ($typedescription['attributes']['form']['title'])){
                         $type = $modeldescription['properties'][$property]['attributes']['type'];
-                        $field = "`$property`.`{$modeldescription['properties'][$property]['attributes']['form']['display_property']}`";
+                        $field = "`$property`.`{$typedescription['attributes']['form']['title']}`";
+                    }                
+                    elseif (isset($modeldescription['properties'][$property]['attributes']['form'])) {
+                        if (isset($modeldescription['properties'][$property]['attributes']['form']['title'])) {
+                            $type = $modeldescription['properties'][$property]['attributes']['type'];
+                            $field = "`$property`.`{$modeldescription['properties'][$property]['attributes']['form']['title']}`";
+                        }
                     }
                 }
 
@@ -166,15 +174,27 @@ abstract class CrudController extends AppController {
         foreach ($items as $row) {
             $item = array();
             foreach ($this->columns as $property) {
-
-                if (isset($modeldescription['properties'][$property]['attributes']['form'])) {
-                    // tiene la propiedad form, tenemos que ver como hay que presentar el valor
-                    if (isset($modeldescription['properties'][$property]['attributes']['form']['display_property'])) {
+                
+                // buscamos la propiedad form->title en la relacion
+                if ($modeldescription['properties'][$property]['attributes']['is_relationship']==true) {
+                
+                    $typedescription = ModelDescriptor::describe($modeldescription['properties'][$property]['attributes']['type']);
+                    if (isset ($typedescription['attributes']['form']['title'])){
                         // una relacion con otro objeto
-                        $property = $property . '->' . $modeldescription['properties'][$property]['attributes']['form']['display_property'];
-
+                        $property = $property . '->' . $typedescription['attributes']['form']['title'];
+                        
                         eval('$item[] = $row->' . $property . ';');
-                    } elseif (isset($modeldescription['properties'][$property]['attributes']['form']['type']) and $modeldescription['properties'][$property]['attributes']['form']['type'] == 'select'
+                    }
+                    elseif (isset($modeldescription['properties'][$property]['attributes']['form']['title'])) {
+                        // una relacion con otro objeto
+                        $property = $property . '->' . $modeldescription['properties'][$property]['attributes']['form']['title'];
+
+                        eval('$item[] = $row->' . $property . ';');                    
+                    }
+                }
+                elseif (isset($modeldescription['properties'][$property]['attributes']['form'])) {
+                    // coleccion de opciones en un select
+                    if (isset($modeldescription['properties'][$property]['attributes']['form']['type']) and $modeldescription['properties'][$property]['attributes']['form']['type'] == 'select'
                             and isset($modeldescription['properties'][$property]['attributes']['form']['options'])) {
                         // tipo select
                         $item[] = $modeldescription['properties'][$property]['attributes']['form']['options'][$row->$property];
