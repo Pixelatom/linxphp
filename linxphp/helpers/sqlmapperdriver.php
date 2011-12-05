@@ -86,7 +86,11 @@ class SQLMapperDriver implements IMapperDriver {
                 $schema['primary_key'][] = $property_name;
                 $field['primary_key'] = true;
             }
-            $type = 'VARCHAR(255)';
+            $type = 'VARCHAR';
+            if (!empty($length))
+                $type .= "($length)";
+            else
+                $type .= "(255)";
 
             $pdo_bind_params = array('data_type' => PDO::PARAM_STR, 'length' => (!empty($length)) ? $length : 255);
 
@@ -199,7 +203,7 @@ class SQLMapperDriver implements IMapperDriver {
                 $type = 'VARCHAR(255)';
             }
 
-            if ($field['value'] == null)
+            if ($field['value'] === null)
                 $pdo_bind_params = array('data_type' => PDO::PARAM_NULL);
 
             $field['pdo_bind_params'] = $pdo_bind_params;

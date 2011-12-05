@@ -58,11 +58,15 @@ class MySQLMapperDriver extends SQLMapperDriver{
         # field declarations
         $fields_declaration = "";
         foreach ($sql_schema['fields'] as $field => $attributes) {
-
+            
             $declaration = "{$this->escape}$field{$this->escape} {$attributes['data_type']}";
 
             if (isset($attributes['auto_increment']) and $attributes['auto_increment'] == true) {
                 $declaration .= ' AUTO_INCREMENT';
+            }
+
+            if (isset($attributes['value'])){
+                $declaration .= ' NOT NULL DEFAULT  \''. addslashes($attributes['value']) .'\''; 
             }
 
             if (((isset($attributes['auto_increment']) and $attributes['auto_increment'] == true)
