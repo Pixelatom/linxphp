@@ -76,7 +76,20 @@ class Mapper {
         return call_user_func_array(array(self::$driver, "get"), $args);
         //return self::$driver->get($classname, $conditions , $order_by );
     }
-    
+
+    /**
+     *
+     * @param <type> $object
+     * @param <type> $property_name
+     * @param <type> $child_conditions
+     * @param <type> $order_by
+     * @return <type>
+     */
+    static public function get_relationship($object, $property_name ,$child_conditions=null, $order_by=null){
+        self::setup();
+        return self::$driver->get_relationship($object, $property_name ,$child_conditions, $order_by);
+    }
+
     // these following methods are used internally by the models objects
     /**
      * load all relationships in an object

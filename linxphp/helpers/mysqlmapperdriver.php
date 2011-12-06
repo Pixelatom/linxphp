@@ -1,30 +1,30 @@
 <?php
+
 /**
  * extension of Mapper for supporting MySQL specific stuff like pagination
  * and autoincrement and that kind of things
  *
  * @author JaViS
  */
-class MySQLMapperDriver extends SQLMapperDriver{
+class MySQLMapperDriver extends SQLMapperDriver {
 
-	protected $escape = '`';
+    protected $escape = '`';
 
-     protected function _insert($object){
-         $return = parent::_insert($object);
-         if ($return>0){
-             $d = ModelDescriptor::describe($object);
-             foreach ($d['properties'] as $property=>$property_attributes){
-                 if ((isset($property_attributes['attributes']['auto_increment'])
-                    and $property_attributes['attributes']['auto_increment'] == true)) {
-                     $object->$property = db::get_last_insert_id($property);
-                 }
-             }
-         }
-         return $return;
-     }
+    protected function _insert($object) {
+        $return = parent::_insert($object);
+        if ($return > 0) {
+            $d = ModelDescriptor::describe($object);
+            foreach ($d['properties'] as $property => $property_attributes) {
+                if ((isset($property_attributes['attributes']['auto_increment'])
+                        and $property_attributes['attributes']['auto_increment'] == true)) {
+                    $object->$property = db::get_last_insert_id($property);
+                }
+            }
+        }
+        return $return;
+    }
 
-
-     protected function get_sql_table_schema($object_or_classname) {
+    protected function get_sql_table_schema($object_or_classname) {
         if (is_object($object_or_classname)) {
             $obj_schema = $this->get_object_schema($object_or_classname);
         } else {
@@ -35,12 +35,11 @@ class MySQLMapperDriver extends SQLMapperDriver{
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
-
             if ((isset($property_attributes['attributes']['auto_increment'])
-                and $property_attributes['attributes']['auto_increment'] == true)) {
+                    and $property_attributes['attributes']['auto_increment'] == true)) {
 
-                if (array_search($property_name, $schema['primary_key'])===false)
-                $schema['primary_key'][] = $property_name;
+                if (array_search($property_name, $schema['primary_key']) === false)
+                    $schema['primary_key'][] = $property_name;
                 $schema['fields'][$property_name]['primary_key'] = true;
                 $schema['fields'][$property_name]['auto_increment'] = true;
             }
@@ -48,31 +47,32 @@ class MySQLMapperDriver extends SQLMapperDriver{
 
         return $schema;
     }
+
     /**
      * @todo soporte para autoincrement
      * @param <type> $object 
      */
-     protected function create_table($object) {
+    protected function create_table($object) {
         $sql_schema = $this->get_sql_table_schema($object);
 
         # field declarations
         $fields_declaration = "";
         foreach ($sql_schema['fields'] as $field => $attributes) {
-            
+
             $declaration = "{$this->escape}$field{$this->escape} {$attributes['data_type']}";
 
             if (isset($attributes['auto_increment']) and $attributes['auto_increment'] == true) {
                 $declaration .= ' AUTO_INCREMENT';
             }
 
-            if (isset($attributes['value'])){
-                $declaration .= ' NOT NULL DEFAULT  \''. addslashes($attributes['value']) .'\''; 
+            if (isset($attributes['value'])) {
+                $declaration .= ' NOT NULL DEFAULT  \'' . addslashes($attributes['value']) . '\'';
             }
 
             if (((isset($attributes['auto_increment']) and $attributes['auto_increment'] == true)
-                    OR 
-                 (isset($attributes['primary_key']) and $attributes['primary_key'] == true)
-                 )  and count($sql_schema['primary_key']) == 1) {
+                    OR
+                    (isset($attributes['primary_key']) and $attributes['primary_key'] == true)
+                    ) and count($sql_schema['primary_key']) == 1) {
 
                 $declaration .= ' PRIMARY KEY';
             }
@@ -95,25 +95,28 @@ class MySQLMapperDriver extends SQLMapperDriver{
         )";
 
         //echo $sql;
-        
+
         db::execute($sql);
     }
 
-     protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null , $offset = 0) {
+    protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null, $offset = 0) {
         $sql = parent::build_select_query($classname, $conditions, $order_by);
 
-        if (!is_null($limit)){
+        if (!is_null($limit)) {
             $sql .= " LIMIT $offset, $limit";
         }
 
         //echo $sql;
         return $sql;
     }
-     public function get($classname, $conditions=null, $order_by=null, $limit = null , $offset = 0) {
 
-        
-        $sql = $this->build_select_query($classname, $conditions, $order_by, $limit , $offset);
+    public function get($classname, $conditions=null, $order_by=null, $limit = null, $offset = 0) {
+
+
+        $sql = $this->build_select_query($classname, $conditions, $order_by, $limit, $offset);
+
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
+
         foreach ($return as &$object) {
 
             // revisa si cada uno de los objetos retornados esta en cache,
@@ -131,5 +134,6 @@ class MySQLMapperDriver extends SQLMapperDriver{
 
         return $return;
     }
+
 }
 ?>

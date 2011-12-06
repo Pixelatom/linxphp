@@ -16,33 +16,23 @@ abstract class Model{
             $description['properties'][$name]["attributes"]['is_relationship'] and
             isset($description['properties'][$name]["attributes"]['relationship']['inverse_property'])){
             
+            // build the array of arguments to be passed to the mapper function
+            array_unshift($arguments, $this, $name);
             
-            array_unshift($arguments,$description['properties'][$name]["attributes"]['type']);
-            
-            // $arguments[1] are the conditions of the search 
-            foreach ($description['primary_key'] as $key ){
-                $value = $description['properties'][$key]['value'];
-                if (!empty($arguments[1])){
-                    $arguments[1] .= ' and ';
-                }
-                
-                $forekey = $description['properties'][$name]["attributes"]['relationship']['inverse_property'] . '_' . $key;
-                
-                $arguments[1] .= " $forekey = " . $value;
-            
-            }
-            
-            return call_user_func_array(array('Mapper','get'),$arguments);            
+            return call_user_func_array(array('Mapper','get_relationship'),$arguments);
         }        
         
         $trace = debug_backtrace();
+
+        $file = $line = '';
+        foreach ($trace as $t){ if (isset($t['file'])){ $file = $t['file']; $line = $t['line']; break; } }
         trigger_error(
         'Undefined method "'. $name . '" on class ' .  get_class($this) .
-        ' in ' . $trace[0]['file'] .
-        ' on line ' . $trace[0]['line'],
+        ' in ' . $file  .
+        ' on line ' . $line ,
         E_USER_NOTICE);
-        return null;
-        
+
+        return null;        
     }
     
     /**
@@ -82,8 +72,7 @@ abstract class Model{
             $reflection = new ReflectionProperty($class_name, $name);
             if ($reflection->isPublic() ){
                 // is part of the model!!
-                // force the loading of the current value before setting the new one
-                //if (!Mapper::_is_relationship_loaded($this, $name))
+                // force the loading of the current value before setting the new one                
                 Mapper::_load_relationship($this,$name);
 
                 // set the non accesible internal property

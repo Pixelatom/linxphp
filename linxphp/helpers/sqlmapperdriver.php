@@ -69,153 +69,135 @@ class SQLMapperDriver implements IMapperDriver {
 
         $schema['primary_key'] = array();
 
-
+        // we'll add all properties as fields in the SQL table description
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
-            //echo 'property: '.$property_name.'<br/>';
+            
+            if (!$property_attributes['attributes']['is_relationship']) {
+                // scalar value property
 
-            $field = array();
+                $field = array();
 
-            $field['name'] = $property_name;
+                $field['name'] = $property_name;
 
-            $field['value'] = $property_attributes['value'];
+                $field['value'] = $property_attributes['value'];
 
-            $length = (int) (isset($property_attributes['attributes']['length'])) ? $property_attributes['attributes']['length'] : '';
+                $length = (int) (isset($property_attributes['attributes']['length'])) ? $property_attributes['attributes']['length'] : '';
 
+                $type = 'VARCHAR';
+                if (!empty($length))
+                    $type .= "($length)";
+                else
+                    $type .= "(255)";
 
+                $pdo_bind_params = array('data_type' => PDO::PARAM_STR, 'length' => (!empty($length)) ? $length : 255);
 
-            $type = 'VARCHAR';
-            if (!empty($length))
-                $type .= "($length)";
-            else
-                $type .= "(255)";
+                if (isset($property_attributes['attributes']['type'])) {
+                    switch ($property_attributes['attributes']['type']) {
+                        case 'string':
+                        case 'varchar':
+                            $type = 'VARCHAR';
+                            if (!empty($length))
+                                $type .= "($length)";
+                            else
+                                $type .= "(255)";
 
-            $pdo_bind_params = array('data_type' => PDO::PARAM_STR, 'length' => (!empty($length)) ? $length : 255);
+                            $pdo_bind_params = array('data_type' => PDO::PARAM_STR, 'length' => (!empty($length)) ? $length : 255);
 
-            if (isset($property_attributes['attributes']['type'])) {
-                switch ($property_attributes['attributes']['type']) {
-                    case 'string':
-                    case 'varchar':
-                        $type = 'VARCHAR';
-                        if (!empty($length))
-                            $type .= "($length)";
+                            break;
+                        case 'integer':
+                            $pdo_bind_params = array('data_type' => PDO::PARAM_INT);
+                            $type = 'INTEGER';
+                            break;
+                        case 'smallint':
+                        case 'tinyint':
+                        case 'float':
+                        //numeric(p,s)
+                        case 'char':
+                        case 'real':
+                        case 'datetime':
+                            $type = strtoupper($property_attributes['attributes']['type']);
+                            break;
+
+                        default:
+                            # unrecognized type!
+                            # run an event to proccess the unrecognized type
+                            $type = Event::run('mapper.data_type_declaration', $property_attributes['attributes']['type'], $pdo_bind_params);
+                            break;
+                    }
+                } else {
+                    # default type if it's not set
+                    $type = 'VARCHAR(255)';
+                }
+
+                if ($field['value'] === null)
+                    $pdo_bind_params = array('data_type' => PDO::PARAM_NULL);
+
+                $field['pdo_bind_params'] = $pdo_bind_params;
+                $field['data_type'] = $type;
+
+                if (isset($property_attributes['attributes']['primary_key'])
+                        and $property_attributes['attributes']['primary_key'] == true) {
+                    $schema['primary_key'][] = $property_name;
+                    $field['primary_key'] = true;
+                }
+
+                $schema['fields'][$property_name] = $field;
+            }
+            else{
+                // relationship property
+                
+                $type_classname = $property_attributes['attributes']['type'];
+                $type_schema = $this->get_class_schema($type_classname);
+
+                # we're going to define fore keys for this relationship
+                if (!isset($property_attributes['attributes']['relationship']['type'])) {
+                    # relationship must be defined in comments!
+                    throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+                }
+                //die(    $property_attributes['attributes']['relationship']['type']);
+                switch ($property_attributes['attributes']['relationship']['type']) {
+                    case 'childs':
+                        // parents doesnt need a sql field for their childs
+                        break;
+                    case 'parent':
+                        // childs must define the relationship to a parent in SQL
+                        if (is_object($property_attributes['value']))
+                            $type_sql_schema = $this->get_sql_table_schema($property_attributes['value']); // if the relationship is not empty we'll get the values for the fields
                         else
-                            $type .= "(255)";
+                            $type_sql_schema = $this->get_sql_table_schema($type_classname);// if the relationship is empty we'll get the schema from the class name
 
-                        $pdo_bind_params = array('data_type' => PDO::PARAM_STR, 'length' => (!empty($length)) ? $length : 255);
+                        // for each pk on the relationship object we'll create a forekey field on our table
+                        foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
+                            // we're going to copy the declaration of the primary keys
+                            // to build the fore keys
+                            $forekey = $property_name . '_' . $type_primary_key;
 
-                        break;
-                    case 'integer':
-                        $pdo_bind_params = array('data_type' => PDO::PARAM_INT);
-                        $type = 'INTEGER';
-                        break;
-                    case 'smallint':
-                    case 'tinyint':
-                    case 'float':
-                    //numeric(p,s)
-                    case 'char':
-                    case 'real':
-                    case 'datetime':
-                        $type = strtoupper($property_attributes['attributes']['type']);
-                        break;
-                    
-                    default:
-                        # unrecognized type! let's see if it's a class name
+                            $field = array();
+                            $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
+                            $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
-                        if ($property_attributes['attributes']['is_relationship']) {
-
-                            $type_classname = $property_attributes['attributes']['type'];
-                            $type_schema = $this->get_class_schema($type_classname);
-
-                            # we're going to define fore keys for this relationship
-                            if (!isset($property_attributes['attributes']['relationship']['type'])) {
-                                # relationship must be defined in comments!
-                                throw new Exception("relationship attribute must be defined for field $property_name in model {$obj_schema['type']} ");
+                            // if it's a lazy_load property and we have the temporal id value we'll use it                            
+                            if (is_object($model) and isset($model->$forekey)) {                                
+                                $field['value'] = $model->$forekey;
+                            } elseif (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)) {                                
+                                $field['value'] = $model->$property_name->$type_primary_key;// si es una instancia con la relación asignada usamos el valor que tenemos en memoria o forzamos la carga
+                            } else {
+                                $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
                             }
-                            //die(    $property_attributes['attributes']['relationship']['type']);
-                            switch ($property_attributes['attributes']['relationship']['type']) {
-                                case 'childs':
-                                    // parents doesnt need a sql property for their childs
-                                    break;
-                                case 'parent':
-                                    // childs must define the relationship to a parent in SQL
-                                    // we will add fore keys to this table
-                                    // force loading just in case it's lazy load
-                                    // TODO: remove force loading from here.
-                                    //if (is_object($object_or_classname))
-                                    //$property_attributes['value'] = $object_or_classname->$property_name;
 
-                                    if (is_object($property_attributes['value']))
-                                    // if the relationship is not empty we'll get the values for the fields
-                                        $type_sql_schema = $this->get_sql_table_schema($property_attributes['value']);
-                                    else
-                                    // if the relationship is empty we'll get the schema from the class name
-                                        $type_sql_schema = $this->get_sql_table_schema($type_classname);
-
-                                    foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
-					                    // we're going to copy the declaration of the primary keys
-                                        // to build the fore keys
-                                        $forekey = $property_name . '_' . $type_primary_key;
-                                        
-                                        $field = array();
-                                        
-                                        $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
-                                        $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
-                                        
-                                        // if it's a lazy_load property and we have the temporal id value we'll use it
-                                        /*
-                                        echo 'tipo de modelo';
-                                        var_dump($model);
-                                        */
-                                        if (is_object($model) and isset($model->$forekey)){
-                                            //echo 'existefore :'.$model->$forekey;
-                                            $field['value'] = $model->$forekey;
-                                        }
-                                        elseif (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)){
-                                            // si es una instancia con la relación asignada usamos el valor que tenemos en memoria o forzamos la carga 
-                                            $field['value'] = $model->$property_name->$type_primary_key; 
-                                        }
-                                        else{
-                                            $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
-                                        }
-
-                                        // check if this forekey is pk at the same time
-                                        if (isset($property_attributes['attributes']['primary_key'])
-                                            and $property_attributes['attributes']['primary_key'] == true){
-                                            $schema['primary_key'][] = $forekey;
-                                            $field['primary_key'] = true;
-                                        }
-
-                                        // add the real SQL field as forekey
-                                        $schema['fields'][$forekey] = $field;
-                                    }
-                                    break;
+                            // check if this forekey is pk at the same time
+                            if (isset($property_attributes['attributes']['primary_key'])
+                                    and $property_attributes['attributes']['primary_key'] == true) {
+                                $schema['primary_key'][] = $forekey;
+                                $field['primary_key'] = true;
                             }
-                            // continue with next property
-                            continue 2; // 2 because the sentence SWITCH is considered a loop structure :O
+
+                            // add the real SQL field as forekey
+                            $schema['fields'][$forekey] = $field;
                         }
-
-                        # run an event to proccess the unrecognized type
-                        $type = Event::run('mapper.data_type_declaration', $property_attributes['attributes']['type'], $pdo_bind_params);
                         break;
                 }
-            } else {
-                # default type if it's not set
-                $type = 'VARCHAR(255)';
             }
-
-            if ($field['value'] === null)
-                $pdo_bind_params = array('data_type' => PDO::PARAM_NULL);
-
-            $field['pdo_bind_params'] = $pdo_bind_params;
-            $field['data_type'] = $type;
-
-            if (isset($property_attributes['attributes']['primary_key'])
-                    and $property_attributes['attributes']['primary_key'] == true) {
-                $schema['primary_key'][] = $property_name;
-                $field['primary_key'] = true;
-            }
-
-            $schema['fields'][$property_name] = $field;
         }
 
         // if this is the first call of this recursive function
@@ -548,6 +530,10 @@ class SQLMapperDriver implements IMapperDriver {
         foreach ($sql_schema['fields'] as $field => $attributes) {
 
             $declaration = "$field {$attributes['data_type']}";
+
+            if (isset($attributes['value'])){
+                $declaration .= ' NOT NULL DEFAULT  \''. addslashes($attributes['value']) .'\'';
+            }
 
             if (isset($attributes['primary_key']) and $attributes['primary_key'] == true
                     and count($sql_schema['primary_key']) == 1) {
@@ -1000,8 +986,16 @@ class SQLMapperDriver implements IMapperDriver {
         return $return;
     }
 
-    public function _load_relationship($object, $property_name) {
 
+    /**
+     *
+     * @param <type> $object
+     * @param <type> $property_name
+     * @param <type> $conditions
+     * @param <type> $order_by
+     * @return mixed relationship model/s
+     */
+    public function get_relationship($object, $property_name,$child_conditions=null, $order_by=null) {
         $obj_schema = $this->get_object_schema($object);
         $sql_schema = $this->get_sql_table_schema($object);
 
@@ -1013,7 +1007,7 @@ class SQLMapperDriver implements IMapperDriver {
             $type_schema = $this->get_class_schema($type_classname);
             $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
-            # we're going to define fore keys for this relationship            
+            # we're going to define fore keys for this relationship
 
             switch ($property_attributes['attributes']['relationship']['type']) {
                 case 'childs':
@@ -1038,19 +1032,21 @@ class SQLMapperDriver implements IMapperDriver {
                         $field = $property_attributes['attributes']['relationship']['inverse_property'] . '_' . $primary_key;
 
 
-                        $conditions .= " $field = '$value' ";
+                        $conditions .= " {$this->escape}{$type_sql_schema['table_name']}{$this->escape}.{$this->escape}$field{$this->escape} = '$value' ";
+                    }
+
+                    if (!empty($child_conditions)){
+                        $conditions = "({$conditions}) AND ({$child_conditions})";
                     }
 
                     /* TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
                     // parents doesnt need a sql property for their childs
-                    $childs = $this->get($type_classname, $conditions);
-                    
-                    // asignamos los childs at last
-                    $object->$property_name = $childs;
+                    return $this->get($type_classname, $conditions,$order_by);
+
 
                     break;
                 case 'parent':
-                    
+
                     $fore_keys = array();
 
                     foreach ($type_sql_schema['primary_key'] as $type_primary_key) {
@@ -1062,7 +1058,7 @@ class SQLMapperDriver implements IMapperDriver {
                         // if the id is null then there is not an object related to it
                         if (!isset($object->$sql_field) or $object->$sql_field == NULL) {
                             $object->$property_name = null;
-                            // shall we break?                            
+                            // shall we break?
                         } else {
                             $fore_keys[$type_primary_key] = $object->$sql_field;
                         }
@@ -1073,11 +1069,23 @@ class SQLMapperDriver implements IMapperDriver {
 
 
                     if (!empty($fore_keys)){
-                        $object->$property_name = $this->get_by_id($type_classname, $fore_keys);
+                        return $this->get_by_id($type_classname, $fore_keys);
                     }
 
                     break;
             }
+        }
+    }
+
+    /**
+     * Load a relationship property. Used by the lazy_load mechanism.
+     * @param <type> $object
+     * @param <type> $property_name
+     */
+    public function _load_relationship($object, $property_name) {
+        $obj_schema = $this->get_object_schema($object);
+        if ($obj_schema['properties'][$property_name]['attributes']['is_relationship']){
+            $object->$property_name = $this->get_relationship($object, $property_name);
         }
     }
 
