@@ -81,11 +81,8 @@ class SQLMapperDriver implements IMapperDriver {
 
             $length = (int) (isset($property_attributes['attributes']['length'])) ? $property_attributes['attributes']['length'] : '';
 
-            if (isset($property_attributes['attributes']['primary_key'])
-                    and $property_attributes['attributes']['primary_key'] == true) {
-                $schema['primary_key'][] = $property_name;
-                $field['primary_key'] = true;
-            }
+
+
             $type = 'VARCHAR';
             if (!empty($length))
                 $type .= "($length)";
@@ -180,14 +177,17 @@ class SQLMapperDriver implements IMapperDriver {
                                         else{
                                             $field['value'] = $type_sql_schema['fields'][$type_primary_key]['value'];
                                         }
+
+                                        // check if this forekey is pk at the same time
+                                        if (isset($property_attributes['attributes']['primary_key'])
+                                            and $property_attributes['attributes']['primary_key'] == true){
+                                            $schema['primary_key'][] = $forekey;
+                                            $field['primary_key'] = true;
+                                        }
+
+                                        // add the real SQL field as forekey
                                         $schema['fields'][$forekey] = $field;
                                     }
-                                    /*
-                                    echo 'resultado campo';
-                                    echo '<pre>' .$property_name;
-                                    var_dump($field);
-                                    */
-
                                     break;
                             }
                             // continue with next property
@@ -208,6 +208,12 @@ class SQLMapperDriver implements IMapperDriver {
 
             $field['pdo_bind_params'] = $pdo_bind_params;
             $field['data_type'] = $type;
+
+            if (isset($property_attributes['attributes']['primary_key'])
+                    and $property_attributes['attributes']['primary_key'] == true) {
+                $schema['primary_key'][] = $property_name;
+                $field['primary_key'] = true;
+            }
 
             $schema['fields'][$property_name] = $field;
         }
