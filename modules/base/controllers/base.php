@@ -52,6 +52,15 @@ abstract class BaseController extends Controller {
      * @param <type> $type
      */
     protected function show_message($message, $type = self::INFO_MSG) {
+        $alreadythere = false;
+        foreach($_SESSION['_messages'] as $msg){
+            if ($msg['message']==$message){
+                $alreadythere = true;
+                break;
+            }
+
+        } 
+        if (!$alreadythere)
         $_SESSION['_messages'][] = array('type' => $type, 'message' => $message);
     }
 
