@@ -1,18 +1,5 @@
 <?php
 
-/*
-  ANSI data type	Oracle        MySql           PostGreSQL                  Most Portable
-  integer               NUMBER(38)    integer(11)     integer                     integer
-  smallint              NUMBER(38)    smallint(6)     smallint                    smallint
-  tinyint               *	      tinyint(4)      *                           numeric(4,0)
-  numeric(p,s)          NUMBER(p,s)   decimal(p,s)    numeric(p,s)                numeric(p,s)
-  varchar(n)            VARCHAR2(n)   varchar(n)      character varying(n)	  varchar(n)
-  char(n)               CHAR(n)       varchar(n)      character(n)                char(n)
-  datetime              DATE          datetime        timestamp no timezone       have to autodetect
-  float                 FLOAT(126)    float           double precision            float
-  real                  FLOAT(63)     double          real                        real
- */
-
 class SQLMapperDriver implements IMapperDriver {
 
     protected $escape = '';
@@ -172,8 +159,8 @@ class SQLMapperDriver implements IMapperDriver {
                             // to build the fore keys
                             $forekey = $property_name . '_' . $type_primary_key;
 
-                            $field = array();
-                            $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
+                            $field = array();                            
+                            $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];                            
                             $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
                             // if it's a lazy_load property and we have the temporal id value we'll use it                            
@@ -210,17 +197,54 @@ class SQLMapperDriver implements IMapperDriver {
         return $schema;
     }
 
+    protected function get_unique_identifier($model){
+        //for model instances we add a new property describing the unique identifier
+        $unique = array();
+        $schema = ModelDescriptor::describe($model);
+        foreach ($schema['properties'] as $property_name => $property_attributes) {
+            if (array_key_exists('primary_key', $property_attributes['attributes'])
+                    and $property_attributes['attributes']['primary_key'] == true) {
+
+                // for non relationship properties
+                if (!$property_attributes['attributes']['is_relationship'] and !is_null($schema['properties'][$property_name]['value']))
+                    $unique[$property_name] = $schema['properties'][$property_name]['value'];
+
+                // relation properties
+                if ($property_attributes['attributes']['is_relationship'] and
+                        $property_attributes['attributes']['relationship']['type'] == 'parent') {
+
+                    $type_classname = $property_attributes['attributes']['type'];
+                    $type_schema = ModelDescriptor::describe($type_classname);
+
+                    foreach ($type_schema['primary_key'] as $type_primary_key) {
+                        $forekey = $property_name . '_' . $type_primary_key;
+
+                        // if it's a lazy_load property and we have the temporal id value we'll use it
+                        if (is_object($model) and isset($model->$forekey)) {
+                            $unique[$forekey] = $model->$forekey;
+                        } elseif (is_object($model) and !isset($model->$forekey) and isset($model->$property_name->$type_primary_key)) {
+                            $unique[$forekey] = $model->$property_name->$type_primary_key; // si es una instancia con la relación asignada usamos el valor que tenemos en memoria o forzamos la carga
+                        } else {
+                            $unique[$forekey] = $type_schema['properties'][$type_primary_key]['value'];
+                        }
+                    }
+                }
+            }
+        }
+        return $unique;
+    }
+
     /*
      * Stupid function
      */
 
     public function save($object) {
-
-        $schema = ModelDescriptor::describe($object);
+        $unique = $this->get_unique_identifier($object);
+        
         /* TODO mysql update if exists */
         /* TODO count how many recrds with the same id */
         // check if the object was loaded or if it's new
-        if (isset($schema['unique']) and $this->exists(get_class($object), $schema['unique'])) {
+        if (!empty($unique) and $this->exists(get_class($object), $unique)) {
             return $this->update($object);
         } else {
             return $this->insert($object);

@@ -41,17 +41,6 @@ class ModelDescriptor {
                     if (!($prop['attributes']['is_relationship'] and $prop['attributes']['relationship']['lazy_load']) )
                         $prop['value'] = $model->$property;
                 }
-                //for model instances we add a new property describing the unique identifier
-                $unique = array();
-                foreach ($schema['properties'] as $property_name => $property_attributes) {
-                    if (array_key_exists('primary_key', $property_attributes['attributes'])
-                          and $property_attributes['attributes']['primary_key'] == true) {
-                        if (!is_null($schema['properties'][$property_name]['value']))
-                         $unique[$property_name] = $schema['properties'][$property_name]['value'];
-                    }
-                }
-                if (!empty($unique))
-                $schema['unique'] = $unique;
             }
             
             return $schema;
