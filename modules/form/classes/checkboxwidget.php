@@ -21,7 +21,7 @@ class CheckboxWidget extends FormWidget{
         if (!isset($this->properties['value']))
                 $this->properties['value'] = true;
 
-        $this->value = ($this->checked())? $this->properties['value']:null;
+        $this->value = ($this->checked())? $this->properties['value']:false;
 
         $this->set_default_template('form/widgets/checkbox');
     }
