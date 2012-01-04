@@ -181,8 +181,7 @@ abstract class CrudController extends AppController {
                     $typedescription = ModelDescriptor::describe($modeldescription['properties'][$property]['attributes']['type']);
                     if (isset ($typedescription['attributes']['form']['title'])){
                         // una relacion con otro objeto
-                        $property = $property . '->' . $typedescription['attributes']['form']['title'];
-                        
+                        $property = $property . '->' . $typedescription['attributes']['form']['title'];                        
                         eval('$item[] = $row->' . $property . ';');
                     }
                     elseif (isset($modeldescription['properties'][$property]['attributes']['form']['title'])) {
