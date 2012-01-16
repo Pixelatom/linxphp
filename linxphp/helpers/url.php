@@ -257,6 +257,11 @@ class Url {
 
         return $current_url;
     }
+
+    public function set_fragment($value){
+        $this->_fragment = $value;
+    }
+
     /**
      * set the value of a url parameter
      *@param string $name the name of the parameter
