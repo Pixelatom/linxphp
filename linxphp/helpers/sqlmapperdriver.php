@@ -159,8 +159,13 @@ class SQLMapperDriver implements IMapperDriver {
                             // to build the fore keys
                             $forekey = $property_name . '_' . $type_primary_key;
 
-                            $field = array();                            
-                            $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];                            
+                            $field = array(); 
+                            $field['data_type'] = 'VARCHAR';
+                            $field['pdo_bind_params'] = array('data_type' => PDO::PARAM_STR, 'length' => 255);
+
+                            if (isset($type_sql_schema['fields'][$type_primary_key]['pdo_bind_params']))                    
+                            $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
+                            if (isset($type_sql_schema['fields'][$type_primary_key]['data_type']))
                             $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
                             // if it's a lazy_load property and we have the temporal id value we'll use it                            
