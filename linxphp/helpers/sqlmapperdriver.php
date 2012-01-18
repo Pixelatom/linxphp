@@ -160,12 +160,16 @@ class SQLMapperDriver implements IMapperDriver {
                             $forekey = $property_name . '_' . $type_primary_key;
 
                             $field = array(); 
-                            $field['data_type'] = 'VARCHAR';
-                            $field['pdo_bind_params'] = array('data_type' => PDO::PARAM_STR, 'length' => 255);
+                            ///echo '<pre>';
+                            //var_dump($type_sql_schema);
+                            //$field['data_type'] = 'VARCHAR';
+                            //$field['pdo_bind_params'] = array('data_type' => PDO::PARAM_STR, 'length' => 255);
 
-                            if (isset($type_sql_schema['fields'][$type_primary_key]['pdo_bind_params']))                    
+                            if (!isset($type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'])){
+                                throw new Exception("Foreign Key Declaration Failure: Field {$type_classname}::{$type_primary_key} must be declared before {$classname}::{$property_name}");
+                            }                    
                             $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
-                            if (isset($type_sql_schema['fields'][$type_primary_key]['data_type']))
+                            //if (isset($type_sql_schema['fields'][$type_primary_key]['data_type']))
                             $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
 
                             // if it's a lazy_load property and we have the temporal id value we'll use it                            
