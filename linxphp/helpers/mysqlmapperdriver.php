@@ -53,7 +53,10 @@ class MySQLMapperDriver extends SQLMapperDriver {
      * @param <type> $object 
      */
     protected function create_table($object) {
-        $sql_schema = $this->get_sql_table_schema($object);
+        if(is_object($object))
+           $sql_schema = $this->get_sql_table_schema(get_class($object));
+       else
+           $sql_schema = $this->get_sql_table_schema($object);
 
         # field declarations
         $fields_declaration = "";
