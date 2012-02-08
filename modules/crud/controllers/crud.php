@@ -233,11 +233,16 @@ abstract class CrudController extends AppController {
             $this->view->page_description = '';
         if (!$this->view->key_exists('addbutton'))
             $this->view->addbutton = true;
-        $this->view->content = new Template('crud/list');
+        $this->view->content = $this->list_items_template();
 
         // shows
         $this->show();
     }
+	
+	protected function list_items_template(){
+		return new Template('crud/list');
+	}
+	
 
     /**
      * returns a template with the form for the model
