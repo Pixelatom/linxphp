@@ -314,20 +314,24 @@ class SQLMapperDriver implements IMapperDriver {
         return $count;
     }
 
+    protected static $table_exists_cache = array();
     protected function table_exists($tableName) {
 
-
-        // Other RDBMS.  Graceful degradation
-        $exists = true;
-        try{
-            $cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
-            db::query($cmdOthers);
+        if (!isset(self::$table_exists_cache[$tableName])){
+            // Other RDBMS.  Graceful degradation
+            $exists = true;
+            try{
+                $cmdOthers = "select 1 from {$this->escape}" . $tableName . "{$this->escape} where 1 = 0";
+                db::query($cmdOthers);
+            }
+            catch (Exception $e){
+                $exists = false;
+            }
+            self::$table_exists_cache[$tableName] = $exists;
         }
-        catch (Exception $e){
-            $exists = false;
+        else{
+            $exists = self::$table_exists_cache[$tableName];
         }
-
-
 
         return $exists;
     }
