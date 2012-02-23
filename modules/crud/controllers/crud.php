@@ -267,6 +267,14 @@ abstract class CrudController extends AppController {
     }
 
     /**
+     * executes after the object has been saved
+     * @param <type> $object
+     */
+    protected function on_save($object){
+        
+    }
+    
+    /**
      * fill object properties with form values
      * @param <type> $object
      */
@@ -314,8 +322,10 @@ abstract class CrudController extends AppController {
                 $this->submit($object);
                 
                 try{
-                    if (Mapper::save($object));
-                    $this->show_message('Changes saved successfully', self::SUCCESS_MSG);
+                    if (Mapper::save($object)){
+                        $this->show_message('Changes saved successfully', self::SUCCESS_MSG);
+                    }
+                    $this->on_save($object);
                 }
                 catch(Exception $e){
                     $this->show_message($e->getMessage(), self::ERROR_MSG);
@@ -378,7 +388,7 @@ abstract class CrudController extends AppController {
                 try{
                     if (Mapper::save($object)>0) {
                         $this->show_message(ucfirst($this->modelname) . ' was created successfully', self::SUCCESS_MSG);
-
+                        $this->on_save($object);
                         $route = "{$this->controllername}/edit/" . $object->id;
                         Application::route($route, true);
                     } else {

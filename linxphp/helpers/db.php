@@ -2,6 +2,7 @@
 class DB {
   static protected $link;
   static protected $prepared_queries = array();
+  static public $debug = false;
 
   static private function connect(){
     $c = Configuration::get('database');
@@ -10,8 +11,13 @@ class DB {
     $user = $c['username'];
     $password = $c['password'];
 
+    if (self::$debug)
+    $dbh = new LoggedPDO($dsn, $user, $password);
+    else
     $dbh = new PDO($dsn, $user, $password);
+
     $dbh->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);//drops exception when error
+    
     if ($dbh->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
         $dbh->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,TRUE);//necesary for not hanging mysql
     }
@@ -23,8 +29,13 @@ class DB {
 
   static public function get_pdolink(){
       if(!self::$link)
-    self::connect();
+      self::connect();
       return self::$link;
+  }
+
+  static public function set_debug($enabled){
+    self::$debug = true;
+    self::connect();
   }
 
   //static private function close(){
