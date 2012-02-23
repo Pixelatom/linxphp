@@ -73,7 +73,7 @@ abstract class Model{
             if ($reflection->isPublic() ){
                 // is part of the model!!
                 // force the loading of the current value before setting the new one                
-                Mapper::_load_relationship($this,$name);
+                //Mapper::_load_relationship($this,$name); // bad boy
 
                 // set the non accesible internal property
                 $this->$name = $value;
