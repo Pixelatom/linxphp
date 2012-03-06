@@ -24,7 +24,6 @@ class Authorization {
     }
 
     static public function has_access($permission){
-
         if (!Mapper::get_by_id('Permission', $permission)){
             $new = new Permission();
             $new->name = $permission;
