@@ -48,7 +48,11 @@ Configuration::set_values($app_config);
 
 // system classes
 Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/core');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/routing');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/presentation');
 Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/helpers');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/database');
+Application::add_class_path('/(.+)/e',"strtolower('\\1').'.php'",$system_directory.'/cache');
 
 // controllers path
 Application::add_class_path('/\\A([A-Z]\\w+)Controller\\z/e',"strtolower('\\1').'.php'",Application::get_site_path().Configuration::get('paths','controllers'));    
