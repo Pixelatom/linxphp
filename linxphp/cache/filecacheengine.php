@@ -1,5 +1,13 @@
 <?php
 class FileCacheEngine implements iCacheEngine {
+  protected $_path;
+
+  public function __construct($settings){
+      $this->_path = ini_get('session.save_path') . '/s_cache';
+      if (isset($settings['path'])){
+          $this->_path = $settings['path'];
+      }
+  }
 
   // This is the function you store information with
   function store($key,$data,$ttl) {
@@ -70,7 +78,7 @@ class FileCacheEngine implements iCacheEngine {
    }
 
   private function getFileName($key) {
-      return ini_get('session.save_path') . '/s_cache' . md5($key);
+      return $this->_path . md5($key);
   }
 
 }
