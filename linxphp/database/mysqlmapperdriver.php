@@ -25,12 +25,8 @@ class MySQLMapperDriver extends SQLMapperDriver {
     }
 
     protected function get_sql_table_schema($object_or_classname) {
-        if (is_object($object_or_classname)) {
-            $obj_schema = $this->get_object_schema($object_or_classname);
-        } else {
-            $obj_schema = $this->get_class_schema($object_or_classname);
-        }
-
+        $obj_schema = ModelDescriptor::describe($object_or_classname);
+        
         $schema = parent::get_sql_table_schema($object_or_classname);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
@@ -121,18 +117,7 @@ class MySQLMapperDriver extends SQLMapperDriver {
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
         foreach ($return as &$object) {
-
-            // revisa si cada uno de los objetos retornados esta en cache,
-            // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
-            if ($this->is_object_in_cache($object)) {
-                // objects in cache are supposed to be already filled
-
-                $object = $this->get_object_from_cache($object);
-            } else {
-                $this->add_to_cache($object);
-                $this->fill_relationship($object);
-                $object->_after_load();
-            }
+            $this->fill_relationship($object);            
         }
 
         return $return;

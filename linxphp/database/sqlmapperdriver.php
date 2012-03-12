@@ -4,13 +4,7 @@ class SQLMapperDriver implements IMapperDriver {
 
     protected $escape = '';
 
-    protected function get_class_schema($class_name) {
-        return ModelDescriptor::describe($class_name);
-    }
-
-    protected function get_object_schema($object) {
-        return ModelDescriptor::describe($object);
-    }
+    
 
     // a little cache for storing ongoing processing in recursive functions
     protected $cache = null;
@@ -45,7 +39,7 @@ class SQLMapperDriver implements IMapperDriver {
             $schema = &$this->cache[$cache_id];
         }
 
-        $obj_schema = $this->get_class_schema($model);
+        $obj_schema = ModelDescriptor::describe($model);
 
         $schema['table_name'] = $obj_schema['type'];
 
@@ -134,7 +128,7 @@ class SQLMapperDriver implements IMapperDriver {
                 // relationship property
                 
                 $type_classname = $property_attributes['attributes']['type'];
-                $type_schema = $this->get_class_schema($type_classname);
+                $type_schema = ModelDescriptor::describe($type_classname);
 
                 # we're going to define fore keys for this relationship
                 if (!isset($property_attributes['attributes']['relationship']['type'])) {
@@ -254,9 +248,9 @@ class SQLMapperDriver implements IMapperDriver {
         /* TODO count how many recrds with the same id */
         // check if the object was loaded or if it's new
         if (!empty($unique) and $this->exists(get_class($object), $unique)) {
-            return $this->update($object);
+            return Mapper::update($object);
         } else {
-            return $this->insert($object);
+            return Mapper::insert($object);
         }
     }
 
@@ -271,7 +265,7 @@ class SQLMapperDriver implements IMapperDriver {
         // force loading of lazy load properties
         $this->fill_relationship($object, true);
 
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
@@ -295,7 +289,7 @@ class SQLMapperDriver implements IMapperDriver {
                         $object->$property_name->$inverse = $object;
                     }
 
-                    $count += $this->save($object->$property_name);
+                    $count += Mapper::save($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
 
                     foreach ($object->$property_name as $child) {
@@ -306,7 +300,7 @@ class SQLMapperDriver implements IMapperDriver {
 
                             $child->{$inverse} = $object;
                         }
-                        $count += $this->save($child);
+                        $count += Mapper::save($child);
                     }
                 }
             }
@@ -392,12 +386,7 @@ class SQLMapperDriver implements IMapperDriver {
             $this->create_table($object);
         }
 
-        $object->_before_insert();
-
         $count = $this->_insert($object);
-
-        $object->_after_insert();
-
 
         if ($count > 0) {
             // LOAD and save childs properties
@@ -416,9 +405,6 @@ class SQLMapperDriver implements IMapperDriver {
 
         // quantity of entities saved (to be returned by the function)
         $count = 0;
-
-        $object->_before_update();
-
 
         $sql_schema = $this->get_sql_table_schema($object);
 
@@ -465,8 +451,6 @@ class SQLMapperDriver implements IMapperDriver {
 
         $count += db::execute($sql, $fields_values, $bind_params);
 
-        $object->_after_update();
-
         $count += $this->save_relationships($object);
 
         return $count;
@@ -477,7 +461,7 @@ class SQLMapperDriver implements IMapperDriver {
         // force loading of lazy load properties
         $this->fill_relationship($object, true);
 
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
 
@@ -490,7 +474,7 @@ class SQLMapperDriver implements IMapperDriver {
                     $count += $this->delete($object->$property_name);
                 } elseif (is_array($object->$property_name)) {
                     foreach ($object->$property_name as $child) {
-                        $count += $this->delete($child);
+                        $count += Mapper::delete($child);
                     }
                 }
 
@@ -510,7 +494,7 @@ class SQLMapperDriver implements IMapperDriver {
             return;
         }
 
-        $object->_before_delete();
+        
         $sql_schema = $this->get_sql_table_schema($object);
 
         $count = 0;
@@ -548,7 +532,7 @@ class SQLMapperDriver implements IMapperDriver {
 
         $count += db::execute($sql, $fields_values, $bind_params);
 
-        $object->_after_delete();
+        
 
         return $count;
     }
@@ -596,101 +580,14 @@ class SQLMapperDriver implements IMapperDriver {
         db::execute($sql);
     }
 
-    /*
-     * Cache functions
-     * every object is stored in cache so it's possible to use always the
-     * same instance of an object
-     */
-
-    protected function add_to_cache($object) {
-        $classname = get_class($object);
-
-        $sql_schema = $this->get_sql_table_schema($object);
-
-        $id = array();
-
-        foreach ($sql_schema['primary_key'] as $key) {
-
-            $value = $sql_schema['fields'][$key]['value'];
-
-            $id[$key] = (string) $value;
-        }
-
-        $key = md5($classname . json_encode($id));
-
-
-
-        Registry::set($key, $object);
-    }
-
-    protected function is_object_in_cache($object) {
-        $classname = get_class($object);
-
-        $sql_schema = $this->get_sql_table_schema($object);
-
-        $id = array();
-
-        foreach ($sql_schema['primary_key'] as $key) {
-
-            $value = $sql_schema['fields'][$key]['value'];
-
-            $id[$key] = (string) $value;
-        }
-
-        return $this->is_in_cache($classname, $id);
-    }
-
-    protected function is_in_cache($classname, $id) {
-        if (!is_array($id)) {
-            $sql_schema = $this->get_sql_table_schema($classname);
-            $id = array($sql_schema['primary_key'][0] => (string) $id);
-        }
-
-        $key = md5($classname . json_encode($id));
-
-        return Registry::exists($key);
-    }
-
-    protected function get_object_from_cache($object) {
-        $classname = get_class($object);
-
-        $sql_schema = $this->get_sql_table_schema($object);
-
-        $id = array();
-
-        foreach ($sql_schema['primary_key'] as $key) {
-
-            $value = $sql_schema['fields'][$key]['value'];
-
-            $id[$key] = (string) $value;
-        }
-
-        $key = md5($classname . json_encode($id));
-
-        return Registry::get($key);
-    }
-
-    protected function get_from_cache($classname, $id) {
-        if (!is_array($id)) {
-            $sql_schema = $this->get_sql_table_schema($classname);
-            $id = array($sql_schema['primary_key'][0] => (string) $id);
-        }
-
-        $key = md5($classname . json_encode($id));
-
-        return Registry::get($key);
-    }
-
-    /*
-     * End Cache functions
-     */
+    
 
     /*
      * utility function
      */
 
     protected function build_select_query($classname, $conditions=null, $order_by=null) {
-        $obj_schema = $this->get_class_schema($classname);
+        $obj_schema = ModelDescriptor::describe($classname);
         $sql_schema = $this->get_sql_table_schema($classname);
 
         if (!$this->table_exists($sql_schema['table_name'])) {
@@ -756,7 +653,7 @@ class SQLMapperDriver implements IMapperDriver {
 
                     // current part of the path schemas
                     $type_classname = $property_attributes['attributes']['type'];
-                    $type_schema = $this->get_class_schema($type_classname);
+                    $type_schema = ModelDescriptor::describe($type_classname);
                     $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
                     if (in_array($pathstring, $processed_paths))
@@ -916,7 +813,7 @@ class SQLMapperDriver implements IMapperDriver {
      * @param <type> $id
      * @return <type>
      */
-    protected function _get_by_id($classname, $id) {
+    public function get_by_id($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
 
 
@@ -968,13 +865,14 @@ class SQLMapperDriver implements IMapperDriver {
 
         $results = db::query($sql, $fields_values, $bind_params, $classname);
 
+
         if (isset($results[0])) {
-            $this->add_to_cache($results[0]);
-            $this->fill_relationship($results[0]);
+            
+            Mapper::_fill_relationship($results[0]);
 
             $object = $results[0];
 
-            $object->_after_load();
+            
 
             return $object;
         }
@@ -982,42 +880,20 @@ class SQLMapperDriver implements IMapperDriver {
             return;
     }
 
-    /*
-     * Loads one object by id -uses cache
-     */
+    
 
-    public function get_by_id($classname, $id) {
-
-        if ($this->is_in_cache($classname, $id))
-            return $this->get_from_cache($classname, $id);
-
-
-        return $this->_get_by_id($classname, $id);
-    }
+    
+        
+    
 
     public function get($classname, $conditions=null, $order_by=null) {
-
-        //$sql = call_user_func_array(array(self, 'build_select_query'), func_get_args());
+        
         $sql = $this->build_select_query($classname, $conditions, $order_by);
-//        if (empty($sql))
-//            die($conditions);
 
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
         foreach ($return as &$object) {
-
-            // revisa si cada uno de los objetos retornados esta en cache,
-            // y si no es asi los guardamos, si ya estan guardados retornamos la instancia que ya existe
-            if ($this->is_object_in_cache($object)) {
-                // objects in cache are supposed to be already filled
-
-                $object = $this->get_object_from_cache($object);
-            } else {
-                $this->add_to_cache($object);
-                $this->fill_relationship($object);
-
-                $object->_after_load();
-            }
+             Mapper::_fill_relationship($object);
         }
 
         return $return;
@@ -1033,7 +909,7 @@ class SQLMapperDriver implements IMapperDriver {
      * @return mixed relationship model/s
      */
     public function get_relationship($object, $property_name,$child_conditions=null, $order_by=null) {
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
         $sql_schema = $this->get_sql_table_schema($object);
 
         $property_attributes = $obj_schema['properties'][$property_name];
@@ -1041,7 +917,7 @@ class SQLMapperDriver implements IMapperDriver {
         if ($property_attributes['attributes']['is_relationship']) {
 
             $type_classname = $property_attributes['attributes']['type'];
-            $type_schema = $this->get_class_schema($type_classname);
+            $type_schema = ModelDescriptor::describe($type_classname);
             $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
             # we're going to define fore keys for this relationship
@@ -1078,7 +954,7 @@ class SQLMapperDriver implements IMapperDriver {
 
                     /* TODO: el parametro conditions del get no me gusta mucho porque los valores no se pueden pasar como parametros */
                     // parents doesnt need a sql property for their childs
-                    return $this->get($type_classname, $conditions,$order_by);
+                    return Mapper::get($type_classname, $conditions,$order_by);
 
 
                     break;
@@ -1101,12 +977,12 @@ class SQLMapperDriver implements IMapperDriver {
                         }
 
                         if (!in_array($sql_field, array_keys($obj_schema['properties'])))
-                            unset($object->$sql_field);# remove property because it was not defined in the original class
+                            unset($object->$sql_field); # remove property because it was not defined in the original class
                     }
 
 
                     if (!empty($fore_keys)){
-                        return $this->get_by_id($type_classname, $fore_keys);
+                        return Mapper::get_by_id($type_classname, $fore_keys);
                     }
 
                     break;
@@ -1120,9 +996,9 @@ class SQLMapperDriver implements IMapperDriver {
      * @param <type> $property_name
      */
     public function _load_relationship($object, $property_name) {
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
         if ($obj_schema['properties'][$property_name]['attributes']['is_relationship']){
-            $object->$property_name = $this->get_relationship($object, $property_name);
+            $object->$property_name = Mapper::get_relationship($object, $property_name);
         }
     }
 
@@ -1133,13 +1009,13 @@ class SQLMapperDriver implements IMapperDriver {
      * - parent: si estan seteadas las propiedades temporales (forekeys) que hacen referencia al registro padre quiere decir que todavia no se cargó el modelo, pero tenemos un problema, si serializamos el objeto sin cargar el lazy_load, cuando se desserialice quizas perdamos las vars temporales.
      */
     public function _is_relationship_loaded($object, $property_name){
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
         $sql_schema = $this->get_sql_table_schema($object);
         $property_attributes = $obj_schema['properties'][$property_name];
         if ($property_attributes['attributes']['is_relationship']) {
 
             $type_classname = $property_attributes['attributes']['type'];
-            $type_schema = $this->get_class_schema($type_classname);
+            $type_schema = ModelDescriptor::describe($type_classname);
             $type_sql_schema = $this->get_sql_table_schema($type_classname);
 
             # we're going to define fore keys for this relationship
@@ -1169,7 +1045,7 @@ class SQLMapperDriver implements IMapperDriver {
 
     protected function fill_relationship($object, $force_loading=false) {
 
-        $obj_schema = $this->get_object_schema($object);
+        $obj_schema = ModelDescriptor::describe($object);
 
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {

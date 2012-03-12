@@ -124,4 +124,18 @@ class ModelDescriptor {
 
         return $schema;
     }
+
+    static public function get_id($model){
+        $d = self::describe($model);
+        $id = array();        
+        foreach ($d['primary_key'] as $key) {
+            if (is_object($key)){
+                $id[$key]=self::get_id($key);
+            }
+            else
+            $id[$key] = $model->$key;
+        }
+        asort($id);
+        return $id;
+    }
 }
