@@ -86,7 +86,8 @@ abstract class Model{
         }
     }
     
-    function  __get($name) {
+    function  &__get($name) {
+
         // when checking for unset variables
         // we'll check if the unset variable is part of the model
         $class_name = get_class($this);
