@@ -819,7 +819,6 @@ class SQLMapperDriver implements IMapperDriver {
 
         if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
-            //return;
         }
         $where_id = '';
 

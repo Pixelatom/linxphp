@@ -129,7 +129,7 @@ class ModelDescriptor {
         $d = self::describe($model);
         $id = array();        
         foreach ($d['primary_key'] as $key) {
-            if (is_object($key)){
+            if (is_object($model->$key)){
                 $id[$key]=self::get_id($key);
             }
             else

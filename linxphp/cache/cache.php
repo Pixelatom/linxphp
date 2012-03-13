@@ -28,15 +28,15 @@ class Cache{
         }
     }
 
-    public function fetch($key){
+    static public function fetch($key){
         self::init();
         return self::$_engine->fetch($key);
     }
-    public function store($key,$data,$ttl){
+    static public function store($key,$data,$ttl){
         self::init();
         return self::$_engine->store($key,$data,$ttl);
     }
-    public function delete($key){
+    static public function delete($key){
         self::init();
         return self::$_engine->delete($key);
     }
