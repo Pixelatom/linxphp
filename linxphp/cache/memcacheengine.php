@@ -2,11 +2,11 @@
 class MemcacheEngine implements iCacheEngine{
 
     // Memcache object
-    protected $_connection;
+    protected $connection;
 
     public function __construct($settings) {
 
-        $this->_connection = new MemCache;
+        $this->connection = new Memcache;
         foreach ($settings['servers'] as $host){
             $this->addServer($host);
         }

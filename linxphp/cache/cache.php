@@ -4,6 +4,7 @@ class Cache{
 
     static protected $_config = array(
         'engine' => 'FileCache',
+        'servers' => array('localhost'),
     );
 
     /**
