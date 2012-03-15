@@ -102,7 +102,7 @@ class Mapper {
     /* cache functions */
     static protected function get_cache_registry(){
         
-        $registry = Cache::fetch('mapper_cache_registry');
+        $registry = SimpleCache::fetch('mapper_cache_registry');
         if (!is_array($registry)){
             $registry = array();
         }        
@@ -111,7 +111,7 @@ class Mapper {
 
     static protected function cache_fetch($class_name,$conditions){
         $key = strtolower("{$class_name}_{$conditions}");
-        return Cache::fetch($key);
+        return SimpleCache::fetch($key);
     }
 
     static protected function cache_store($data,$class_name,$conditions){
@@ -119,24 +119,24 @@ class Mapper {
         $key = strtolower("{$class_name}_{$conditions}");
         $ttl = self::$config['cache_ttl'];
 
-        Cache::store($key, $data, $ttl);       
+        SimpleCache::store($key, $data, $ttl);       
 
         $registry = self::get_cache_registry();
         $registry[$class_name][$key] = json_encode(array('class_name'=>$class_name,'conditions'=>$conditions));
-        Cache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
+        SimpleCache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
     }
 
     static protected function cache_delete($class_name,$conditions){
         $class_name = strtolower($class_name);
         $key = strtolower("{$class_name}_{$conditions}");
 
-        Cache::delete($key);
+        SimpleCache::delete($key);
         
         $registry = self::get_cache_registry();
         if (isset($registry[$class_name][$key]))
         unset($registry[$class_name][$key]);
 
-        Cache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
+        SimpleCache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
     }
     
     static protected function cache_delete_section($class_name){
@@ -144,7 +144,7 @@ class Mapper {
         $registry = self::get_cache_registry();
         if (isset($registry[$class_name])){
             foreach($registry[$class_name] as $key=>$value){
-                Cache::delete($key);
+                SimpleCache::delete($key);
             }
         }
         // delete all cache refered to this model class name        
@@ -153,7 +153,7 @@ class Mapper {
         if (isset($registry[$class_name]))
         unset($registry[$class_name]);
 
-        Cache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
+        SimpleCache::store('mapper_cache_registry', $registry, self::$config['cache_registry_ttl']);
     }
 
 
@@ -210,12 +210,12 @@ class Mapper {
     static public function count($classname, $conditions=null) {
         self::setup();
         if (self::$config['use_cache']){
-            $cached = self::cache_fetch($class_name, 'count:'.$conditions);
+            $cached = self::cache_fetch($classname, 'count:'.$conditions);
             if ($cached !== false) return $cached;
         }
         $return = self::$driver->count($classname, $conditions);        
         if (self::$config['use_cache']){
-            self::cache_store($return, $class_name, 'count:'.$conditions);
+            self::cache_store($return, $classname, 'count:'.$conditions);
         }
         return $return;
     }
