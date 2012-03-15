@@ -101,7 +101,7 @@ class Mapper {
 
     /* cache functions */
     static protected function get_cache_registry(){
-        $class_name = strtolower($class_name);
+        
         $registry = Cache::fetch('mapper_cache_registry');
         if (!is_array($registry)){
             $registry = array();
@@ -224,7 +224,7 @@ class Mapper {
         self::setup();
 
         /* normalizar parametro $id para poder identificarlo en instances y cache */
-        $d = self::describe($classname);
+        $d = ModelDescriptor::describe($classname);
         $nid = array();
         if (count($d['primary_key']) != count($id)) throw new Exception('Incorrect number of values for primary key');
         
