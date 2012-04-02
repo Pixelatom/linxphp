@@ -12,9 +12,20 @@ class ModelDescriptor {
         $attributes = preg_replace('%/\*\*|^\s*?\*/\s*|^\s*?\*(?:\s?$| ){0,1}%sm', '', $comments_string);
         return Spyc::YAMLLoadString($attributes);
     }
-    static public function describe($model){
 
-        
+    static protected function fill_values($model,$schema){
+        if (is_object($model)){
+            // set the value for the cached properties
+            foreach ($schema['properties'] as $property => &$prop) {
+                // we'll ask this condition to avoid force loading of lazy loading properties
+                if (!($prop['attributes']['is_relationship'] and $prop['attributes']['relationship']['lazy_load']) )
+                    $prop['value'] = $model->$property;
+            }
+        }
+        return $schema;
+    }
+
+    static public function describe($model){
 
         if (is_object($model)){
             $class_name = get_class($model);
@@ -34,14 +45,7 @@ class ModelDescriptor {
             
             $schema = self::$cache[$class_name];
             
-            if (is_object($model)){
-                // set the value for the cached properties
-                foreach ($schema['properties'] as $property => &$prop) {
-                    // we'll ask this condition to avoid force loading of lazy loading properties
-                    if (!($prop['attributes']['is_relationship'] and $prop['attributes']['relationship']['lazy_load']) )
-                        $prop['value'] = $model->$property;
-                }
-            }
+            $schema = self::fill_values($model,$schema);
             
             return $schema;
         }
@@ -120,8 +124,22 @@ class ModelDescriptor {
         if (!isset(self::$cache[$class_name]))
             self::$cache[$class_name] = $schema;
 
+        $schema = self::fill_values($model,$schema);
         
-
         return $schema;
+    }
+
+    static public function get_id($model){
+        $d = self::describe($model);
+        $id = array();        
+        foreach ($d['primary_key'] as $key) {
+            if (is_object($model->$key)){
+                $id[$key]=self::get_id($key);
+            }
+            else
+            $id[$key] = $model->$key;
+        }
+        asort($id);
+        return $id;
     }
 }
