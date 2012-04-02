@@ -72,8 +72,9 @@ abstract class Model{
             $reflection = new ReflectionProperty($class_name, $name);
             if ($reflection->isPublic() ){
                 // is part of the model!!
-                // force the loading of the current value before setting the new one                
-                //Mapper::_load_relationship($this,$name); // bad boy
+                // force the loading of the current value before setting the new one
+                $this->$name = null; // we'll create the property so next time Mapper calls it wont pass throug __set() 
+                Mapper::_load_relationship($this,$name); // bad boy
 
                 // set the non accesible internal property
                 $this->$name = $value;
@@ -85,7 +86,8 @@ abstract class Model{
         }
     }
     
-    function  __get($name) {
+    function  &__get($name) {
+
         // when checking for unset variables
         // we'll check if the unset variable is part of the model
         $class_name = get_class($this);
