@@ -168,12 +168,10 @@ class FormTemplate extends Template {
         array_splice($keys, $siblingPos, 0, $name);
         array_splice($values, $siblingPos, 0, array($properties));
         $this->fields = array_combine($keys, $values);
-    }    
-
+    }
     public function add_field_before($name, $properties, $sibling) {
         $this->add_field($name, $properties, $sibling);
     }
-
     public function add_field_after($name, $properties, $sibling) {
         $this->add_field($name, $properties, $sibling, 'after');
     }
@@ -184,13 +182,21 @@ class FormTemplate extends Template {
         if (isset($this->_widgets[$name]))
         unset($this->_widgets[$name]);
     }
-
     public function remove_field($name) {
         unset($this->fields[$name]);
 
         // remove widget too
         if (isset($this->_widgets[$name]))
         unset($this->_widgets[$name]);
+    }
+    public function &get_field($name){
+        if (isset($this->fields[$name])){            
+            return $this->fields[$name];
+        }
+        else{
+            throw new Exception ("Field `$name` not found in Form's field list");
+        }
+            
     }
 
 }
