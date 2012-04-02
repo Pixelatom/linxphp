@@ -7,7 +7,7 @@
  */
 class FormTemplate extends Template {
     // array definition for each field
-    protected $fields = array();
+    public $fields = array();
     // error messages for each field after validation
     protected $errors = array();
     // array of FormWidgets objects for each field
