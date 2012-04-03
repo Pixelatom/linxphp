@@ -1,10 +1,16 @@
 <?php
+/**
+ * SimpleCache is a class that wraps up different PHP cache engines though one simple class 
+ * that allows you to encapsulate the caching layer of your application.
+ */
 class SimpleCache{
     static protected $_engine = null;
 
+    // default configuration of the cache class
     static protected $_config = array(
         'engine' => 'FileCache',
         'servers' => array('localhost'),
+        'prefix' => '',
     );
 
     /**
@@ -20,6 +26,9 @@ class SimpleCache{
         self::$_engine = null;
     }
 
+    /**
+     * internal setup function
+     */
     static protected function init(){
         if (!is_object(self::$_engine)){
             $class_name = self::$_config['engine'] . 'Engine';
@@ -29,10 +38,16 @@ class SimpleCache{
         }
     }
 
+    /**
+     * retrieves the value stored under the key name
+     * or false if the cache doesn't exists or if it's expired
+     */
     static public function fetch($key){
         self::init();
         return self::$_engine->fetch($key);
     }
+
+    
     static public function store($key,$data,$ttl){
         self::init();
         return self::$_engine->store($key,$data,$ttl);
