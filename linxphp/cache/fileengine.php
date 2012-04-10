@@ -1,5 +1,5 @@
 <?php
-class FileCacheEngine implements iCacheEngine {
+class FileEngine implements iCacheEngine {
   protected $_path;
 
   public function __construct($settings){
