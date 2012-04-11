@@ -43,7 +43,7 @@ class Mapper {
 
     
     static protected $config = array(
-        'use_cache' => true,
+        'use_cache' => false,
         'cache_ttl' => 86400,
         'cache_registry_ttl' => 186400,
     );
