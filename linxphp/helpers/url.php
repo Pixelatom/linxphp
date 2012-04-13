@@ -14,39 +14,7 @@ if (preg_match('�'.($helper->get_application_path()).'/(?!index\\.php\\?route=
 	$referer_url=new Url(preg_replace('�'.($helper->get_application_path()).'/(.*)�i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
 }
 */
-/**
- *copia de la clase Url, pero esta es estatica
- */
-class UrlFactory {
-    public static function get() {
-        $url = new Url();
-        return $url;
-    }
-    public static function get_application_path() {
-        $url = new Url();
-        return $url->get_application_path();
-    }
-    public static function set_server_name($name) {
-        $url = new Url();
-        $url->set_server_name($name);
-        return $url;
-    }
-    public static function set_param($name,$value) {
-        $url = new Url();
-        $url->set_param($name,$value);
-        return $url;
-    }
-    public static function clear_params() {
-        $url = new Url();
-        $url->clear_params();
-        return $url;
-    }
-    public static function remove_param($remove) {
-        $url = new Url();
-        $url->remove_param($remove);
-        return $url;
-    }
-}
+
 /**
  * Url Helper. This class allows you to write and read url easily.
  *
@@ -65,6 +33,15 @@ class Url {
     private $_fragment=null;
 
     private static $_default_rewriter=null;
+    
+    /**
+     * Factory static mehod. Useful for method chaining.
+     * @return Url instance 
+     */
+    public static function factory(){
+        $class = get_class();
+        return new $class();
+    }
 
     /**
      * sets a default rewriter class which will modify the output of all the urls printed with this class
