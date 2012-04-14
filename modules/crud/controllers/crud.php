@@ -194,7 +194,8 @@ abstract class CrudController extends AppController {
                 elseif (isset($modeldescription['properties'][$property]['attributes']['form'])) {
                     // coleccion de opciones en un select
                     if (isset($modeldescription['properties'][$property]['attributes']['form']['type']) and $modeldescription['properties'][$property]['attributes']['form']['type'] == 'select'
-                            and isset($modeldescription['properties'][$property]['attributes']['form']['options'])) {
+                            and isset($modeldescription['properties'][$property]['attributes']['form']['options'])
+                            and isset($modeldescription['properties'][$property]['attributes']['form']['options'][$row->$property])){
                         // tipo select
                         $item[] = $modeldescription['properties'][$property]['attributes']['form']['options'][$row->$property];
                     } else {
