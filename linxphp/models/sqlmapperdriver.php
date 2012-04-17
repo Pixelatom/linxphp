@@ -40,6 +40,7 @@ class SQLMapperDriver implements IMapperDriver {
         }
 
         $obj_schema = ModelDescriptor::describe($model);
+        
 
         $schema['table_name'] = $obj_schema['type'];
 
@@ -59,6 +60,8 @@ class SQLMapperDriver implements IMapperDriver {
                 $field = array();
 
                 $field['name'] = $property_name;
+                
+                $field['default'] = $property_attributes['default_value'];
 
                 $field['value'] = $property_attributes['value'];
 
@@ -165,6 +168,8 @@ class SQLMapperDriver implements IMapperDriver {
                             $field['pdo_bind_params'] = $type_sql_schema['fields'][$type_primary_key]['pdo_bind_params'];
                             //if (isset($type_sql_schema['fields'][$type_primary_key]['data_type']))
                             $field['data_type'] = $type_sql_schema['fields'][$type_primary_key]['data_type'];
+                            
+                            $field['default'] = $type_sql_schema['fields'][$type_primary_key]['default'];
 
                             // if it's a lazy_load property and we have the temporal id value we'll use it                            
                             if (is_object($model) and isset($model->$forekey)) {                                
@@ -552,8 +557,8 @@ class SQLMapperDriver implements IMapperDriver {
 
             $declaration = "$field {$attributes['data_type']}";
 
-            if (isset($attributes['value'])){
-                $declaration .= ' NOT NULL DEFAULT  \''. addslashes($attributes['value']) .'\'';
+            if (isset($attributes['default'])){
+                $declaration .= ' NOT NULL DEFAULT  \''. addslashes($attributes['default']) .'\'';
             }
 
             if (isset($attributes['primary_key']) and $attributes['primary_key'] == true
