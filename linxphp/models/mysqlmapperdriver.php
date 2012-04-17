@@ -64,8 +64,8 @@ class MySQLMapperDriver extends SQLMapperDriver {
                 $declaration .= ' AUTO_INCREMENT';
             }
 
-            if (isset($attributes['value'])) {
-                $declaration .= ' NOT NULL DEFAULT  \'' . addslashes($attributes['value']) . '\'';
+            if (isset($attributes['default'])) {
+                $declaration .= ' NOT NULL DEFAULT  \'' . addslashes($attributes['default']) . '\'';
             }
 
             if (((isset($attributes['auto_increment']) and $attributes['auto_increment'] == true)
