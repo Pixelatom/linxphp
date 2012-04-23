@@ -18,8 +18,6 @@ abstract class CrudController extends AppController {
         // if there are not defined columns for this model, we'll use all of them :P
         if (empty($this->columns)){
             // define columns properties to be displayed on the table
-            
-       
             foreach($modeldescription['properties'] as $property=>$attributes){
                 // for now only properties that aren't relations to other models
                 if (!$modeldescription['properties'][$property]['attributes']['is_relationship']){

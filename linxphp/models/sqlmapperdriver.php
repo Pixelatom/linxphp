@@ -65,7 +65,7 @@ class SQLMapperDriver implements IMapperDriver {
 
                 $field['value'] = $property_attributes['value'];
 
-                $length = (int) (isset($property_attributes['attributes']['length'])) ? $property_attributes['attributes']['length'] : '';
+                $length = (int) ((isset($property_attributes['attributes']['length'])) ? $property_attributes['attributes']['length'] : '');
 
                 $type = 'VARCHAR';
                 if (!empty($length))
@@ -105,7 +105,8 @@ class SQLMapperDriver implements IMapperDriver {
                         default:
                             # unrecognized type!
                             # run an event to proccess the unrecognized type
-                            $type = Event::run('mapper.data_type_declaration', $property_attributes['attributes']['type'], $pdo_bind_params);
+                            $type = $property_attributes['attributes']['type'];
+                            Event::run('mapper.data_type_declaration', $type, $pdo_bind_params);                            
                             break;
                     }
                 } else {
@@ -548,6 +549,11 @@ class SQLMapperDriver implements IMapperDriver {
 
     protected function create_table($object) {
         $sql_schema = $this->get_sql_table_schema($object);
+        
+        // unset table_exists cache value
+        if (isset(self::$table_exists_cache[$sql_schema['table_name']]))
+        unset(self::$table_exists_cache[$sql_schema['table_name']]);
+        
         if (count($sql_schema['primary_key']) == 0) {
             throw new Exception('Objects must have a PRIMARY ID property.');
         }

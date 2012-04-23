@@ -1,28 +1,22 @@
  <div class="row">
-
+     <div class="span2" >
+        <p><a class="btn" href="<?=Url::factory()->set_param('route', $controllername . '/add') ?>"> Agregar <?=(isset($label)) ? $label : $modelname ?> </a></p>
+    </div>
     <!-- actual content -->
-    <div class="span11">
-        <div>
-        <!-- start filter form -->
-        <form action="<?=Url::factory()->remove_param('q')?>" method="GET" enctype="multipart/form-data" class="forms" name="form" >
-            <fieldset>
-                <div class="clearfix">
-                    <label for="xlInput">Buscar</label>
-                    <div class="input">
-                        <input class="text-input small-input" type="text" value="<?=(isset($_GET['q'])) ? $_GET['q'] : ''?>"  name="q" />
-                        <button type="submit" class="btn">Enviar</button>
-                    </div>
-                </div>
-            </fieldset>
+    <div class="span10">
         
+        <!-- start filter form -->
+        <form name="searchform" action="<?=Url::factory()->remove_param('q')?>" method="GET" enctype="multipart/form-data" class="well form-search">
+            <input name="q" value="<?=(isset($_GET['q'])) ? $_GET['q'] : ''?>" type="text" class="input-medium search-query">
+            <button type="submit" class="btn">Search</button>
         </form>
         
         <!-- end filter form -->
-        </div>
+        
 
         <!--  start product-table ..................................................................................... -->
-        <form id="mainform"  method="post" action="<?=Url::factory()->set_param('route', $controllername . '/listitems') ?>">
-            <table class="zebra-striped">
+        <form class="form-inline" id="mainform"  method="post" action="<?=Url::factory()->set_param('route', $controllername . '/listitems') ?>">
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th><input class="check-all" type="checkbox" /></th>
@@ -42,26 +36,28 @@
                         <? endforeach; ?>
                         <td>
                             <!-- Icons -->
-                             <a  href="<?=Url::factory()->set_param(Application::get_router_param(), "{$controllername}/edit/" . $row->$id_property) ?>" title="Edit">Editar</a>
-                             <a  href="<?=Url::factory()->set_param(Application::get_router_param(), "{$controllername}/delete/" . $row->$id_property) ?>" title="Delete">Borrar</a>
+                             <a class="btn btn-mini"  href="<?=Url::factory()->set_param(Application::get_router_param(), "{$controllername}/edit/" . $row->$id_property) ?>" title="Edit">Edit</a>
+                             <a class="btn btn-mini" href="<?=Url::factory()->set_param(Application::get_router_param(), "{$controllername}/delete/" . $row->$id_property) ?>" title="Delete">Detele</a>
                         </td>
                     </tr>
                 </tbody>
                 <? endforeach; ?>
             </table>
+            
             <!-- bulk actions box -->
             <fieldset>
-                <div class="clearfix">
-                    <div >
+                
+                
                         <select name="dropdown">
                             <option value="option1">Choose an action...</option>
                             <option value="option3">Delete</option>
                         </select>
-                        <button type="submit" class="btn primary">Aplicar</button>
-                    </div>
-                </div>
-            </fieldset>
+                        <button type="submit" class="btn">Apply</button>
                 
+            </fieldset>
+            
+                
+            
                 
             
             <!-- bulk actions box -->
@@ -93,9 +89,7 @@
         </form>
         <div class="clear"></div>
     </div>
-    <div class="span3">
-        <p><a class="btn success" href="<?=Url::factory()->set_param('route', $controllername . '/add') ?>"> Agregar <?=(isset($label)) ? $label : $modelname ?> </a></p>
-    </div>
+    
 </div>
 
 

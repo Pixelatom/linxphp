@@ -1,8 +1,7 @@
-<div class="clearfix  <?=(isset($error))?'error':''?>">
-    <label for="<?=$id?>"><?=$label?></label>
-    <div class="input">
-        <select <?foreach ($attributes as $property_name=>$property_value): echo " {$property_name}='{$property_value}' "; endforeach;?> name="<?=$name?>" id="<?=$id?>" autocomplete="off">
-            
+<div class="control-group <?=(isset($error))?'error':''?>">
+    <label class="control-label" for="<?=$id?>"><?=$label?></label>
+    <div class="controls">
+        <select <?foreach ($attributes as $property_name=>$property_value): echo " {$property_name}='{$property_value}' "; endforeach;?> name="<?=$name?>" id="<?=$id?>" autocomplete="off">            
             <?foreach ( $options as $value => $title ):?>
             <option value='<?=$value?>' <?=(isset($selected[$value]))?$selected[$value]:''?> ><?=$title?></option>
             <?endforeach;?>
@@ -11,9 +10,7 @@
         <span class="help-inline"><?=$error?></span> 
         <?endif;?>
         <?if (isset($description)):?>
-        <span class="help-block">
-            <?=$description?>
-        </span>
+        <p class="help-block"><?=$description?></p>
         <?endif;?>
     </div>
 </div>

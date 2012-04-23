@@ -26,7 +26,7 @@ class MySQLMapperDriver extends SQLMapperDriver {
 
     protected function get_sql_table_schema($object_or_classname) {
         $obj_schema = ModelDescriptor::describe($object_or_classname);
-        
+
         $schema = parent::get_sql_table_schema($object_or_classname);
 
         foreach ($obj_schema['properties'] as $property_name => $property_attributes) {
@@ -49,10 +49,14 @@ class MySQLMapperDriver extends SQLMapperDriver {
      * @param <type> $object 
      */
     protected function create_table($object) {
-        if(is_object($object))
-           $sql_schema = $this->get_sql_table_schema(get_class($object));
-       else
-           $sql_schema = $this->get_sql_table_schema($object);
+        if (is_object($object))
+            $sql_schema = $this->get_sql_table_schema(get_class($object));
+        else
+            $sql_schema = $this->get_sql_table_schema($object);
+
+        // unset table_exists cache value
+        if (isset(self::$table_exists_cache[$sql_schema['table_name']]))
+        unset(self::$table_exists_cache[$sql_schema['table_name']]);
 
         # field declarations
         $fields_declaration = "";
@@ -98,7 +102,7 @@ class MySQLMapperDriver extends SQLMapperDriver {
         db::execute($sql);
     }
 
-    protected function build_select_query($classname, $conditions=null, $order_by=null, $limit = null, $offset = 0) {
+    protected function build_select_query($classname, $conditions = null, $order_by = null, $limit = null, $offset = 0) {
         $sql = parent::build_select_query($classname, $conditions, $order_by);
 
         if (!is_null($limit)) {
@@ -109,7 +113,7 @@ class MySQLMapperDriver extends SQLMapperDriver {
         return $sql;
     }
 
-    public function get($classname, $conditions=null, $order_by=null, $limit = null, $offset = 0) {
+    public function get($classname, $conditions = null, $order_by = null, $limit = null, $offset = 0) {
 
 
         $sql = $this->build_select_query($classname, $conditions, $order_by, $limit, $offset);
@@ -117,11 +121,12 @@ class MySQLMapperDriver extends SQLMapperDriver {
         $return = db::query($sql, $fields_values = array(), $bind_params = array(), $classname);
 
         foreach ($return as &$object) {
-            $this->fill_relationship($object);            
+            $this->fill_relationship($object);
         }
 
         return $return;
     }
 
 }
+
 ?>
