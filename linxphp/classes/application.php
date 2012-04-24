@@ -15,8 +15,7 @@ class Application{
      */
     static public $request_url;
     /*static public $base_url;*/
-
-    static private $_initialized=false;
+    
     static private $_router=false;
 
     static protected $_classes_paths=array();
@@ -108,14 +107,5 @@ class Application{
                     "href=\"http://www.example.com\">link</a> instead\n");
             }
         }
-    }
-
-    function __construct(){
-        if (!self::$_initialized){
-            self::$request_url = new Url();
-            self::set_application_router(new ApplicationRouter());
-            self::$_initialized = true;
-        }
-    }
+    }    
 }
-?>

@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 /*
  * necesario para la correcta ejecucion del sitio
  */
-include_once('../linxphp/linxphp/linx.php');
+include_once('../linxphp/linx.php');
 if (!session_id()) 
 session_start();
 
