@@ -108,7 +108,10 @@ foreach ($hookdirs as $dir){
 /*
  * load all modules
  */
-$path_array = array(realpath($system_directory.'/modules/'));// adds framework modules (linxphp directory is a modules folder)
+$path_array = array(
+    realpath($system_directory.'/core/'), //core modules
+    realpath($system_directory.'/modules/'), // extra framework's modules
+);
 $app_modules_path = Application::get_site_path().Configuration::get('paths','modules','application/modules'); // application modules paths
 $app_modules_path = explode(',', $app_modules_path);
 $path_array = array_merge($path_array,$app_modules_path);
