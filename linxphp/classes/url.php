@@ -194,7 +194,6 @@ class Url {
         if (count($this->_params)>0) {
             $request='';
             foreach ($this->_params as $name=>$value) {
-
                 if ($request=='')
                     $request.='?';
                 else
@@ -222,8 +221,6 @@ class Url {
             }
             $current_url.= $request;
         }
-
-        
 
         if (!empty(self::$_default_rewriter) and is_object(self::$_default_rewriter) and $this->use_rewriter) {
             $current_url=self::$_default_rewriter->rewrite($current_url);
@@ -273,12 +270,9 @@ class Url {
      *@param String $remove the name of the parameter to be removed
      */
     public function remove_param($remove) {
-        $new_params=array();
-        foreach ($this->_params as $name=>$value) {
-            if ($name<>$remove)
-                $new_params[$name]=$value;
-        }
-        $this->_params=$new_params;
+        
+        if (array_key_exists($remove,$this->_params))
+            unset($this->_params[$remove]);
         return $this;
     }
 

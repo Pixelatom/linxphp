@@ -20,35 +20,55 @@ class FileWidget extends FormWidget{
     }
 
     protected function get_value(){
-
-        if (isset($_FILES[$this->name])) {
-
+        if (isset($_FILES[$this->name])){
             $foo = new Upload($_FILES[$this->name]);
             /*$handle->allowed = array('image/*');*/
             if ($foo->uploaded) {
-                $uploadpath = 'upload/';
-                
-                if (isset($this->attributes['uploadpath']))
-                $uploadpath = $this->attributes['uploadpath'] . '/';
-                
                 // save uploaded image with no changes
-                $foo->Process(Application::get_site_path() . $uploadpath );
+                $foo->Process(Application::get_site_path() . $this->config['path'] );
                 if ($foo->processed) {
+                    // if it was not empty, we'll remove previous file
+                    if (!empty($this->default)){
+                        @ unlink(Application::get_site_path() . $this->config['path'].$this->default);
+                    }
                     return $foo->file_dst_name;
                 }
                 else {
-                   
                     //AdminController::set_message('error uploading file: ' . $foo->error, AdminController::MSG_TYPE_ERROR);
                     $this->error = 'Error uploading file: ' . $foo->error;
                     return '';
                 }
-                
             }
         }
     }
+    
+    public $config = array(
+        'path' => 'upload/',
+        'multi' => false,
+    );
+    
     public function  __construct($name, $properties) {
-        parent::__construct($name, $properties);
         $this->set_default_template('form/widgets/file');
+
+        $this->properties = $properties;
+        $this->name = $name;
+        $this->id = (!isset($properties['id']))? $name : $properties['id'];
+        $this->type = (!isset($properties['type']))? 'text' : $properties['type'];
+        $this->label = (!isset($properties['label']))?  $name : $properties['label'];
+        $this->default = (!isset($properties['default']))?  '' : $properties['default'];
+        $this->rules = (!isset($properties['rules']))?  array() : $properties['rules'];
+
+        if (!isset($properties['attributes']['class']))
+            $properties['attributes']['class'] = '';
+
+        if (!isset($properties['attributes']['id']))
+            $properties['attributes']['id'] = $name;
+
+        $this->attributes = $properties['attributes'];
+        
+        if (isset($this->properties['upload']))
+        $this->config = array_merge($this->config,$this->properties['upload']);
+        
+        $this->value = $this->get_value();
     }
 }
-?>

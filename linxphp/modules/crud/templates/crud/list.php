@@ -1,6 +1,6 @@
  <div class="row">
      <div class="span2" >
-        <p><a class="btn" href="<?=Url::factory()->set_param('route', $controllername . '/add') ?>"> Agregar <?=(isset($label)) ? $label : $modelname ?> </a></p>
+        <p><a class="btn" href="<?=Url::factory()->set_param('route', $controllername . '/add') ?>"> Add <?=(isset($label)) ? $label : $modelname ?> </a></p>
     </div>
     <!-- actual content -->
     <div class="span10">
