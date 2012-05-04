@@ -14,13 +14,14 @@ class FileWidget extends FormWidget{
             return false;
 
         if (is_null($this->parentform))
-            return  isset($_FILES[$this->name]);
+            return  (isset($_FILES[$this->name]) and !empty($_FILES[$this->name]["name"]));
         else
-            return  isset($_FILES[$this->parentform->name][$this->name]);
+            return  (isset($_FILES[$this->parentform->name][$this->name]) and !empty($_FILES[$this->parentform->name][$this->name]["name"]));
     }
 
     protected function get_value(){
-        if (isset($_FILES[$this->name])){
+        if ($this->is_submitted()){
+            
             $foo = new Upload($_FILES[$this->name]);
             /*$handle->allowed = array('image/*');*/
             if ($foo->uploaded) {
