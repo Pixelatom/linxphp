@@ -183,7 +183,7 @@ class Url {
     /**
      * returns the the url as string
      */
-    public function get_url() {
+    public function get_url(){        
         $current_url='http';
         $current_url.=($this->_https)?'s':'';
         $current_url.='://'. $this->_server_name;
@@ -222,11 +222,11 @@ class Url {
             $current_url.= $request;
         }
 
-        if (!empty(self::$_default_rewriter) and is_object(self::$_default_rewriter) and $this->use_rewriter) {
+        if (!empty(self::$_default_rewriter) and is_object(self::$_default_rewriter) and $this->use_rewriter) {            
             $current_url=self::$_default_rewriter->rewrite($current_url);
         }
 
-        if (!empty($this->_fragment))
+        if (trim($this->_fragment))
         $current_url.='#'.$this->_fragment;
 
         return $current_url;

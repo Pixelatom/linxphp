@@ -7,7 +7,7 @@
         
         <!-- start filter form -->
         <form name="searchform" action="<?=Url::factory()->remove_param('q')?>" method="GET" enctype="multipart/form-data" class="well form-search">
-            <input name="q" value="<?=(isset($_GET['q'])) ? $_GET['q'] : ''?>" type="text" class="input-medium search-query">
+            <input name="q" value="<?=(isset($_GET['q'])) ? htmlentities($_GET['q']) : ''?>" type="text" class="input-medium search-query">
             <button type="submit" class="btn">Search</button>
         </form>
         
@@ -73,7 +73,7 @@
                 $page = Url::factory()->get_param('page',1);
                 ?>
 
-                <?for($i= $page - 2; $i<= $page + 2; $i++ ):?>
+                <?for($i= $page - 4; $i<= $page + 4; $i++ ):?>
                 <?if ($i>0 and $i<=$pagecount):?>
                 <li class="<?=($page==$i)?'active':''?>">
                 <a href="<?=Url::factory()->set_param('page', $i) ?>" title="<?=$i?>"><?=$i?></a>

@@ -63,7 +63,7 @@ abstract class CrudController extends AppController {
     /**
      * controller path: list items in a table
      */
-    public function listitems() {
+    public function listitems(){
         $this->action = 'list';
                 
         // permission & access control
@@ -91,8 +91,9 @@ abstract class CrudController extends AppController {
         // a wild search query appears!
         if (!empty($_GET['q'])) {
             // time to biuld the $conditions string
-            $string = addslashes($_GET['q']);
-
+            //$terms = explode(' ', $_GET['q']);
+            $terms = str_getcsv($_GET['q'],' ', '"');
+            
             $modeldescription = ModelDescriptor::describe($this->modelname);
 
             $table = strtolower($this->modelname);
@@ -101,34 +102,59 @@ abstract class CrudController extends AppController {
                 $table = $modeldescription["attributes"]["table"];
             }
 
-            foreach ($this->columns as $property) {
-                $field = "`$table`.`$property`";
-                if ($modeldescription['properties'][$property]['attributes']['is_relationship']==true) {
-
-                    $typedescription = ModelDescriptor::describe($modeldescription['properties'][$property]['attributes']['type']);
-                    if (isset ($typedescription['attributes']['form']['title'])){
-                        $type = $modeldescription['properties'][$property]['attributes']['type'];
-                        $field = "`$property`.`{$typedescription['attributes']['form']['title']}`";
-                    }                
-                    elseif (isset($modeldescription['properties'][$property]['attributes']['form'])) {
-                        if (isset($modeldescription['properties'][$property]['attributes']['form']['title'])) {
-                            $type = $modeldescription['properties'][$property]['attributes']['type'];
-                            $field = "`$property`.`{$modeldescription['properties'][$property]['attributes']['form']['title']}`";
-                        }
-                    }
-                }
+            
+            foreach ($terms as $term){
 
                 if (!empty($conditions))
-                    $conditions .= ' OR ';
+                        $conditions .= ' AND ';
 
-                $conditions .= "$field like '%$string%'";
+                
+                $conditions .= '('; 
+                
+                $condition = '';
+                foreach ($this->columns as $property) {
+                    
+                    
+                    
+
+                    $field = "`$table`.`$property`";
+                    if ($modeldescription['properties'][$property]['attributes']['is_relationship']==true) {
+
+                        $typedescription = ModelDescriptor::describe($modeldescription['properties'][$property]['attributes']['type']);
+                        if (isset ($typedescription['attributes']['form']['title'])){
+                            $type = $modeldescription['properties'][$property]['attributes']['type'];
+                            $field = "`$property`.`{$typedescription['attributes']['form']['title']}`";
+                        }                
+                        elseif (isset($modeldescription['properties'][$property]['attributes']['form'])) {
+                            if (isset($modeldescription['properties'][$property]['attributes']['form']['title'])) {
+                                $type = $modeldescription['properties'][$property]['attributes']['type'];
+                                $field = "`$property`.`{$modeldescription['properties'][$property]['attributes']['form']['title']}`";
+                            }
+                        }
+                    }
+
+                    if (!empty($condition))
+                    $condition .= ' OR ';
+
+                    $condition .= "$field like '%". addslashes(($term))."%'";
+                    //$condition .= "$field REGEXP '[[:<:]]". addslashes(preg_quote($term))."[[:>:]]'";
+                    //die($condition);
+                    
+
+
+                }
+                $conditions .= $condition; 
+                
+                $conditions .= ')'; 
             }
+            
         }
         if (!empty($this->conditions) and !empty($conditions)) {
             $conditions = $this->conditions . " AND ( $conditions ) ";
         } elseif (!empty($this->conditions) and empty($conditions)) {
             $conditions = $this->conditions;
         }
+        
         // paginator configuration
         if (!isset($_SESSION['pagesize']))
             $_SESSION['pagesize'] = 10;
@@ -238,9 +264,9 @@ abstract class CrudController extends AppController {
         $this->show();
     }
 	
-	protected function list_items_template(){
-		return new Template('crud/list');
-	}
+    protected function list_items_template(){
+            return new Template('crud/list');
+    }
 	
 
     /**

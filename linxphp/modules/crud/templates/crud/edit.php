@@ -4,8 +4,6 @@
     </div>
     <!-- actual content -->
     <div class="span10">
-
-
         <?php $form->show(); ?>
-</div>
     </div>
+</div>
