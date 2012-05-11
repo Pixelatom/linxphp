@@ -10,8 +10,8 @@ TIP:
 codigo para emular la reescritura que hace el htaccess.
 
 $helper=new Url();	
-if (preg_match('�'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(.*)�i', $_SERVER['HTTP_REFERER'])) {	
-	$referer_url=new Url(preg_replace('�'.($helper->get_application_path()).'/(.*)�i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
+if (preg_match('ï¿½'.($helper->get_application_path()).'/(?!index\\.php\\?route=)(.*)ï¿½i', $_SERVER['HTTP_REFERER'])) {	
+	$referer_url=new Url(preg_replace('ï¿½'.($helper->get_application_path()).'/(.*)ï¿½i', $helper->get_application_path().'/index.php?route=$1', ($_SERVER['HTTP_REFERER'])));				
 }
 */
 
@@ -221,7 +221,7 @@ class Url {
             }
             $current_url.= $request;
         }
-
+        
         if (!empty(self::$_default_rewriter) and is_object(self::$_default_rewriter) and $this->use_rewriter) {            
             $current_url=self::$_default_rewriter->rewrite($current_url);
         }

@@ -15,8 +15,10 @@ class Regexpurlrewriter implements IUrlRewriter {
 		/*http://(.+?)/([^\/]+?\.php){0,1}(?:\?route=(.+?))*(&.*)*\z*/
                 $pattern = '/http(s)*:\/\/(.+?)\/([^\/]+?\.php){0,1}((?:(?![&?]route=)[&?][^&?]+)*)(?:[&?]route=([^&?]+))*((?:(?![&?]route=)[&?][^&?]+)*)\z/i';
                 if (preg_match($pattern, $url)){
-                    
                     $url = preg_replace($pattern, 'http\1://\2/\5\4\6', $url);
+                    if (strpos($url, '?')===False){
+                        $url =  preg_replace('/&/', '?', $url, 1);
+                    }
                 }	
                 
 		return $url;
