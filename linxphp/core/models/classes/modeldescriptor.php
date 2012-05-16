@@ -134,7 +134,7 @@ class ModelDescriptor {
         $id = array();        
         foreach ($d['primary_key'] as $key) {
             if (is_object($model->$key)){
-                $id[$key]=self::get_id($key);
+                $id[$key]=self::get_id($model->$key);
             }
             else
             $id[$key] = $model->$key;
