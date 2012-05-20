@@ -826,8 +826,7 @@ class SQLMapperDriver implements IMapperDriver {
      */
     public function get_by_id($classname, $id) {
         $sql_schema = $this->get_sql_table_schema($classname);
-
-
+        
         if (!$this->table_exists($sql_schema['table_name'])) {
             $this->create_table($classname);
         }
@@ -881,8 +880,6 @@ class SQLMapperDriver implements IMapperDriver {
             Mapper::_fill_relationship($results[0]);
 
             $object = $results[0];
-
-            
 
             return $object;
         }
