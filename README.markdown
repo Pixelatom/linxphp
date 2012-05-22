@@ -24,15 +24,15 @@ Linx is our effort to make a developer friendly framework, keeping it simple and
 The project is authored and maintained by Javier Arias (@javis), with many contributions from [Pixelatom] (http://www.pixelatom.com/).
 
 ### Support or Contact
-Having trouble with linxphp? Check out the documentation at https://github.com/javis/linxphp/wiki or contact us at contact@pixelatom.com or throug the [issues tracker] (https://github.com/javis/linxphp/issues) and we’ll help you sort it out.
+Having trouble with linxphp? Check out the documentation at https://github.com/pixelatom/linxphp/wiki or contact us at contact@pixelatom.com or throug the [issues tracker] (https://github.com/javis/linxphp/issues) and we’ll help you sort it out.
 
 ### Documentation
 
-* [Getting Started](https://github.com/javis/linxphp/wiki/Getting-Started)
-    * [System Requirements](https://github.com/javis/linxphp/wiki/System-Requirements)
+* [Getting Started](https://github.com/pixelatom/linxphp/wiki/Getting-Started)
+    * [System Requirements](https://github.com/pixelatom/linxphp/wiki/System-Requirements)
 * MVC
-    * [Controllers](https://github.com/javis/linxphp/wiki/Controllers)
-    * [Views](https://github.com/javis/linxphp/wiki/Views)
-    * [Models](https://github.com/javis/linxphp/wiki/Models)
-        - [Designing Models](https://github.com/javis/linxphp/wiki/Designing-Models)
-        - [Relationships](https://github.com/javis/linxphp/wiki/Relationships)
+    * [Controllers](https://github.com/pixelatom/linxphp/wiki/Controllers)
+    * [Views](https://github.com/pixelatom/linxphp/wiki/Views)
+    * [Models](https://github.com/pixelatom/linxphp/wiki/Models)
+        - [Designing Models](https://github.com/pixelatom/linxphp/wiki/Designing-Models)
+        - [Relationships](https://github.com/pixelatom/linxphp/wiki/Relationships)
