@@ -24,7 +24,7 @@ Linx is our effort to make a developer friendly framework, keeping it simple and
 The project is authored and maintained by Javier Arias (@javis), with many contributions from [Pixelatom] (http://www.pixelatom.com/).
 
 ### Support or Contact
-Having trouble with linxphp? Check out the documentation at https://github.com/pixelatom/linxphp/wiki or contact us at contact@pixelatom.com or throug the [issues tracker] (https://github.com/pixelatom/linxphp/issues) and we’ll help you sort it out.
+Having trouble with linxphp? Check out the documentation at https://github.com/pixelatom/linxphp/wiki, take a look at our [forum] (http://ost.io/Pixelatom/linxphp) or contact us at contact@pixelatom.com or throug the [issues tracker] (https://github.com/pixelatom/linxphp/issues) and we’ll help you sort it out.
 
 ### Documentation
 
