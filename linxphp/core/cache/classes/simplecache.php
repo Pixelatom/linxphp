@@ -11,6 +11,7 @@ class SimpleCache{
         'engine' => 'File',
         'servers' => array('localhost'),
         'prefix' => '',
+        'compress' => false,
     );
 
     /**
