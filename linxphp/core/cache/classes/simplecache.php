@@ -11,6 +11,7 @@ class SimpleCache{
         'engine' => 'File',
         'servers' => array('localhost'),
         'prefix' => '',
+        'compress' => false,
     );
 
     /**
@@ -31,10 +32,12 @@ class SimpleCache{
      * internal setup function
      */
     static protected function init(){
-        if (!is_object(self::$_engine)){
-            $class_name = self::$_config['engine'] . 'Engine';
-            if (!class_exists($class_name))
+        
+        $class_name = self::$_config['engine'] . 'Engine';
+        if (!class_exists($class_name))
                 throw new Exception ($message= "Cache Class '$class_name' not found");
+        if (!is_object(self::$_engine) or (get_class(self::$_engine)!=$class_name)){
+            
             self::$_engine = new $class_name(self::$_config);
         }
     }

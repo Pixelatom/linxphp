@@ -6,7 +6,6 @@ class MemcacheEngine implements iCacheEngine{
     protected $compress = 0;
     protected $prefix = '';
 
-
     public function __construct($settings) {
         if (!empty($settings['prefix']))
             $this->prefix = $settings['prefix'];
