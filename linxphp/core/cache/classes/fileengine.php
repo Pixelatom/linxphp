@@ -1,8 +1,11 @@
 <?php
 class FileEngine implements iCacheEngine {
   protected $_path;
+  protected $prefix = '';
 
   public function __construct($settings){
+      if (!empty($settings['prefix']))
+            $this->prefix = $settings['prefix'];
       $this->_path = ini_get('session.save_path') . '/s_cache';
       if (isset($settings['path'])){
           $this->_path = $settings['path'];
@@ -78,7 +81,7 @@ class FileEngine implements iCacheEngine {
    }
 
   private function getFileName($key) {
-      return $this->_path . md5($key);
+      return $this->_path . md5($this->prefix.$key);
   }
 
 }

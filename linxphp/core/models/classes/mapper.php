@@ -110,13 +110,13 @@ class Mapper {
     }
 
     static protected function cache_fetch($class_name,$conditions){
-        $key = strtolower("{$class_name}_{$conditions}");
+        $key = md5(strtolower("{$class_name}_{$conditions}"));
         return SimpleCache::fetch($key);
     }
 
     static protected function cache_store($data,$class_name,$conditions){
         $class_name = strtolower($class_name);
-        $key = strtolower("{$class_name}_{$conditions}");
+        $key = md5(strtolower("{$class_name}_{$conditions}"));
         $ttl = self::$config['cache_ttl'];
 
         SimpleCache::store($key, $data, $ttl);       
@@ -128,7 +128,7 @@ class Mapper {
 
     static protected function cache_delete($class_name,$conditions){
         $class_name = strtolower($class_name);
-        $key = strtolower("{$class_name}_{$conditions}");
+        $key = md5(strtolower("{$class_name}_{$conditions}"));
 
         SimpleCache::delete($key);
         
