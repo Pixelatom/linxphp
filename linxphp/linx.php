@@ -117,6 +117,7 @@ $app_modules_path = explode(',', $app_modules_path);
 $path_array = array_merge($path_array,$app_modules_path);
 
 foreach ($path_array as $path){
+    if($path == false) continue;
     $path = trim($path);
     if (file_exists(realpath($path.'/'))){        
         # read all modules folders
