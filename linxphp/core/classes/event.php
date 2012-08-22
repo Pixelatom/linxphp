@@ -1,5 +1,5 @@
 <?php
-namespace linxphp;
+namespace linxphp\Core;
 
 class event
 {

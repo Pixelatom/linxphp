@@ -4,7 +4,7 @@
  * Author: Javier Arias. *
  * Licensed under MIT License.
  */
-namespace linxphp;
+namespace linxphp\Core;
 /**
  * Some people say global variables are a bad practice, insted of GLOBAL you could use this class
  * to store and get variables.
