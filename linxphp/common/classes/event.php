@@ -1,7 +1,7 @@
 <?php
-namespace linxphp\Core;
+namespace linxphp\common;
 
-class event
+class Event
 {
     protected static $_listeners=array();
 

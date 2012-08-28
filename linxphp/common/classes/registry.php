@@ -4,13 +4,13 @@
  * Author: Javier Arias. *
  * Licensed under MIT License.
  */
-namespace linxphp\Core;
+namespace linxphp\common;
 /**
  * Some people say global variables are a bad practice, insted of GLOBAL you could use this class
  * to store and get variables.
  * http://blog.case.edu/gps10/2006/07/22/why_global_variables_in_php_is_bad_programming_practice
  */
-class registry
+class Registry
 {
     private static $_vars=array();
     /**
