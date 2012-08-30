@@ -7,15 +7,12 @@
 namespace linxphp\common;
 
 // includes SplClassLoader implementation
-require_once 'common/classes/classloader.php';
+require_once 'common/classloader.php';
 
 // register common classes
 $linxphp_path = dirname(__FILE__);
-$classLoader = new ClassLoader('linxphp\common', $linxphp_path. '/common/classes');
+die($linxphp_path);
+$classLoader = new ClassLoader('linxphp', $linxphp_path);
 $classLoader->register();
 
-if (Configuration::get('errors','useexeptions',true)){
-    ErrorHandler::register();
-}
-
-
+Event::run('system.ready'); // the framework is loaded

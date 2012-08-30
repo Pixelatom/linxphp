@@ -1,5 +1,5 @@
 <?php
-namespace linxphp\core;
+namespace linxphp\common;
 
 class App
 {
