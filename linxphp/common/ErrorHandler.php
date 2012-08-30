@@ -12,9 +12,9 @@ class ErrorHandler{
             case E_DEPRECATED: // ignores new DEPRECATED error to allow developers to use third party libraries
                 return;
             case E_WARNING:
-                throw new ErrorException($string, $code, $code,$file,$line);
+                throw new \ErrorException($string, $code, $code,$file,$line);
             default:
-                throw new ErrorException($string, $code, $code,$file,$line);
+                throw new \ErrorException($string, $code, $code,$file,$line);
         }
     }
     static public function register(){

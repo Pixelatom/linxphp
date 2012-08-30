@@ -25,7 +25,7 @@ class Configuration{
      */
     public static function set($section,$key = null,$value = null ){		
         if (is_array($section)){
-            self::$config = array_merge(self::$config,$array);
+            self::$config = array_merge(self::$config,$section);
         }
         else{
             self::$config[strtolower($section)][strtolower($key)]=$value;
