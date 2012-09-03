@@ -4,7 +4,7 @@ namespace linxphp\common;
  * Based on the SplClassLoader implementation that implements the technical interoperability
  * standards for PHP 5.3 namespaces and class names.
  *
- * http://groups.google.com/group/php-standards/web/final-proposal 
+ * http://blog.montmere.com/2011/09/21/psr-0-final-proposal/
  */
 class ClassLoader
 {

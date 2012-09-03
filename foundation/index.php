@@ -1,18 +1,22 @@
 <?php
 require "../linxphp/linx.php";
 
+use linxphp\common\Configuration;
+use linxphp\common\ErrorHandler;
+use linxphp\common\ClassLoader;
+
 # load application configuration
 if (file_exists('config.ini')){
-    linxphp\common\Configuration::load('config.ini');
+    Configuration::load('config.ini');
 }
 
 # sets error handler
-if (linxphp\common\Configuration::get('error_handler','convert_to_exceptions',true)){
-    linxphp\common\ErrorHandler::register();
+if (Configuration::get('error_handler','convert_to_exceptions',true)){
+    ErrorHandler::register();
 }
 
 # configure app classes autoloading
-$class_loader = linxphp\common\ClassLoader('\\','app/classes');
+$app_classes = Configuration::get('paths','classes','application/classes');
+$class_loader = new ClassLoader(null,$app_classes);
 $class_loader->register();
 
-# configure vendor classes autoloading

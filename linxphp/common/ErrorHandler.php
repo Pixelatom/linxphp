@@ -7,7 +7,7 @@ class ErrorHandler{
     protected static $old_error_reporting = null;
     protected static $old_display_error = null;
     
-    static public function errorHandler($code, $string, $file, $line){
+    static public function handler($code, $string, $file, $line){
         switch ($code) {
             case E_DEPRECATED: // ignores new DEPRECATED error to allow developers to use third party libraries
                 return;
@@ -28,7 +28,7 @@ class ErrorHandler{
             error_reporting(E_ALL);
 
             // set error handling
-            set_error_handler(array('linxphp\common\ErrorHandler','errorHandler'), E_ALL);
+            set_error_handler(array(__CLASS__,'handler'), E_ALL);
             self::$registered = true;
         }
         
