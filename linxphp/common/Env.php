@@ -1,7 +1,7 @@
 <?php
 namespace linxphp\common;
 
-class App
+class Env
 {
     /**
      * it returns the phyphisical path where the application is hosted at.
