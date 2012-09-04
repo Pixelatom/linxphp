@@ -4,6 +4,7 @@ require "../linxphp/linx.php";
 use linxphp\common\Configuration;
 use linxphp\common\ErrorHandler;
 use linxphp\common\ClassLoader;
+use linxphp\common\Event;
 
 
 # load application configuration
