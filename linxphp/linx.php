@@ -16,4 +16,4 @@ $linxphp_path = dirname(__FILE__);
 $classLoader = new ClassLoader('linxphp', "$linxphp_path/..");
 $classLoader->register();
 
-Event::run('system.ready'); // the framework is loaded
+Event::run('linxphp.ready'); // the framework is loaded
