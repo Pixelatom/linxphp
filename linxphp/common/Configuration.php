@@ -10,7 +10,12 @@ namespace linxphp\common;
  * Default values are taken form the config.ini file located at the root of the program.
  */
 class Configuration{
-    private $config=array();
+    protected $config=array();
+    
+    
+    public function __construct($config = array()){
+        $this->config = $config;
+    }
     
     /**
      * this function load the values from a ini file
