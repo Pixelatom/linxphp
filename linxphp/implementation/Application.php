@@ -16,6 +16,10 @@ class Application extends Module{
         if (self::$_instance->config->get('error_handler','convert_to_exceptions',true)){
             ErrorHandler::register();
         }
+        
+        # Application setup ready
+        Event::run('system.ready',$module);
+        
         return self::$_instance;
     }
     
