@@ -1,6 +1,9 @@
 <?php
 namespace linxphp\common;
 
+/**
+ * The Env class holds environment variables values. 
+ */
 class Env
 {
     /**

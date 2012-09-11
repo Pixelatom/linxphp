@@ -2,12 +2,22 @@
 namespace linxphp\implementation;
 
 use linxphp\common\ErrorHandler;
+use linxphp\common\Event;
 
 class Application extends Module{
     static protected $_instance = NULL;
-    public static function load($path) {
+    
+    /**
+     * Singleton method that loads the Application just once
+     * @param type $path the path to the application
+     * @return type
+     * @throws \Exception 
+     */
+    public static function load($path) {        
         // if the application was already initialized we''l trow an error
         if (self::$_instance) throw new \Exception('Application already loaded');
+        
+        if (!file_exists($path)) throw new \Exception("Application path '$path' does not exists");
         
         // loads application configuration and init class autoloading 
         self::$_instance = parent::load($path);
@@ -18,7 +28,7 @@ class Application extends Module{
         }
         
         # Application setup ready
-        Event::run('system.ready',$module);
+        Event::run('system.ready');
         
         return self::$_instance;
     }
