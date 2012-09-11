@@ -37,15 +37,17 @@ class Module{
             $module->config->load($path.'config.ini');
         }
         
+        
         # configure app classes autoloading
-        $app_classes = $module->config->get('paths','classes',$module->path.'classes');        
+        $app_classes = $module->config->get('paths','classes','classes');        
+        
         if (file_exists($path.$app_classes)){
             $class_loader = new ClassLoader(null,($path.$app_classes));
             $class_loader->register();    
         }
         
         # autoinclude hook files
-        $app_hooks = $module->config->get('paths','hooks',$module->path.'hooks');
+        $app_hooks = $module->config->get('paths','hooks','hooks');
         if (file_exists($path.$app_hooks)){
             $dir = new \DirectoryIterator(($path.$app_hooks));
             foreach ($dir as $file){

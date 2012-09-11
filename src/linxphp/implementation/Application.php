@@ -26,6 +26,17 @@ class Application extends Module{
         if (self::$_instance->config->get('error_handler','convert_to_exceptions',true)){
             ErrorHandler::register();
         }
+
+        // Register application modules
+        $app_modules = self::$_instance->config->get('paths','modules','modules');
+        if (file_exists($path.$app_modules)){
+            $dir = new \DirectoryIterator(($path.$app_modules));
+            foreach ($dir as $file){
+                if(!$file->isDot() && $file->isDir()) {
+                    echo $file;
+                }
+            }
+        }
         
         # Application setup ready
         Event::run('system.ready');

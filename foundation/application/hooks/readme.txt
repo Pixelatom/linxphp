@@ -1,0 +1,1 @@
+This is the place for the php files containing Event attachments that needs to be auto included at the beginning of the application

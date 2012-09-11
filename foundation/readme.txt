@@ -1,0 +1,1 @@
+This is a application template folder. Use it as a model of how to start an application using linxPHP
