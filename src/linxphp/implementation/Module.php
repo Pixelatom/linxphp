@@ -9,6 +9,12 @@ use linxphp\common\ClassLoader;
 class Module{
     protected $config;    
     protected $path;
+    
+    protected $name;
+    
+    public function name(){
+        return $this->name;
+    }
         
     private function __construct(){    
         $this->config = new Configuration();
@@ -37,6 +43,8 @@ class Module{
             $module->config->load($path.'config.ini');
         }
         
+        # assign a module name that can be also configured
+        $module->name = $module->config->get('module','name',basename($path));
         
         # configure app classes autoloading
         $app_classes = $module->config->get('paths','classes','classes');        
@@ -58,7 +66,7 @@ class Module{
         }
 
         # Application setup ready
-        Event::run('module.ready',$module);
+        Event::run('module.load',$module);
         
         return $module;
     }

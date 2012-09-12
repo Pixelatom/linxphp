@@ -29,11 +29,11 @@ class Application extends Module{
 
         // Register application modules
         $app_modules = self::$_instance->config->get('paths','modules','modules');
-        if (file_exists($path.$app_modules)){
-            $dir = new \DirectoryIterator(($path.$app_modules));
+        if (file_exists(self::$_instance->path.$app_modules)){
+            $dir = new \DirectoryIterator((self::$_instance->path.$app_modules));
             foreach ($dir as $file){
                 if(!$file->isDot() && $file->isDir()) {
-                    echo $file;
+                    Module::load(self::$_instance->path.$app_modules.DIRECTORY_SEPARATOR.$file);
                 }
             }
         }
