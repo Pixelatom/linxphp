@@ -6,8 +6,9 @@ require_once '../src/linxphp/common/ClassLoader.php';
 $classLoader = new linxphp\common\ClassLoader('linxphp', "../src");
 $classLoader->register();
 
-use linxphp\common\Env;
-use linxphp\implementation\Application;
+// Load the application at the current directory
+linxphp\implementation\Application::load(dirname(__FILE__));
 
-// Load the application
-Application::load(Env::path());
+$request = new linxphp\rest\Request();
+echo '<pre>';
+var_dump($request);

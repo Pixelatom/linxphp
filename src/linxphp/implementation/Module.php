@@ -15,6 +15,10 @@ class Module{
     public function name(){
         return $this->name;
     }
+    
+    public function path(){
+        return $this->path;
+    }
         
     private function __construct(){    
         $this->config = new Configuration();
