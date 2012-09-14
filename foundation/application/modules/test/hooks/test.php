@@ -1,6 +1,6 @@
 <?php
 use linxphp\common\Event;
 
-Event::add('system.ready',function(){
-    echo '<p>App loaded</p>';
+Event::add('module.load',function($module){
+    echo "<p>Module '{$module->name()}' loaded</p>";
 });
