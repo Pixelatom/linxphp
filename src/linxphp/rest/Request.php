@@ -4,53 +4,60 @@ namespace linxphp\rest;
 class Request {
     public $method = '';
     public $https = false;
-    public $uri = '';    
+    public $port = 80;
+    public $path = '';    
     public $route = '';
     public $params = array();
     
-    public function __construct() {
-        $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+    
+    
+    public function __construct($method = null, $route = null, $params = null) {
+        
+        if (!empty($method)){
+            $this->method = $method;
+        }
+        else{
+            $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+        }
+        
+        
+        if (!empty($route)){
+            $this->route = $route;
+        }
+        else{
+            if (!isset($_SERVER['PATH_INFO'])){
+                $path = str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']);
+                $this->route = (empty($path))? '/': $path;
+            }
+            else{
+                $this->route = $_SERVER['PATH_INFO'];
+            }
+        }
+        
         
         $this->https = !(empty($_SERVER['HTTPS']) or $_SERVER['HTTPS'] == 'off');
         
-        if (isset($_SERVER['REQUEST_URI'])){
-            $this->uri =  $_SERVER['REQUEST_URI'];
+        $this->port=$_SERVER['SERVER_PORT'];
+        
+        $this->path = $_SERVER['SCRIPT_NAME'];
+        
+        
+        if ($params!==null){
+            $this->params = $params;
         }
         else{
-            if (isset($_SERVER['argv'])) {
-                $uri = $_SERVER['SCRIPT_NAME'] . '?' . $_SERVER['argv'][0];
+            switch ($this->method){
+                case 'POST':
+                    $this->params = $_POST;
+                    break;
+                case 'GET':
+                    $this->params = $_GET;
+                    break;
+                default:
+                    $this->params = isset($_SERVER['QUERY_STRING']) ? parse_str($_SERVER['QUERY_STRING']) : array();
             }
-            elseif (isset($_SERVER['QUERY_STRING'])) {
-                $uri = $_SERVER['SCRIPT_NAME'] . '?' . $_SERVER['QUERY_STRING'];
-            }
-            else {
-                $uri = $_SERVER['SCRIPT_NAME'];
-            }
-            
-            // Prevent multiple slashes to avoid cross site requests via the Form API.
-            $uri = '/' . ltrim($uri, '/');
-
-            $this->uri = $uri;
         }
         
-        if (!isset($_SERVER['PATH_INFO'])){
-            $path = str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']);
-            $this->route = (empty($path))? '/': $path;
-        }
-        else{
-            $this->route = $_SERVER['PATH_INFO'];
-        }
-        
-        switch ($this->method){
-            case 'POST':
-                $this->params = $_POST;
-                break;
-            case 'GET':
-                $this->params = $_GET;
-                break;
-            default:
-                $this->params = isset($_SERVER['QUERY_STRING']) ? parse_str($_SERVER['QUERY_STRING']) : array();
-        }
         
     }
     

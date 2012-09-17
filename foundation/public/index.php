@@ -9,6 +9,7 @@ $classLoader->register();
 // Load the application. Path argument needs to point to the 'application' folder  
 linxphp\implementation\Application::load(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'application');
 
-$request = new linxphp\rest\Request();
+$request = new linxphp\rest\Request('GET','/users',array());
+
 echo '<pre>';
 var_dump($request);
