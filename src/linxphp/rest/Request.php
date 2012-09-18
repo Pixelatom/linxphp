@@ -9,9 +9,23 @@ class Request {
     public $route = '';
     public $params = array();
     
+    public static function fromRoute($route){
+        $class = get_called_class();
+        return new $class(null,$route);
+    }
     
+    public function url(){
+        $scheme   = 'http'. (($this->https) ? 's':'') . '://' ; 
+        $host     = $_SERVER["SERVER_NAME"]; 
+        $port     = ($this->port!=80) ? ':' . $this->port : ''; 
+        $path     = $this->path . (($this->route != '/')? $this->route : ''); 
+        $query    = ($this->method == 'GET') ? '?' . http_build_query($this->params) : ''; 
+        
+        $url = "$scheme$host$port$path$query";
+        return new \linxphp\common\URL($url);
+    }
     
-    public function __construct($method = null, $route = null, $params = null) {
+    public function __construct( $method = null, $route = null, $params = null) {
         
         if (!empty($method)){
             $this->method = $method;
@@ -20,8 +34,11 @@ class Request {
             $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
         }
         
-        
         if (!empty($route)){
+            
+            if ($route[0]!='/')
+                $route = '/'.$route;
+            
             $this->route = $route;
         }
         else{
@@ -34,13 +51,11 @@ class Request {
             }
         }
         
-        
         $this->https = !(empty($_SERVER['HTTPS']) or $_SERVER['HTTPS'] == 'off');
         
         $this->port=$_SERVER['SERVER_PORT'];
         
         $this->path = $_SERVER['SCRIPT_NAME'];
-        
         
         if ($params!==null){
             $this->params = $params;
@@ -57,8 +72,6 @@ class Request {
                     $this->params = isset($_SERVER['QUERY_STRING']) ? parse_str($_SERVER['QUERY_STRING']) : array();
             }
         }
-        
-        
     }
     
 }

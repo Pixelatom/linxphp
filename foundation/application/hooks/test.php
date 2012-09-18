@@ -2,6 +2,6 @@
 use linxphp\common\Event;
 
 Event::add('system.ready',function(){
-    echo '<p>System Ready</p>';
+    //echo '<p>System Ready</p>';
 });
 
