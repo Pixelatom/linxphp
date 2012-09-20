@@ -26,7 +26,7 @@ class Router {
     /**
      * 
      */
-    public static function register($method,$uri_pattern,$callback){
+    public static function register($method,$pattern,$callback){
 
     } 
 }

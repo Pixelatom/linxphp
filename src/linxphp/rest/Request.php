@@ -63,12 +63,22 @@ class Request {
         }
     }
     
+    public static function urlRewriteEnabled(){
+        return (strpos($_SERVER["REQUEST_URI"],basename($_SERVER['SCRIPT_NAME']))===false);
+    }
+    
     public function url(){
         $scheme   = 'http'. (($this->https) ? 's':'') . '://' ; 
-        $host     = $_SERVER["SERVER_NAME"]; 
+        $host     = $_SERVER["SERVER_NAME"];
         $port     = ($this->port!=80) ? ':' . $this->port : ''; 
         $path     = $this->path . (($this->route != '/')? $this->route : ''); 
         $query    = ($this->method == 'GET') ? '?' . http_build_query($this->params) : ''; 
+        
+        // detect if url was rewritten
+        if (self::urlRewriteEnabled()){            
+            $path = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $path);
+            $path = (preg_replace('{(/)\1+}','$1',$path)); 
+        }
         
         $url = "$scheme$host$port$path$query";
         return new \linxphp\common\URL($url);
