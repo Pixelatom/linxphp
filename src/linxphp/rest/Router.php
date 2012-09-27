@@ -24,9 +24,19 @@ class Router {
     public static $methods = array('GET', 'POST', 'PUT', 'DELETE', 'PATCH','HEAD');
     
     /**
-     * 
+     *
+     * @param string $method
+     * @param string $route
+     * @param callable $callback
+     * @throws \Exception 
      */
-    public static function register($method,$pattern,$callback){
-
+    public static function register($method,$route,$callback){
+        // validates method
+        $method = strtoupper($method);        
+        if (!in_array($method,self::$methods)) throw new \Exception("Method invalid or not supported to be registered");
+        
+        
+        
+        self::$routes[$method] = $route;
     } 
 }
