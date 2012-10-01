@@ -30,16 +30,27 @@ class Router {
      * @param callable $callback
      * @throws \Exception 
      */
-    public static function register($method,$route,callable $callback){
-        // validates method
-        $method = strtoupper($method);        
-        if (!in_array($method,self::$methods)) throw new \Exception("Method {$method} invalid or not supported to be registered");
+    public static function register($methods,$route,callable $callback){
+        if (!is_array($methods))
+            $methods = array($methods);
         
-        self::$routes[$method][$route] = $callback;
+        foreach ($methods as $method){
+            // validates method
+            $method = strtoupper($method);        
+            if (!in_array($method,self::$methods)) throw new \Exception("Method {$method} invalid or not supported to be registered");
+
+            if ($route[0]!='/') $route = '/'.$route;
+
+            self::$routes[$method][$route] = $callback;
+        }
     }
     
     
-    public static function route(Request $request){
+    public static function route(Request $request = null){
+        
+        if ($request === null){
+            $request = new Request();
+        }
         
         if (!in_array($request->method,self::$methods)) throw new \Exception("Method {$request->method} invalid or not supported by the router");
         

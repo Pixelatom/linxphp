@@ -6,10 +6,13 @@ require_once '../../src/linxphp/common/ClassLoader.php';
 $classLoader = new linxphp\common\ClassLoader('linxphp', "../../src");
 $classLoader->register();
 
+// enabled to stop at any error
+linxphp\common\ErrorHandler::register();
+
 use linxphp\rest\Router;
 
 Router::register('GET', '/lol/lala', function(){
     echo ':D';
 });
     
-Router::route(new linxphp\rest\Request());
+Router::route();
