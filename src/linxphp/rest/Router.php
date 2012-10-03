@@ -7,14 +7,7 @@ class Router {
     *
     * @var array
     */
-    protected static $routes = array(
-        'GET'    => array(),
-        'POST'   => array(),
-        'PUT'    => array(),
-        'DELETE' => array(),
-        'PATCH'  => array(),
-        'HEAD'   => array(),
-    );
+    protected static $routes = array();
    
     /**
      * An array of HTTP request methods.
@@ -33,16 +26,8 @@ class Router {
     public static function register($methods,$route,callable $callback){
         if (!is_array($methods))
             $methods = array($methods);
-        
-        foreach ($methods as $method){
-            // validates method
-            $method = strtoupper($method);        
-            if (!in_array($method,self::$methods)) throw new \Exception("Method {$method} invalid or not supported to be registered");
 
-            if ($route[0]!='/') $route = '/'.$route;
-
-            self::$routes[$method][$route] = $callback;
-        }
+        self::$routes[] = new Route($methods,$route,$callback);
     }
     
     
@@ -54,8 +39,10 @@ class Router {
         
         if (!in_array($request->method,self::$methods)) throw new \Exception("Method {$request->method} invalid or not supported by the router");
         
-        foreach(self::$routes[$request->method] as $route=>$handler){
-            $pattern = '#^'.$route.'$#';
+        foreach(self::$routes as $route){
+            
+            
+            $pattern = '#^'.$route->getRoute().'$#';
 
             // If we get a match we'll return the route and slice off the first
             // parameter match, as preg_match sets the first array item to the
@@ -63,7 +50,7 @@ class Router {
             if (preg_match($pattern, $request->route, $parameters))
             {
                 $parameters = array_slice($parameters, 1);
-                return call_user_func_array($handler, $parameters);
+                return call_user_func_array($route->getHandler(), $parameters);
             }
         }
     }
