@@ -26,6 +26,13 @@ class Router {
     public static function register($methods,$route,callable $callback){
         if (!is_array($methods))
             $methods = array($methods);
+        
+        $refFunc = new \ReflectionFunction($callback);
+        foreach( $refFunc->getParameters() as $param ){
+            //invokes ■ReflectionParameter::__toString
+            print $param;
+        }
+        die();
 
         self::$routes[] = new Route($methods,$route,$callback);
     }
@@ -41,19 +48,20 @@ class Router {
         
         foreach(self::$routes as $route){
             
-            $pattern = preg_quote($route->getRoute(),'#');
+            //$pattern = preg_quote($route->getRoute(),'#');
+            $pattern = $route->getRoute();
             
             // generates regexp for required section wildcard
-            $pattern = preg_replace('\?', '([^/]+)', $pattern);
+            $pattern = preg_replace('/\?/', '([^/]+)', $pattern);
             
             // generates regexp for optional section wildcard
-            $pattern = preg_replace('/\*', '(/[^/]*){0,1}', $pattern);
+            $pattern = preg_replace('#/\*#', '(?:/([^/]*)){0,1}', $pattern);
             
             // hacemos el ultimo / opcional
             $pattern .= '/{0,1}';
             
             $pattern = '#^'.$pattern.'$#i';
-
+            
             // If we get a match we'll return the route and slice off the first
             // parameter match, as preg_match sets the first array item to the
             // full-text match of the pattern.
@@ -63,5 +71,8 @@ class Router {
                 return call_user_func_array($route->getHandler(), $parameters);
             }
         }
+        
+        /*@TODO: response 404 status*/
+        echo 'not found';
     }
 }

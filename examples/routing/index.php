@@ -11,8 +11,9 @@ linxphp\common\ErrorHandler::register();
 
 use linxphp\rest\Router;
 
-Router::register('GET', '/lol/lala', function(){
-    echo ':D';
+Router::register('GET', '/lol/lala/?/*', function($primer_param,$opcional='opcional'){
+    echo $primer_param;
+    echo $opcional;
 });
     
 Router::route();
