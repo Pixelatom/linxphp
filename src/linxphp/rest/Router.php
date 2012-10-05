@@ -27,13 +27,6 @@ class Router {
         if (!is_array($methods))
             $methods = array($methods);
         
-        $refFunc = new \ReflectionFunction($callback);
-        foreach( $refFunc->getParameters() as $param ){
-            //invokes ■ReflectionParameter::__toString
-            print $param;
-        }
-        die();
-
         self::$routes[] = new Route($methods,$route,$callback);
     }
     
@@ -56,6 +49,12 @@ class Router {
             
             // generates regexp for optional section wildcard
             $pattern = preg_replace('#/\*#', '(?:/([^/]*)){0,1}', $pattern);
+            
+            // generates regexp for required rest of the path wildcard
+            $pattern = preg_replace('/\?\+/', '(.+)', $pattern);
+            
+            // generates regexp for optional rest of the path wildcard
+            $pattern = preg_replace('/\*\+/', '(?:/(.*)){0,1}', $pattern);
             
             // hacemos el ultimo / opcional
             $pattern .= '/{0,1}';
