@@ -11,7 +11,19 @@ linxphp\common\ErrorHandler::register();
 
 use linxphp\rest\Router;
 
-Router::register('GET', '/*+', function($path=''){
+// optional and required section arguments detection
+// optional path argument detection
+Router::register('GET', '/users/?/*', function($action,$id=''){
+    echo $action;
+});
+
+// optional path argument detection
+Router::register('GET', '/posts/*+', function($path=''){
+    echo $path;
+});
+
+// required path argument detection
+Router::register('GET', '/pages/?+', function($path){
     echo $path;
 });
     
