@@ -43,22 +43,22 @@ class Router {
             
             //$pattern = preg_quote($route->getRoute(),'#');
             $pattern = $route->getRoute();
-            
-            // generates regexp for required section wildcard
-            $pattern = preg_replace('/\?/', '([^/]+)', $pattern);
-            
-            // generates regexp for optional section wildcard
-            $pattern = preg_replace('#/\*#', '(?:/([^/]*)){0,1}', $pattern);
-            
+                        
             // generates regexp for required rest of the path wildcard
             $pattern = preg_replace('/\?\+/', '(.+)', $pattern);
             
             // generates regexp for optional rest of the path wildcard
             $pattern = preg_replace('/\*\+/', '(?:/(.*)){0,1}', $pattern);
             
+            // generates regexp for required section wildcard
+            $pattern = preg_replace('/\?/', '([^/]+)', $pattern);
+            
+            // generates regexp for optional section wildcard
+            $pattern = preg_replace('#/\*#', '(?:/([^/]*)){0,1}', $pattern);
+                        
             // hacemos el ultimo / opcional
             $pattern .= '/{0,1}';
-            
+                        
             $pattern = '#^'.$pattern.'$#i';
             
             // If we get a match we'll return the route and slice off the first
