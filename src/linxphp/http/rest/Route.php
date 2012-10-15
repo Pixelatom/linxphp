@@ -1,6 +1,9 @@
 <?php
-namespace linxphp\rest;
+namespace linxphp\http\rest;
 
+/**
+ * A router is the group of conditions a Request must meet to be executed
+ */
 class Route {
     // methods this routes will work with
     protected $methods = array();

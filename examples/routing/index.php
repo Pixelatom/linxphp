@@ -9,7 +9,7 @@ $classLoader->register();
 // enabled to stop at any error
 linxphp\common\ErrorHandler::register();
 
-use linxphp\rest\Router;
+use linxphp\http\rest\Router;
 
 // optional and required section arguments detection
 // optional path argument detection
@@ -26,5 +26,5 @@ Router::register('GET', '/posts/*+', function($path=''){
 Router::register('GET', '/pages/?+', function($path){
     echo $path;
 });
-    
+
 Router::route();

@@ -1,5 +1,5 @@
 <?php
-namespace linxphp\rest;
+namespace linxphp\http;
 
 class Request {
     public $method = '';
