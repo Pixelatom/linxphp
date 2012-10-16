@@ -22,8 +22,8 @@ class URL {
         $url .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
         }
         
-        $class = get_called_class();
-        return new $class($url);
+        
+        return new static($url);
     }
     
     public function __construct($url){

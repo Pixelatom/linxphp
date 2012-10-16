@@ -27,14 +27,14 @@ class Module{
     /**
      * Factory method to create Module instances
      * @param string $path the path to the module to be loaded
-     * @return \linxphp\implementation\get_called_class 
+     * @return \linxphp\implementation\Module 
      */
     public static function load($path){
         
         if (!file_exists($path)) throw new \Exception("Module path '$path' does not exists");
         
-        $class = get_called_class();
-        $module = new $class();
+        
+        $module = new static();
         
         // adds slash at the end of the path
         if (substr($path, -1) !== "/" and substr($path, -1) !== "\\") {

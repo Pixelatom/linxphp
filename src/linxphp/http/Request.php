@@ -10,8 +10,7 @@ class Request {
     public $params = array();
     
     public static function fromRoute($route){
-        $class = get_called_class();
-        return new $class(null,$route);
+        return new static(null,$route);
     }
     
     public function __construct( $method = null, $route = null, $params = null) {
