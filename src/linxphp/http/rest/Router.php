@@ -69,11 +69,15 @@ class Router {
             if (preg_match($pattern, $request->route, $parameters))
             {
                 $parameters = array_slice($parameters, 1);
-                return call_user_func_array($route->getHandler(), $parameters);
+                $response = call_user_func_array($route->getHandler(), $parameters);
             }
         }
         
-        /*@TODO: response 404 status*/
-        echo 'not found';
+        $response = \linxphp\http\Response::create('', 404);
+        
+        // dispatch an event to give the system 
+        \linxphp\common\Event::run('Router.404', $response);
+        
+        $response->send();
     }
 }

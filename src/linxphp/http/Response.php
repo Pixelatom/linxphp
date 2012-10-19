@@ -3,7 +3,7 @@
 namespace linxphp\http;
 
 class Response {
-
+    
     /**
      * @var  array  An array of status codes and messages
      */
@@ -188,14 +188,15 @@ class Response {
      *
      * @return  bool
      */
-    public function sendHeaders() {
+    public function sendHeaders() {        
         if (!headers_sent()) {
             // Send the protocol/status line first, FCGI servers need different status header
             if (!empty($_SERVER['FCGI_SERVER_VERSION'])) {
-                header('Status: ' . $this->status . ' ' . static::$statuses[$this->status]);
+                header('Status: ' . $this->status . ' ' . static::$statuses[$this->status]);                
             } else {
                 $protocol = ($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
                 header($protocol . ' ' . $this->status . ' ' . static::$statuses[$this->status]);
+                
             }
 
             foreach ($this->headers as $name => $value) {
@@ -212,7 +213,7 @@ class Response {
                 header($value, true);
             }
             return true;
-        }
+        }        
         return false;
     }
 
@@ -223,7 +224,7 @@ class Response {
      * @param   string  $sendHeaders  Whether to send the headers
      * @return  $this
      */
-    public function send($sendHeaders = false) {
+    public function send($sendHeaders = true) {
         $sendHeaders and $this->sendHeaders();
 
         if ($this->body != null) {
