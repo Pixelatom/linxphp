@@ -39,53 +39,56 @@ class Router {
             $request = new Request();
         }
         
-        if (!in_array($request->method,self::$methods)) throw new \Exception("Method {$request->method} invalid or not supported by the router");
+        // default response
+        $response = \linxphp\http\Response::create('', \linxphp\http\Response::ST_NOT_FOUND);
         
-        foreach(self::$routes as $route){
-            
-            $pattern = preg_quote($route->getRoute(),'#');
-            
-            // generates regexp for required rest of the path wildcard
-            $pattern = str_replace('\?\+', '(.+)', $pattern);
-            
-            // generates regexp for optional rest of the path wildcard
-            $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
-                        
-            // generates regexp for required section wildcard
-            $pattern = str_replace('\?', '([^/]+)', $pattern);
-            
-            // generates regexp for optional section wildcard
-            $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
-                        
-            // hacemos el ultimo / opcional
-            $pattern .= '/{0,1}';
-                        
-            $pattern = '#^'.$pattern.'$#i';
-            
-            
-            // If we get a match we'll return the route and slice off the first
-            // parameter match, as preg_match sets the first array item to the
-            // full-text match of the pattern.
-            if (preg_match($pattern, $request->route, $parameters))
-            {
-                $parameters = array_slice($parameters, 1);
-                $response = call_user_func_array($route->getHandler(), $parameters);
-                
-                \linxphp\common\Event::run('Router.response', $response);
-                
-                if (is_object($response) and $response instanceof \linxphp\http\Response){
-                    $response->send();
+        if (!in_array($request->method,self::$methods)){
+            $response = \linxphp\http\Response::create('', \linxphp\http\Response::ST_METHOD_NOT_ALLOWED);
+        }
+        else{
+            foreach(self::$routes as $route){
+
+                $pattern = preg_quote($route->getRoute(),'#');
+
+                // generates regexp for required rest of the path wildcard
+                $pattern = str_replace('\?\+', '(.+)', $pattern);
+
+                // generates regexp for optional rest of the path wildcard
+                $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
+
+                // generates regexp for required section wildcard
+                $pattern = str_replace('\?', '([^/]+)', $pattern);
+
+                // generates regexp for optional section wildcard
+                $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
+
+                // hacemos el ultimo / opcional
+                $pattern .= '/{0,1}';
+
+                $pattern = '#^'.$pattern.'$#i';
+
+
+                // check request url
+                if (preg_match($pattern, $request->route, $parameters))
+                {
+                    // check request method
+                    if (in_array($request->method, $route->methods)){                        
+                        $parameters = array_slice($parameters, 1);
+                        $response = call_user_func_array($route->getHandler(), $parameters);
+                    }
                 }
-                
-                return $response;
             }
         }
         
-        $response = \linxphp\http\Response::create('', 404);
+        if (is_object($response) and $response instanceof \linxphp\http\Response){
+            
+            // dispatch an event to give the system the possibility to modify the response
+            \linxphp\common\Event::run('Response.'.$response->status, $response);
+            
+            $response->send();
+        }
+
+        return $response;
         
-        // dispatch an event to give the system 
-        \linxphp\common\Event::run('Router.404', $response);
-        
-        $response->send();
     }
 }

@@ -9,11 +9,18 @@ class Request {
     public $route = '';
     public $params = array();
     
+    public $protocol;
+    public $time;
+    
     public static function fromRoute($route){
         return new static(null,$route);
     }
     
     public function __construct( $method = null, $route = null, $params = null) {
+        
+        $this->protocol = $_SERVER['SERVER_PROTOCOL'];
+        $this->time = $_SERVER['REQUEST_TIME_FLOAT'];
+        
         
         if (!empty($method)){
             $this->method = $method;
@@ -41,7 +48,7 @@ class Request {
         
         $this->https = !(empty($_SERVER['HTTPS']) or $_SERVER['HTTPS'] == 'off');
         
-        $this->port=$_SERVER['SERVER_PORT'];
+        $this->port = $_SERVER['SERVER_PORT'];
         
         $this->path = $_SERVER['SCRIPT_NAME'];
         

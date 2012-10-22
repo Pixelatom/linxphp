@@ -3,54 +3,54 @@
 namespace linxphp\http;
 
 class Response {
-    
-        const STATUS_Continue = 100;
-        const STATUS_Switching_Protocols = 101;
-        const STATUS_OK = 200;
-        const STATUS_Created = 201;
-        const STATUS_Accepted = 202;
-        const STATUS_Non_Authoritative_Information = 203;
-        const STATUS_No_Content = 204;
-        const STATUS_Reset_Content = 205;
-        206 => Partial Content;
-        207 => Multi-Status;
-        300 => Multiple Choices;
-        301 => Moved Permanently;
-        302 => Found;
-        303 => See Other;
-        304 => Not Modified;
-        305 => Use Proxy;
-        307 => Temporary Redirect;
-        400 => Bad Request;
-        401 => Unauthorized;
-        402 => Payment Required;
-        403 => Forbidden;
-        404 => Not Found;
-        405 => Method Not Allowed;
-        406 => Not Acceptable;
-        407 => Proxy Authentication Required;
-        408 => Request Timeout;
-        409 => Conflict;
-        410 => Gone;
-        411 => Length Required;
-        412 => Precondition Failed;
-        413 => Request Entity Too Large;
-        414 => Request-URI Too Long;
-        415 => Unsupported Media Type;
-        416 => Requested Range Not Satisfiable;
-        417 => Expectation Failed;
-        422 => Unprocessable Entity;
-        423 => Locked;
-        424 => Failed Dependency;
-        500 => Internal Server Error;
-        501 => Not Implemented;
-        502 => Bad Gateway;
-        503 => Service Unavailable;
-        504 => Gateway Timeout;
-        505 => HTTP Version Not Supported;
-        507 => Insufficient Storage;
-        509 => Bandwidth Limit Exceeded
-    
+
+    const ST_CONTINUE = 100;
+    const ST_SWITCHING_PROTOCOLS = 101;
+    const ST_OK = 200;
+    const ST_CREATED = 201;
+    const ST_ACCEPTED = 202;
+    const ST_NON_AUTHORITATIVE_INFORMATION = 203;
+    const ST_NO_CONTENT = 204;
+    const ST_RESET_CONTENT = 205;
+    const ST_PARTIAL_CONTENT = 206;
+    const ST_MULTI_STATUS = 207;
+    const ST_MULTIPLE_CHOICES = 300;
+    const ST_MOVED_PERMANENTLY = 301;
+    const ST_FOUND = 302;
+    const ST_SEE_OTHER = 303;
+    const ST_NOT_MODIFIED = 304;
+    const ST_USE_PROXY = 305;
+    const ST_TEMPORARY_REDIRECT = 307;
+    const ST_BAD_REQUEST = 400;
+    const ST_UNAUTHORIZED = 401;
+    const ST_PAYMENT_REQUIRED = 402;
+    const ST_FORBIDDEN = 403;
+    const ST_NOT_FOUND = 404;
+    const ST_METHOD_NOT_ALLOWED = 405;
+    const ST_NOT_ACCEPTABLE = 406;
+    const ST_PROXY_AUTHENTICATION_REQUIRED = 407;
+    const ST_REQUEST_TIMEOUT = 408;
+    const ST_CONFLICT = 409;
+    const ST_GONE = 410;
+    const ST_LENGTH_REQUIRED = 411;
+    const ST_PRECONDITION_FAILED = 412;
+    const ST_REQUEST_ENTITY_TOO_LARGE = 413;
+    const ST_REQUEST_URI_TOO_LONG = 414;
+    const ST_UNSUPPORTED_MEDIA_TYPE = 415;
+    const ST_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
+    const ST_EXPECTATION_FAILED = 417;
+    const ST_UNPROCESSABLE_ENTITY = 422;
+    const ST_LOCKED = 423;
+    const ST_FAILED_DEPENDENCY = 424;
+    const ST_INTERNAL_SERVER_ERROR = 500;
+    const ST_NOT_IMPLEMENTED = 501;
+    const ST_BAD_GATEWAY = 502;
+    const ST_SERVICE_UNAVAILABLE = 503;
+    const ST_GATEWAY_TIMEOUT = 504;
+    const ST_HTTP_VERSION_NOT_SUPPORTED = 505;
+    const ST_INSUFFICIENT_STORAGE = 507;
+    const ST_BANDWIDTH_LIMIT_EXCEEDED = 509;
+
     /**
      * @var  array  An array of status codes and messages
      */
@@ -125,7 +125,7 @@ class Response {
         $response->setStatus($code);
 
         if (strpos($url, '://') === false) {
-            if ($url !== '') 
+            if ($url !== '')
                 $url = (string) \linxphp\http\Request::fromRoute($url)->url();
             else
                 throw new \Exception('Invalid URL argument. Must be an absolute URL or a route.');
@@ -235,15 +235,14 @@ class Response {
      *
      * @return  bool
      */
-    public function sendHeaders() {        
+    public function sendHeaders() {
         if (!headers_sent()) {
             // Send the protocol/status line first, FCGI servers need different status header
             if (!empty($_SERVER['FCGI_SERVER_VERSION'])) {
-                header('Status: ' . $this->status . ' ' . static::$statuses[$this->status]);                
+                header('Status: ' . $this->status . ' ' . static::$statuses[$this->status]);
             } else {
                 $protocol = ($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
                 header($protocol . ' ' . $this->status . ' ' . static::$statuses[$this->status]);
-                
             }
 
             foreach ($this->headers as $name => $value) {
@@ -260,7 +259,7 @@ class Response {
                 header($value, true);
             }
             return true;
-        }        
+        }
         return false;
     }
 
