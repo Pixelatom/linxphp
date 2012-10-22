@@ -23,7 +23,7 @@ Router::register('GET', '/posts/*+', function($path=''){
 
 // required path argument detection
 Router::register('GET', '/pages/?+', function($path){
-    echo $path;
+    return \linxphp\http\Response::create($path, 401);
 });
 
 Router::route();

@@ -70,6 +70,14 @@ class Router {
             {
                 $parameters = array_slice($parameters, 1);
                 $response = call_user_func_array($route->getHandler(), $parameters);
+                
+                \linxphp\common\Event::run('Router.response', $response);
+                
+                if (is_object($response) and $response instanceof \linxphp\http\Response){
+                    $response->send();
+                }
+                
+                return $response;
             }
         }
         

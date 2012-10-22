@@ -4,6 +4,53 @@ namespace linxphp\http;
 
 class Response {
     
+        const STATUS_Continue = 100;
+        const STATUS_Switching_Protocols = 101;
+        const STATUS_OK = 200;
+        const STATUS_Created = 201;
+        const STATUS_Accepted = 202;
+        const STATUS_Non_Authoritative_Information = 203;
+        const STATUS_No_Content = 204;
+        const STATUS_Reset_Content = 205;
+        206 => Partial Content;
+        207 => Multi-Status;
+        300 => Multiple Choices;
+        301 => Moved Permanently;
+        302 => Found;
+        303 => See Other;
+        304 => Not Modified;
+        305 => Use Proxy;
+        307 => Temporary Redirect;
+        400 => Bad Request;
+        401 => Unauthorized;
+        402 => Payment Required;
+        403 => Forbidden;
+        404 => Not Found;
+        405 => Method Not Allowed;
+        406 => Not Acceptable;
+        407 => Proxy Authentication Required;
+        408 => Request Timeout;
+        409 => Conflict;
+        410 => Gone;
+        411 => Length Required;
+        412 => Precondition Failed;
+        413 => Request Entity Too Large;
+        414 => Request-URI Too Long;
+        415 => Unsupported Media Type;
+        416 => Requested Range Not Satisfiable;
+        417 => Expectation Failed;
+        422 => Unprocessable Entity;
+        423 => Locked;
+        424 => Failed Dependency;
+        500 => Internal Server Error;
+        501 => Not Implemented;
+        502 => Bad Gateway;
+        503 => Service Unavailable;
+        504 => Gateway Timeout;
+        505 => HTTP Version Not Supported;
+        507 => Insufficient Storage;
+        509 => Bandwidth Limit Exceeded
+    
     /**
      * @var  array  An array of status codes and messages
      */
