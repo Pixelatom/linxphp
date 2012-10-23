@@ -48,4 +48,9 @@ class Route {
         $this->handler = $handler;
         return $this;
     }
+    
+    
+    public function authenticate(callable $handler){
+        
+    }
 }

@@ -29,7 +29,9 @@ class Router {
         if (!is_array($methods))
             $methods = array($methods);
         
-        self::$routes[] = new Route($methods,$route,$callback);
+        $route = new Route($methods,$route,$callback);
+        self::$routes[] = $route;
+        return $route;
     }
     
     
