@@ -10,20 +10,16 @@ $classLoader->register();
 linxphp\common\ErrorHandler::register();
 
 use linxphp\http\rest\Router;
-
-// optional and required section arguments detection
-Router::register('GET', '/users/?/*', function($action,$id=''){
-    echo $action;
-});
-
-// optional path argument detection
-Router::register('GET', '/posts/*+', function($path=''){
-    echo $path;
-});
+use linxphp\http\Request;
+use linxphp\http\Response;
 
 // required path argument detection
-Router::register('GET', '/pages/?+', function($path){
-    return $path;
+Router::register('GET', '/', function($path){
+    $request = new Request();
+    if (empty($request->auth_user))
+        return Response::create($path, 401,array("WWW-Authenticate", "Basic realm=\"myrealm\""));
+    else
+        echo $request->auth_user . ':' . $request->auth_password;
 });
 
 Router::route();
