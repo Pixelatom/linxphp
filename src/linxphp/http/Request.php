@@ -12,14 +12,44 @@ class Request {
     public $protocol;
     public $time;
     
+    public $accept;
+    public $accept_charset;
+    public $accept_encoding;
+    public $accept_language;
+    
+    public $user_agent;
+    public $connection;
+    public $referer;
+    
+    public $auth_user;
+    public $auth_password;
+    
     public static function fromRoute($route){
         return new static(null,$route);
     }
     
     public function __construct( $method = null, $route = null, $params = null) {
         
-        $this->protocol = $_SERVER['SERVER_PROTOCOL'];
-        $this->time = $_SERVER['REQUEST_TIME_FLOAT'];
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])){
+            list($this->auth_user, $this->auth_password) = explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));            
+        }
+        elseif (isset($_SERVER['PHP_AUTH_USER'])){
+            $this->auth_user = $_SERVER['PHP_AUTH_USER'];
+            $this->auth_password = $_SERVER['PHP_AUTH_PW'];
+        }
+        
+        $this->protocol = isset($_SERVER['SERVER_PROTOCOL'])?$_SERVER['SERVER_PROTOCOL']:'HTTP/1.0';        
+        $this->time     = isset($_SERVER['REQUEST_TIME_FLOAT'])?$_SERVER['REQUEST_TIME_FLOAT']:microtime(true);
+        
+        $this->accept           = isset($_SERVER['HTTP_ACCEPT'])?$_SERVER['HTTP_ACCEPT']:null;
+        $this->accept_charset   = isset($_SERVER['HTTP_ACCEPT_CHARSET'])?$_SERVER['HTTP_ACCEPT_CHARSET']:null;
+        $this->accept_encoding  = isset($_SERVER['HTTP_ACCEPT_ENCODING'])?$_SERVER['HTTP_ACCEPT_ENCODING']:null;
+        $this->accept_language  = isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])?$_SERVER['HTTP_ACCEPT_LANGUAGE']:null;
+        
+        $this->user_agent   = isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:null;
+        $this->connection   = isset($_SERVER['HTTP_CONNECTION'])?$_SERVER['HTTP_CONNECTION']:null;
+        $this->referer      = isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:null;
+        
         
         
         if (!empty($method)){
