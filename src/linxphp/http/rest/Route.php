@@ -49,8 +49,21 @@ class Route {
         return $this;
     }
     
+    protected $auth_handler;
     
-    public function authenticate(callable $handler){
-        
+    /**
+     * sets authentication handler for this route
+     * must receive 2 params:
+     * 1: username
+     * 2: password
+     * @param \linxphp\http\rest\callable $handler
+     */    
+    public function if_authenticates(callable $handler){
+        $this->auth_handler = $handler;
+    }
+    
+    public function authenticates($username, $password){
+        if (!is_callable($this->auth_handler)) return true;
+        return call_user_func($this->auth_handler,$username,$password);
     }
 }
