@@ -254,7 +254,7 @@ class Response {
 
                 // Create the header
                 is_string($name) and $value = "{$name}: {$value}";
-
+                
                 // Send it
                 header($value, true);
             }

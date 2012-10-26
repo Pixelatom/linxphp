@@ -23,7 +23,17 @@ Router::register('GET', '/posts/*+', function($path=''){
 
 // required path argument detection
 Router::register('GET', '/pages/?+', function($path){
-    return $path;
+    echo $path;
+});
+
+// advanced HTTP properties
+Router::register('GET', '/admin', function(){
+    echo 'Welcome';
+})->setAuthentication("My App",function($user,$password){ // HTTP Basic auth
+    echo $user . $password;
+    return !empty($user) and !empty($password);
+})->setLastModified(function(){
+    return new DateTime();
 });
 
 Router::route();

@@ -2,6 +2,7 @@
 namespace linxphp\http\rest;
 
 use linxphp\http\Request;
+use linxphp\http\Response;
 
 class Router {
    /**
@@ -42,13 +43,14 @@ class Router {
         }
         
         // default response
-        $response = \linxphp\http\Response::create('', \linxphp\http\Response::ST_NOT_FOUND);
+        $response = Response::create('', Response::ST_NOT_FOUND);
         
         if (!in_array($request->method,self::$methods)){
-            $response = \linxphp\http\Response::create('', \linxphp\http\Response::ST_METHOD_NOT_ALLOWED);
+            $response = Response::create('', Response::ST_METHOD_NOT_ALLOWED);
         }
         else{
             foreach(self::$routes as $route){
+                /*@var $route Route*/
 
                 $pattern = preg_quote($route->getRoute(),'#');
 
@@ -74,13 +76,29 @@ class Router {
                 if (preg_match($pattern, $request->route, $parameters))
                 {
                     // check request method
-                    if (in_array($request->method, $route->methods)){                        
+                    if ($route->testMethod($request->method)){
+                        
+                        if (!$route->testAuthentication($request->auth_user, $request->auth_password)){
+                            $response = new Response('',  Response::ST_UNAUTHORIZED,array(array("WWW-Authenticate","Basic realm=\"{$route->auth_realm}\"")));
+                            break;
+                        }
+                        
+                        if (!is_null($ifModifiedSince = $request->if_modified_since) and !is_null($lastModifiedOn = $route->getLastModified())){
+                            if ($lastModifiedOn <= $ifModifiedSince) {
+                                $headers = array(array('Last-Modified',$lastModifiedOn->format(DateTime::RFC2822)));
+                                $response = new Response('',  Response::ST_NOT_MODIFIED,$headers);
+                                break;
+                            }    
+                        }
+                        
+                        
                         $parameters = array_slice($parameters, 1);
                         $response = call_user_func_array($route->getHandler(), $parameters);
                     }
                 }
             }
         }
+        
         
         if (is_object($response) and $response instanceof \linxphp\http\Response){
             

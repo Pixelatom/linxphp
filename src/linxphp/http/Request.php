@@ -24,6 +24,8 @@ class Request {
     public $auth_user;
     public $auth_password;
     
+    public $if_modified_since;
+    
     public static function fromRoute($route){
         return new static(null,$route);
     }
@@ -50,7 +52,7 @@ class Request {
         $this->connection   = isset($_SERVER['HTTP_CONNECTION'])?$_SERVER['HTTP_CONNECTION']:null;
         $this->referer      = isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:null;
         
-        
+        $this->if_modified_since = isset($_SERVER['IF_MODIFIED_SINCE'])? new DateTime($_SERVER['IF_MODIFIED_SINCE']):null;
         
         if (!empty($method)){
             $this->method = $method;
