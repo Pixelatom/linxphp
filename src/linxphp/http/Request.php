@@ -41,12 +41,16 @@ class Request {
         }
         
         $this->protocol = isset($_SERVER['SERVER_PROTOCOL'])?$_SERVER['SERVER_PROTOCOL']:'HTTP/1.0';        
-        $this->time     = isset($_SERVER['REQUEST_TIME_FLOAT'])?$_SERVER['REQUEST_TIME_FLOAT']:microtime(true);
         
-        $this->accept           = isset($_SERVER['HTTP_ACCEPT'])?$_SERVER['HTTP_ACCEPT']:null;
-        $this->accept_charset   = isset($_SERVER['HTTP_ACCEPT_CHARSET'])?$_SERVER['HTTP_ACCEPT_CHARSET']:null;
-        $this->accept_encoding  = isset($_SERVER['HTTP_ACCEPT_ENCODING'])?$_SERVER['HTTP_ACCEPT_ENCODING']:null;
-        $this->accept_language  = isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])?$_SERVER['HTTP_ACCEPT_LANGUAGE']:null;
+        // parses request time
+        $t     =  isset($_SERVER['REQUEST_TIME_FLOAT'])?  $_SERVER['REQUEST_TIME_FLOAT']:microtime(true);        
+        $micro = sprintf("%06d",($t - floor($t)) * 1000000);
+        $this->time = new \DateTime( date('Y-m-d H:i:s.'.$micro,$t) );
+        
+        $this->accept           = $this->parseAccept('HTTP_ACCEPT');
+        $this->accept_charset   = $this->parseAccept('HTTP_ACCEPT_CHARSET');
+        $this->accept_encoding  = $this->parseAccept('HTTP_ACCEPT_ENCODING');
+        $this->accept_language  = $this->parseAccept('HTTP_ACCEPT_LANGUAGE');
         
         $this->user_agent   = isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:null;
         $this->connection   = isset($_SERVER['HTTP_CONNECTION'])?$_SERVER['HTTP_CONNECTION']:null;
@@ -122,4 +126,27 @@ class Request {
         return new \linxphp\common\URL($url);
     }
     
+    
+    /**
+     * returns an array of values with their quality taken from the accept header
+     * @param type $accept_header
+     * @return type 
+     */
+    protected function parseAccept($accept_header)
+    {
+        if (!isset($_SERVER[$accept_header])) return array();
+        
+        $acceptHeader = $_SERVER[$accept_header];
+        $acceptParts = explode(',', $acceptHeader);
+        $acceptList = array();
+        foreach ($acceptParts as $k => &$acceptPart) {
+            $parts = explode(';q=', trim($acceptPart));
+            $provided = array_shift($parts);
+            $quality = array_shift($parts) ? : (10000 - $k) / 10000;
+            $acceptList[$provided] = $quality;
+        }
+        arsort($acceptList);
+
+        return array_keys($acceptList);
+    }
 }
