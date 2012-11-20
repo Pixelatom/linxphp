@@ -8,27 +8,18 @@ class Request {
     public $path = '';    
     public $route = '';
     public $params = array();
+    public $headers = array();
     
     public $protocol;
     public $time;
     
-    public $accept;
-    public $accept_charset;
-    public $accept_encoding;
-    public $accept_language;
-    
-    public $user_agent;
-    public $connection;
-    public $referer;
-    
     public $auth_user;
     public $auth_password;
-    
-    public $if_modified_since;
     
     public static function fromRoute($route){
         return new static(null,$route);
     }
+    
     
     public function __construct( $method = null, $route = null, $params = null) {
         
@@ -40,23 +31,34 @@ class Request {
             $this->auth_password = $_SERVER['PHP_AUTH_PW'];
         }
         
+        foreach ($_SERVER as $name => $value){ 
+            switch($name){
+                case "CONTENT_LENGTH":
+                    $headers["Content-Length"] = $value; 
+                    break;
+                case "CONTENT_TYPE": 
+                    $headers["Content-Type"] = $value; 
+                    break;
+                case 'IF_MODIFIED_SINCE':
+                    $headers['If-Modified-Since'] = $value;
+                    break;
+                default:
+                    if (substr($name, 0, 5) == 'HTTP_'){ 
+                        $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5))))); 
+                        $headers[$name] = $value; 
+                    }
+            }
+        }
+ 
+        $this->headers = $headers;
+        
+        
         $this->protocol = isset($_SERVER['SERVER_PROTOCOL'])?$_SERVER['SERVER_PROTOCOL']:'HTTP/1.0';        
         
         // parses request time
         $t     =  isset($_SERVER['REQUEST_TIME_FLOAT'])?  $_SERVER['REQUEST_TIME_FLOAT']:microtime(true);        
         $micro = sprintf("%06d",($t - floor($t)) * 1000000);
         $this->time = new \DateTime( date('Y-m-d H:i:s.'.$micro,$t) );
-        
-        $this->accept           = $this->parseAccept('HTTP_ACCEPT');
-        $this->accept_charset   = $this->parseAccept('HTTP_ACCEPT_CHARSET');
-        $this->accept_encoding  = $this->parseAccept('HTTP_ACCEPT_ENCODING');
-        $this->accept_language  = $this->parseAccept('HTTP_ACCEPT_LANGUAGE');
-        
-        $this->user_agent   = isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:null;
-        $this->connection   = isset($_SERVER['HTTP_CONNECTION'])?$_SERVER['HTTP_CONNECTION']:null;
-        $this->referer      = isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:null;
-        
-        $this->if_modified_since = isset($_SERVER['IF_MODIFIED_SINCE'])? new DateTime($_SERVER['IF_MODIFIED_SINCE']):null;
         
         if (!empty($method)){
             $this->method = $method;
@@ -134,9 +136,9 @@ class Request {
      */
     protected function parseAccept($accept_header)
     {
-        if (!isset($_SERVER[$accept_header])) return array();
+        if (!isset($this->headers[$accept_header])) return array();
         
-        $acceptHeader = $_SERVER[$accept_header];
+        $acceptHeader = $this->headers[$accept_header];
         $acceptParts = explode(',', $acceptHeader);
         $acceptList = array();
         foreach ($acceptParts as $k => &$acceptPart) {

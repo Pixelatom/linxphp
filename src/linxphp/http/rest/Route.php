@@ -47,43 +47,10 @@ class Route {
     public function setHandler(callable $handler){
         $this->handler = $handler;
         return $this;
-    }
-    
-    public $auth_realm;
-    protected $auth_handler;
-    
-    /**
-     * sets authentication handler for this route
-     * must receive 2 params:
-     * 1: username
-     * 2: password
-     * @param \linxphp\http\rest\callable $handler
-     */    
-    public function setAuthentication($realm,callable $handler){
-        $this->auth_realm = $realm; 
-        $this->auth_handler = $handler;
-        return $this;
-    }
-    
-    protected $last_modified_handler = null;
-    
-    public function setLastModified(callable $handler){
-        $this->last_modified_handler = $handler;
-        return $this;
-    }
-    
-    public function getLastModified(){
-        if (!is_callable($this->last_modified_handler)) return null;
-        return call_user_func($this->last_modified_handler);
-    }
-    
-    public function testMethod($method){
+    }    
+   
+    public function supportMethod($method){
         return (count($this->getMethods())==0 or in_array($method, $this->getMethods()));
-    }
-    
-    public function testAuthentication($username, $password){
-        if (!is_callable($this->auth_handler)) return true;
-        return call_user_func($this->auth_handler,$username,$password);
     }
     
     

@@ -165,9 +165,19 @@ class Response {
      * @param  string  $status  The response status
      */
     public function __construct($body = null, $status = 200, array $headers = array()) {
+        $headers = headers_list();
+        
+        foreach ($headers as $header) {
+            $header = explode(":", $header);
+            $arh[array_shift($header)] = trim(implode(":", $header));
+        }        
+ 
+        $this->headers = $arh;
+        
         foreach ($headers as $k => $v) {
             $this->setHeader($k, $v);
         }
+        
         $this->body = $body;
         $this->status = $status;
     }

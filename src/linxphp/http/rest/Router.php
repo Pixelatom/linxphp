@@ -27,6 +27,9 @@ class Router {
      * @throws \Exception 
      */
     public static function register($methods,$route,callable $callback){
+        
+        if (empty($methods)) $methods = self::$methods;
+        
         if (!is_array($methods))
             $methods = array($methods);
         
@@ -45,59 +48,43 @@ class Router {
         // default response
         $response = Response::create('', Response::ST_NOT_FOUND);
         
-        if (!in_array($request->method,self::$methods)){
-            $response = Response::create('', Response::ST_METHOD_NOT_ALLOWED);
-        }
-        else{
-            foreach(self::$routes as $route){
-                /*@var $route Route*/
+        
+        foreach(self::$routes as $route){
+            /*@var $route Route*/
 
-                $pattern = preg_quote($route->getRoute(),'#');
+            $pattern = preg_quote($route->getRoute(),'#');
 
-                // generates regexp for required rest of the path wildcard
-                $pattern = str_replace('\?\+', '(.+)', $pattern);
+            // generates regexp for required rest of the path wildcard
+            $pattern = str_replace('\?\+', '(.+)', $pattern);
 
-                // generates regexp for optional rest of the path wildcard
-                $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
+            // generates regexp for optional rest of the path wildcard
+            $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
 
-                // generates regexp for required section wildcard
-                $pattern = str_replace('\?', '([^/]+)', $pattern);
+            // generates regexp for required section wildcard
+            $pattern = str_replace('\?', '([^/]+)', $pattern);
 
-                // generates regexp for optional section wildcard
-                $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
+            // generates regexp for optional section wildcard
+            $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
 
-                // hacemos el ultimo / opcional
-                $pattern .= '/{0,1}';
+            // hacemos el ultimo / opcional
+            $pattern .= '/{0,1}';
 
-                $pattern = '#^'.$pattern.'$#i';
+            $pattern = '#^'.$pattern.'$#i';
 
 
-                // check request url
-                if (preg_match($pattern, $request->route, $parameters))
-                {
-                    // check request method
-                    if ($route->testMethod($request->method)){
-                        
-                        if (!$route->testAuthentication($request->auth_user, $request->auth_password)){
-                            $response = new Response('',  Response::ST_UNAUTHORIZED,array(array("WWW-Authenticate","Basic realm=\"{$route->auth_realm}\"")));
-                            break;
-                        }
-                        
-                        if (!is_null($ifModifiedSince = $request->if_modified_since) and !is_null($lastModifiedOn = $route->getLastModified())){
-                            if ($lastModifiedOn <= $ifModifiedSince) {
-                                $headers = array(array('Last-Modified',$lastModifiedOn->format(DateTime::RFC2822)));
-                                $response = new Response('',  Response::ST_NOT_MODIFIED,$headers);
-                                break;
-                            }    
-                        }
-                        
-                        
-                        $parameters = array_slice($parameters, 1);
-                        $response = call_user_func_array($route->getHandler(), $parameters);
-                    }
+            // check request url
+            if (preg_match($pattern, $request->route, $parameters)){
+                // check request method
+                if ($route->supportMethod($request->method)){                        
+                    $parameters = array_slice($parameters, 1);
+                    $response = call_user_func_array($route->getHandler(), $parameters);
+                }
+                else{
+                    $response = Response::create('', Response::ST_METHOD_NOT_ALLOWED);
                 }
             }
         }
+        
         
         
         if (is_object($response) and $response instanceof \linxphp\http\Response){
