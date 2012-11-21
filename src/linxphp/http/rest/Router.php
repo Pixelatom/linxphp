@@ -34,6 +34,10 @@ class Router {
             $methods = array($methods);
         
         $route = new Route($methods,$route,$callback);
+        
+        // event that gives the chance to modify a route before it's registered
+        \linxphp\common\Event::run('Route.register', $route);
+        
         self::$routes[] = $route;
         return $route;
     }
@@ -48,7 +52,9 @@ class Router {
         // default response
         $response = Response::create('', Response::ST_NOT_FOUND);
         
-        
+        // modify default response
+        \linxphp\common\Event::run('Router.before', $response, $request);
+                
         foreach(self::$routes as $route){
             /*@var $route Route*/
 
@@ -85,7 +91,8 @@ class Router {
             }
         }
         
-        
+        // modify response
+        \linxphp\common\Event::run('Router.after', $response, $request);        
         
         if (is_object($response) and $response instanceof \linxphp\http\Response){
             
