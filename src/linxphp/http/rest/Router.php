@@ -19,6 +19,9 @@ class Router {
      */
     public static $methods = array('GET', 'POST', 'PUT', 'DELETE', 'PATCH','HEAD');
     
+    
+    
+    
     /**
      *
      * @param string $method
@@ -42,7 +45,6 @@ class Router {
         return $route;
     }
     
-    
     public static function route(Request $request = null){
         
         if ($request === null){
@@ -51,45 +53,50 @@ class Router {
         
         // default response
         $response = Response::create('', Response::ST_NOT_FOUND);
+        /*@var $response Response*/
         
         // modify default response
-        \linxphp\common\Event::run('Router.before', $response, $request);
-                
-        foreach(self::$routes as $route){
-            /*@var $route Route*/
+        \linxphp\common\Event::run('Router.before', $response, $request);        
+        
+        if ($response->status != Response::ST_NOT_FOUND){ // if the request wasn't responsed by the event 
+           foreach(self::$routes as $route){
+                /*@var $route Route*/
 
-            $pattern = preg_quote($route->getRoute(),'#');
+                $pattern = preg_quote($route->getRoute(),'#');
 
-            // generates regexp for required rest of the path wildcard
-            $pattern = str_replace('\?\+', '(.+)', $pattern);
+                // generates regexp for required rest of the path wildcard
+                $pattern = str_replace('\?\+', '(.+)', $pattern);
 
-            // generates regexp for optional rest of the path wildcard
-            $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
+                // generates regexp for optional rest of the path wildcard
+                $pattern = str_replace('/\*\+', '(?:/(.*)){0,1}', $pattern);            
 
-            // generates regexp for required section wildcard
-            $pattern = str_replace('\?', '([^/]+)', $pattern);
+                // generates regexp for required section wildcard
+                $pattern = str_replace('\?', '([^/]+)', $pattern);
 
-            // generates regexp for optional section wildcard
-            $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
+                // generates regexp for optional section wildcard
+                $pattern = str_replace('/\*', '(?:/([^/]*)){0,1}', $pattern);
 
-            // hacemos el ultimo / opcional
-            $pattern .= '/{0,1}';
+                // hacemos el ultimo / opcional
+                $pattern .= '/{0,1}';
 
-            $pattern = '#^'.$pattern.'$#i';
+                $pattern = '#^'.$pattern.'$#i';
 
 
-            // check request url
-            if (preg_match($pattern, $request->route, $parameters)){
-                // check request method
-                if ($route->supportMethod($request->method)){                        
-                    $parameters = array_slice($parameters, 1);
-                    $response = call_user_func_array($route->getHandler(), $parameters);
+                // check request url
+                if (preg_match($pattern, $request->route, $parameters)){
+                    // check request method
+                    if ($route->allowMethod($request->method)){                        
+                        $parameters = array_slice($parameters, 1);
+                        $response = call_user_func_array($route->getHandler(), $parameters);
+                    }
+                    else{
+                        $response = Response::create('', Response::ST_METHOD_NOT_ALLOWED);
+                    }
                 }
-                else{
-                    $response = Response::create('', Response::ST_METHOD_NOT_ALLOWED);
-                }
-            }
+            } 
         }
+                
+        
         
         // modify response
         \linxphp\common\Event::run('Router.after', $response, $request);        

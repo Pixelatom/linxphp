@@ -49,7 +49,7 @@ class Route {
         return $this;
     }    
    
-    public function supportMethod($method){
+    public function allowMethod($method){
         return (count($this->getMethods())==0 or in_array($method, $this->getMethods()));
     }
     
