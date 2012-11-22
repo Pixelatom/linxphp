@@ -68,6 +68,12 @@ class Module{
                 }
             }
         }
+        
+        # controllers path
+        $app_controllers = $module->config->get('paths','controllers','controllers');
+        if (file_exists($path.$app_controllers)){
+            
+        }
 
         # Application setup ready
         Event::run('module.load',$module);

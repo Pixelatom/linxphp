@@ -20,8 +20,6 @@ class Router {
     public static $methods = array('GET', 'POST', 'PUT', 'DELETE', 'PATCH','HEAD');
     
     
-    
-    
     /**
      *
      * @param string $method
