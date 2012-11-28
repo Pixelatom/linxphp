@@ -19,6 +19,14 @@ class Module{
     public function path(){
         return $this->path;
     }
+    
+    /**
+     *
+     * @return linxphp\common\Configuration 
+     */
+    public function configuration(){
+        return $this->config;
+    }
         
     private function __construct(){    
         $this->config = new Configuration();

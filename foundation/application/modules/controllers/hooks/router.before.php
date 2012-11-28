@@ -1,6 +1,10 @@
 <?php
 
 use linxphp\common\Event;
+use linxphp\common\Configuration;
+use linxphp\common\ClassLoader;
+    
+use app\controllers\Controller;
 
 Event::add('Router.before',function(linxphp\http\Response $response,linxphp\http\Request $request){
     $file=null;
@@ -8,134 +12,89 @@ Event::add('Router.before',function(linxphp\http\Response $response,linxphp\http
     $action=null;
     $args=array();
 
-    
-    
-    $url = $request->url();
-
     $route = $request->route;
 
     if (empty($route)) $route = 'index';
     
-    $cmd_path = \linxphp\implementation\Application::instance()->path();
-    $cmd_path = Configuration::get('paths','controllers').'/';
-
     $route = trim($route,'/\\');
     $parts = explode('/',$route);		
 
-
-    $cmd_path = realpath(Application::get_site_path().Configuration::get('paths','controllers'));
-
-
     $param=null;
     $controller='index';
-
-    # recorre el route hasta que encuentra un archivo o se acaba el string.
-    do{ 
-        # controller pasa a ser action
-        $action=$controller;
-
-        # se arma el path al archivo
-        $fullpath = $cmd_path .'/' . implode('/',$parts);
-
-        # se extrae la ultima parte del route
+    
+    // build path to the controllers folder
+    $controllers_path = \linxphp\implementation\Application::instance()->path();    
+    $controllers_path .= \linxphp\implementation\Application::instance()->configuration()->get('paths','controllers','controllers');   
+    $controllers_path = realpath($controllers_path);
+    
+    # find the file using the different parts of the route as path
+    do{         
+        $action = $controller; 
+        
+        $fullpath = $controllers_path .'/' . implode('/',$parts);
+        
         $controller=array_pop($parts);
         $args[]=$controller;
     }
     while (!is_file($fullpath.'.php') and count($parts)>0);
 
 
-    # si no se encuentra algun archivo, se va a llamar al archivo por defecto 'index.php'
-    if (!is_file($fullpath.'.php') /*and count(explode('/',$route))==1*/){
+    # if a file wasn't found then we'll try with the default controller called 'index'
+    if (!is_file($fullpath.'.php')){
         $action=$controller;
         $controller='index';
-        $fullpath = $cmd_path .'/index'  ;
-
-        # el ultimo elemento de args es el action
-        array_pop($args);
+        $fullpath = $controllers_path .'/index'  ;
+        
+        array_pop($args); // last element from route is the action
     }
     else{
-        # los dos ultimos elementos de args son el action y el controller.
+        # last two elements from route are controller and action
         array_pop($args);
         array_pop($args);
     }
 
-    $file = realpath($fullpath.'.php');
-    $args=array_reverse($args);
-
-    /*
+    $class  = Controller::mapController($fullpath);    
+    $file   = $fullpath.'.php';
+    $args   = array_reverse($args);
+    
     //debbuging
-    echo "file: $file<br />";
-    echo "controller: $controller<br />";
-    echo "action: $action<br />";        
-    */
-    /*
-    var_dump($args);
-    */
-
+    //echo "file: $file<br />";
+    //echo "controller: $controller<br />";
+    //echo "action: $action<br />";        
+    
     /* end get controller */        
 
-    # incluye el archivo del controller
-    if (!is_readable($file)){ 			
-        $this->not_found();			
-    }
-    else{			
-        include_once($file);
-    }
-
-    # inicializa la clase
-    $class = ucfirst($controller).'Controller';		
-
-
-
-    if (!method_exists($class,$action)) $this->not_found();
-
-
+    // includes controller file
+    if (!is_readable($file)) return; // 404 not found    
+    include_once($file);
+    
+    // validates the class     
+    if (!is_subclass_of($class, 'app\controllers\Controller'))  return; // 404 not found
+    
+    // validates the method    
+    if (!method_exists($class,$action)) return; // 404 not found
     $method = new ReflectionMethod($class, $action);
-
-    if (!$method->isPublic()){
-        $this->not_found();
-    }
-
+    if (!$method->isPublic())  return; // 404 not found
+    
+    // we'll test that the action method has the correct number of arguments    
     $paramsinfo = $method->getParameters();
-
     $requiredparams = 0;
-
     foreach ($paramsinfo as $i => $param) { 
-        if (!$param->isOptional()){
-        $requiredparams++;
-        }         
+        if (!$param->isOptional()) $requiredparams++;
     }
+    if (count($args)<$requiredparams or count($args)>count($paramsinfo)) return; // 404 not found
 
-    if (count($args)<$requiredparams or count($args)>count($paramsinfo)){
-        $this->not_found();
-    }
-
-    /* calculamos el valor de controller */
-    $icontroller=str_ireplace(realpath($cmd_path) ,'',$file);
-    $icontroller=str_replace('\\','/',$icontroller);
-    $icontroller=explode('/',$icontroller);
-    array_pop($icontroller);
-    $icontroller=implode('/',$icontroller);
-    $icontroller.='/'.$controller;
-
-    $this->args=implode('/',$args);
-    $this->file=$file;
-    $this->controller=$icontroller;
-    $this->action=$action;
-
-
-    /*
-    die($icontroller);
-    */
-    /* Creamos el controlador y ejecutamos el metodo */
-
-    Event::run('system.execute');
-
+        
+    /* Creates Controller and executes the action method */
+    $response->setStatus(200);
+        
     $controller = new $class();
     if (count($args)==0)
-    $controller->$action();        
+        $resp = $controller->$action();        
     else        
-    call_user_func_array(array($controller, $action), $args);
+        $resp = call_user_func_array(array($controller, $action), $args);
 
-    Event::run('system.post_routing');    
+    if (is_object($resp) and $resp instanceof \linxphp\http\Response){
+        $response = $resp;
+    }
 });
