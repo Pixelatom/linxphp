@@ -8,6 +8,14 @@ class Application extends Module{
     static protected $_instance = NULL;
     
     /**
+     * 
+     * @return \linxphp\implementation\Application
+     */
+    public static function instance(){
+        return self::$_instance;
+    }
+    
+    /**
      * Singleton method that loads the Application just once
      * @param type $path the path to the application
      * @return type

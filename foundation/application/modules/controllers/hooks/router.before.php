@@ -2,25 +2,22 @@
 
 use linxphp\common\Event;
 
-Event::add('module.load',function($module){
+Event::add('Router.before',function(linxphp\http\Response $response,linxphp\http\Request $request){
     $file=null;
     $controller=null;
     $action=null;
     $args=array();
 
-    $this->args=$args;
-    $this->file=$file;
-    $this->controller=$controller;
-    $this->action=$action;
+    
+    
+    $url = $request->url();
 
-    /* start get controller */
-    /*@var $url Url*/		
-    $url=Application::$request_url;
-
-    $route=($url->get_param($this->router_param));
+    $route = $request->route;
 
     if (empty($route)) $route = 'index';
-    $cmd_path = Application::get_site_path().Configuration::get('paths','controllers').'/';
+    
+    $cmd_path = \linxphp\implementation\Application::instance()->path();
+    $cmd_path = Configuration::get('paths','controllers').'/';
 
     $route = trim($route,'/\\');
     $parts = explode('/',$route);		

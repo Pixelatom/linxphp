@@ -54,7 +54,7 @@ class Router {
         /*@var $response Response*/
         
         // modify default response, allow to overwrite routes if the response is != NOT FOUND
-        \linxphp\common\Event::run('Router.before', $response, $request);        
+        \linxphp\common\Event::run('Router.before', $response, $request);
         
         if ($response->status == Response::ST_NOT_FOUND){ // if the request wasn't responsed by the event 
            foreach(self::$routes as $route){
