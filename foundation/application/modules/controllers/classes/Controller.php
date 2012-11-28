@@ -1,5 +1,4 @@
 <?php
-namespace linxphp\http\rest;
 /**
  * Base class for controllers.
  */

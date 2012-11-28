@@ -40,15 +40,29 @@ class Route {
         return $this;
     }
     
+    /**
+     * Return the route handler
+     * @return callable
+     */
     public function getHandler(){
         return $this->handler;
     }
     
+    /**
+     * Sets the handler function for this route
+     * @param callable $handler
+     * @return \linxphp\http\rest\Route
+     */
     public function setHandler(callable $handler){
         $this->handler = $handler;
         return $this;
     }    
    
+    /**
+     * checks if the method passed is allowed for this route
+     * @param string $method
+     * @return boolean
+     */
     public function allowMethod($method){
         return (count($this->getMethods())==0 or in_array($method, $this->getMethods()));
     }
