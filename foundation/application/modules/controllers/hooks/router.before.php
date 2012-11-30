@@ -41,7 +41,7 @@ Event::add('Router.before',function(linxphp\http\Response $response,linxphp\http
 
     # if a file wasn't found then we'll try with the default controller called 'index'
     if (!is_file($fullpath.'.php')){
-        $action=$controller;
+        $action = $controller;
         $controller='index';
         $fullpath = $controllers_path .'/index'  ;
         
@@ -57,15 +57,17 @@ Event::add('Router.before',function(linxphp\http\Response $response,linxphp\http
     $file   = $fullpath.'.php';
     $args   = array_reverse($args);
     
+    if (empty($action)) $action = 'index';                
+    
     //debbuging
     //echo "file: $file<br />";
-    //echo "controller: $controller<br />";
+    //echo "controller: $class<br />";
     //echo "action: $action<br />";        
     
     /* end get controller */        
 
     // includes controller file
-    if (!is_readable($file)) return; // 404 not found    
+    if (!is_readable($file)) return; // 404 not found
     include_once($file);
     
     // validates the class     
