@@ -1,6 +1,8 @@
 <?php
 
 namespace linxphp\templating;
+use linxphp\common\Event;
+use linxphp\common\ValueStorage;
 
 /**
  * Template is the main View class of MVC pattern .
@@ -10,18 +12,14 @@ namespace linxphp\templating;
  * When this view is rendered it is executed just as any PHP script would and the output from it is returned (or sent to the browser if you so wish).
  *
  */
-class Template {
+class Template extends ValueStorage{
     use linxphp\common\Factory;
-
-    protected $_vars = array();
-
-    
 
     /**
      * set() can be used to set a variable in a view	 
      */
     public function set($varname, $value) {
-        $this->_vars[$varname] = $value;
+        $this->array[$varname] = $value;
         return $this;
     }
 
@@ -29,7 +27,7 @@ class Template {
      * bind() is like set only the variable is assigned by reference.
      */
     public function bind($varname, &$value) {
-        $this->_vars[$varname] = &$value;
+        $this->array[$varname] = &$value;
         return $this;
     }
 
@@ -37,17 +35,16 @@ class Template {
      * return true if the var name is set for this template
      */
     public function key_exists($key) {
-        return isset($this->_vars[$key]);
-        return $this;
+        return isset($this->array[$key]);        
     }
 
     /**
      * get the value set for a template variable
      */
     public function get($key) {
-        if (!isset($this->_vars[$key]))
-            throw new Exception("Value '$key' doesn't exists for this template.");
-        return $this->_vars[$key];
+        if (!isset($this->array[$key]))
+            throw new Exception("Value for key '$key' doesn't exists on Template Object.");
+        return $this->array[$key];
     }
 
     /**
@@ -55,9 +52,9 @@ class Template {
      * 
      */
     public function remove($key) {
-        if (!isset($this->_vars[$key]))
+        if (!isset($this->array[$key]))
             return $this;
-        unset($this->_vars[$key]);
+        unset($this->array[$key]);
         return $this;
     }
 
@@ -65,7 +62,7 @@ class Template {
      * remove all the variables set for this template
      */
     public function clear() {
-        $this->_vars = array();
+        $this->array = array();
         return $this;
     }
 
@@ -115,7 +112,6 @@ class Template {
     
     function __construct($default_template = null, $custom_path = null) {
         $this->set_default_template($default_template);
-
         $this->set_custom_path($custom_path);
     }
 
@@ -160,21 +156,20 @@ class Template {
             $restore_rendering_status = true;
         }
 
-        # sumamos a las variables seteadas con los metodos comunes, las variables seteadas dinamicamente.
-        $vars = array_merge(get_object_vars($this), $this->_vars);
+        
 
         $onbuffer = false;
         $onbuffer = ob_start();
         try {
             // si $name se trata de un objeto
-            if (!empty($name) and is_object($name) and (get_class($name) == 'Template' or is_subclass_of($name, 'BaseTemplate'))) {
+            if (!empty($name) and is_object($name) and (get_class($name) == 'Template' or is_subclass_of($name, 'Template'))) {
                 /* @var $name Template */
                 $name = clone $name;
 
                 # copiamos todas las variables que tenemos en este template al template que se paso por parametros
-                foreach ($vars as $key => &$value) {
-                    if (!isset($name->_vars[$key])) {
-                        $name->_vars[$key] = &$value;
+                foreach ($this->array as $key => &$value) {
+                    if (!$name->key_exists($key)) {
+                        $name->bind($key,$value);
                     }
                 }
 
@@ -182,20 +177,20 @@ class Template {
             } else {
 
                 #buscamos entre todas las variables que tenemos asignadas por un objeto template
-                foreach ($vars as $key => &$value) {
+                foreach ($this->array as $key => &$value) {
                     # si es un template le asigna las variables que este template tiene
-                    if (!empty($value) and is_object($value) and (get_class($value) == 'Template' or is_subclass_of($value, 'BaseTemplate'))) {
+                    if (!empty($value) and is_object($value) and (get_class($value) == 'Template' or is_subclass_of($value, 'Template'))) {
                         $value = clone $value;
 
-                        foreach ($vars as $key1 => &$value1) {
-                            if (!isset($value->_vars[$key1]) and $key != $key1) {
-                                $value->_vars[$key1] = &$value1;
+                        foreach ($this->array as $key1 => &$value1) {
+                            if (!$value->key_exists($key1)) {
+                                $value->bind($key1,$value1);
                             }
                         }
                     }
                 }
 
-                $this->include_template($name, $vars);
+                $this->include_template($name, $this->array);
             }
         } catch (Exception $e) {
             if ($onbuffer) {
@@ -219,8 +214,8 @@ class Template {
 
         return $this;
     }
-
-    protected function include_template($name, &$vars) {
+    
+    protected function include_template($name, &$this->array){
         // self::$_paths
         # va a mostrar template default
         if (empty($name)) {
@@ -246,11 +241,11 @@ class Template {
             throw new Exception('Template `' . $name . '` does not exists or can not be found');
 
 
-        $this->clousure($path, $vars);
+        $this->clousure($path, $this->array);
     }
 
-    protected function clousure($path, &$vars) {
-        extract($vars, EXTR_REFS);
+    protected function clousure($path, &$this->array) {
+        extract($this->array, EXTR_REFS);
         include($path);
     }
 

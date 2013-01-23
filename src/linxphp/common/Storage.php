@@ -5,7 +5,7 @@ namespace linxphp\common;
  * as array, iterated, counted, etc.
  *
  */
-class Storage implements Countable , Iterator , Traversable ,  ArrayAccess {
+class ValueStorage implements Countable , Iterator , Traversable ,  ArrayAccess {
     protected $position = 0;
     protected $array = array();
     
