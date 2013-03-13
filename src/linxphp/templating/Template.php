@@ -1,5 +1,4 @@
 <?php
-
 namespace linxphp\templating;
 use linxphp\common\Event;
 use linxphp\common\ValueStorage;
@@ -14,6 +13,17 @@ use linxphp\common\ValueStorage;
  */
 class Template extends ValueStorage{
     use linxphp\common\Factory;
+    
+    protected $_default_template;
+    protected $_custom_path = false;
+    static protected $_paths = array();
+    // set to true if the template being rendered is inside another template
+    static protected $_status_rendering_child_template = false;
+    
+    function __construct($default_template = null, $custom_path = null) {
+        $this->set_default_template($default_template);
+        $this->set_custom_path($custom_path);
+    }
 
     /**
      * set() can be used to set a variable in a view	 
@@ -83,9 +93,7 @@ class Template extends ValueStorage{
         return $return;
     }
 
-    protected $_default_template;
-    protected $_custom_path = false;
-    static protected $_paths = array();
+    
 
     /**
      * adds a path where the template can be searched for
@@ -110,10 +118,7 @@ class Template extends ValueStorage{
     }
 
     
-    function __construct($default_template = null, $custom_path = null) {
-        $this->set_default_template($default_template);
-        $this->set_custom_path($custom_path);
-    }
+    
 
     /**
      * change the path where the class will search for the file it has to show
@@ -131,8 +136,7 @@ class Template extends ValueStorage{
         return $this;
     }
 
-    // set to true if the template being rendered is inside another template
-    static protected $_status_rendering_child_template = false;
+    
 
     /**
      * renders the output of the View.
@@ -155,8 +159,6 @@ class Template extends ValueStorage{
             self::$_status_rendering_child_template = true;
             $restore_rendering_status = true;
         }
-
-        
 
         $onbuffer = false;
         $onbuffer = ob_start();
@@ -192,7 +194,7 @@ class Template extends ValueStorage{
 
                 $this->include_template($name, $this->array);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             if ($onbuffer) {
                 ob_end_flush();
             }
@@ -203,13 +205,11 @@ class Template extends ValueStorage{
             $output = ob_get_contents();
             ob_end_clean();
 
-
             Event::run('template.show', $output, $this, $name, $is_parent_template = $restore_rendering_status);
             echo $output;
         }
 
-        if ($restore_rendering_status == true)
-            self::$_status_rendering_child_template = false;
+        if ($restore_rendering_status == true) self::$_status_rendering_child_template = false;
 
 
         return $this;
@@ -219,8 +219,7 @@ class Template extends ValueStorage{
         // self::$_paths
         # va a mostrar template default
         if (empty($name)) {
-            if (empty($this->_default_template))
-                throw new Exception("Empty template");
+            if (empty($this->_default_template)) throw new Exception("Empty template");
             $name = $this->_default_template;
         }
 
@@ -238,7 +237,7 @@ class Template extends ValueStorage{
             $path = realpath($this->_custom_path) . '/' . $name . '.php';
 
         if (!file_exists($path))
-            throw new Exception('Template `' . $name . '` does not exists or can not be found');
+            throw new \Exception('Template `' . $name . '` does not exists or can not be found');
 
 
         $this->clousure($path, $this->array);
