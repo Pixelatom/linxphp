@@ -1,0 +1,12 @@
+{
+    "name": "pixelatom/foundation",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Pixelatom/Cache"
+        }
+    ],
+    "require": {
+        "Pixelatom/Cache": "dev-master"
+    }
+}

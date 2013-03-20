@@ -1,0 +1,63 @@
+{
+    "hash": "0ef14ba68495ad35c37e0a831667bbde",
+    "packages": [
+        {
+            "name": "pixelatom/cache",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Pixelatom/Cache",
+                "reference": "5f06e4a8d0ccd383cfda96bfa7a7a4f1f4e9eb8c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Pixelatom/Cache/zipball/5f06e4a8d0ccd383cfda96bfa7a7a4f1f4e9eb8c",
+                "reference": "5f06e4a8d0ccd383cfda96bfa7a7a4f1f4e9eb8c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "time": "2013-03-20 20:39:32",
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Pixelatom": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Javier Arias",
+                    "email": "javier.arias@pixelatom.com",
+                    "homepage": "http://www.pixelatom.org",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A common interface to a variety of caching engines",
+            "homepage": "https://github.com/Pixelatom/Cache",
+            "keywords": [
+                "cache",
+                "wrapper",
+                "interface",
+                "memcached",
+                "redis"
+            ],
+            "support": {
+                "email": "contact@pixelatom.org",
+                "issues": "https://github.com/Pixelatom/Cache/issues",
+                "source": "https://github.com/Pixelatom/Cache"
+            }
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "pixelatom/cache": 20
+    }
+}
