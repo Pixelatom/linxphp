@@ -7,7 +7,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/Pixelatom/Url"
+            "url": "https://github.com/Pixelatom/HTTP"
         }
     ],
     "require": {
