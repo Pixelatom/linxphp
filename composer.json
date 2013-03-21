@@ -4,9 +4,14 @@
         {
             "type": "vcs",
             "url": "https://github.com/Pixelatom/Cache"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Pixelatom/Url"
         }
     ],
     "require": {
-        "Pixelatom/Cache": "dev-master"
+        "Pixelatom/Cache": "dev-master",
+        "Pixelatom/Url": "dev-master"
     }
 }
