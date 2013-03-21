@@ -12,6 +12,6 @@
     ],
     "require": {
         "Pixelatom/Cache": "dev-master",
-        "Pixelatom/Url": "dev-master"
+        "Pixelatom/HTTP": "dev-master"
     }
 }
